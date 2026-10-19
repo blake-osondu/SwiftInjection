@@ -104,23 +104,27 @@ extension View {
 
 // MARK: - Root
 
-/// A screen's payload: initial state, the root view, and named views for `{"ref": ...}`.
-/// `{"state": {"count": 0}, "body": {"vStack": {...}}, "views": {"header": {...}}}`
+/// A screen's payload: initial state, the root view, named views for `{"ref": ...}`, and JavaScript
+/// functions callable from actions and expressions (see `ScriptRuntime`).
+/// `{"state": {"count": 0}, "body": {"vStack": {...}}, "views": {"header": {...}}, "scripts": {"fmt": "(n) => ..."}}`
 public struct InjectedPayload: Codable {
     @OrEmpty public var state: RuntimeValue
     public var body: InjectedView
     @OrEmpty public var views: [String: InjectedView]
+    @OrEmpty public var scripts: [String: String]
 
-    public init(state: RuntimeValue = [:], body: InjectedView, views: [String: InjectedView] = [:]) {
+    public init(state: RuntimeValue = [:], body: InjectedView, views: [String: InjectedView] = [:],
+                scripts: [String: String] = [:]) {
         self.state = state
         self.body = body
         self.views = views
+        self.scripts = scripts
     }
 }
 
-/// Renders a payload against `store`. Create the store from `payload.state` and keep it alive
-/// (e.g. `@StateObject var store = StateStore(payload.state)`) so state survives re-renders;
-/// register host functions on it before showing the screen.
+/// Renders a payload against `store`. Create the store with `StateStore(payload:)` (initial state and
+/// scripts) and keep it alive, e.g. `@StateObject var store = StateStore(payload: payload)`, so state
+/// survives re-renders. Register any Swift host functions on it before showing the screen.
 public struct InjectedScreen: View {
     @ObservedObject var store: StateStore
     let root: InjectedView

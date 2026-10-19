@@ -18,6 +18,10 @@ public final class StateStore: ObservableObject {
     public static var defaultOnError: (Error) -> Void = { print("SwiftInjection: \($0)") }
     /// Called for evaluation and action failures.
     public var onError: (Error) -> Void = StateStore.defaultOnError
+    /// Receives `console.log` output from payload scripts.
+    public var onLog: (String) -> Void = { print("SwiftInjection script: \($0)") }
+    /// Keeps installed scripts alive for as long as the store.
+    var scriptRuntime: ScriptRuntime?
 
     public init(_ root: RuntimeValue = [:]) {
         self.root = root

@@ -51,10 +51,27 @@ public struct ScopeLocals: Hashable {
 struct DraftScope: ExpressionScope {
     let root: RuntimeValue
     let locals: ScopeLocals
+    let functions: [String: StateStore.HostFunction]
 
     func value(at path: [String]) -> RuntimeValue? {
         locals.resolve(path, in: root)
     }
+
+    func call(_ name: String, _ args: [RuntimeValue]) throws -> RuntimeValue {
+        try callReadOnly(name, args, root: root, functions: functions)
+    }
+}
+
+/// Runs a host function from an expression against a copy of the state; writes are an error.
+func callReadOnly(_ name: String, _ args: [RuntimeValue], root: RuntimeValue,
+                  functions: [String: StateStore.HostFunction]) throws -> RuntimeValue {
+    guard let function = functions[name] else { throw EvaluationError.unknownFunction(name) }
+    var copy = root
+    let result = try function(args, &copy)
+    guard copy == root else {
+        throw EvaluationError.readOnly("state (function '\(name)' called from an expression can't change state; call it from an action)")
+    }
+    return result
 }
 
 /// A store plus the locals visible at one point in the view tree. Passed down via the environment.
@@ -70,6 +87,10 @@ public struct StateScope: ExpressionScope {
 
     public func value(at path: [String]) -> RuntimeValue? {
         locals.resolve(path, in: store.root)
+    }
+
+    public func call(_ name: String, _ args: [RuntimeValue]) throws -> RuntimeValue {
+        try callReadOnly(name, args, root: store.root, functions: store.functions)
     }
 
     /// A scope where `name` refers to `path` (resolved through the current locals).
