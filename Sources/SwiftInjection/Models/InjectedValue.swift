@@ -30,9 +30,6 @@ public enum ValueKey: Key {
 }
 
 public indirect enum InjectedValue: Codable, Equatable {
-    static public func == (lhs: InjectedValue, rhs: InjectedValue) -> Bool {
-        lhs.stateId == rhs.stateId && lhs.id == rhs.id
-    }
     case none
     case string(stateId: String, id: String, value: String)
     case integer(stateId: String, id:String, value: Int)
