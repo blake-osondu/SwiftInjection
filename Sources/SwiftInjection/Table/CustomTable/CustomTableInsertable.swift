@@ -13,20 +13,20 @@ struct CustomTableInsertable: View {
     var container: ViewStoresContainer
 
     var customTable: some View {
-        Table {
-            TableColumn(store.viewStore.customTable?.viewStore1?.title ?? "") { state in
+        Table(of: InjectedState.self) {
+            TableColumn(store.viewStore.customTable?.viewStore1?.title ?? "") { (_: InjectedState) in
                 Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.customTable?.viewStore1?.view ?? InjectedView.empty()).eraseToAnyView()
             }
-            TableColumn(store.viewStore.customTable?.viewStore2?.title ?? "") { state in
+            TableColumn(store.viewStore.customTable?.viewStore2?.title ?? "") { (_: InjectedState) in
                 Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.customTable?.viewStore2?.view ?? InjectedView.empty()).eraseToAnyView()
             }
-//            TableColumn(store.viewStore.customTable?.viewStore3?.title ?? "") { state in
+//            TableColumn(store.viewStore.customTable?.viewStore3?.title ?? "") { (_: InjectedState) in
 //                (store.viewStore.customTable?.viewStore3?.view ?? EmptyViewStore()).insertable(stateSignal: store.stateSignal, container: container).eraseToAnyView()
 //            }
-//            TableColumn(store.viewStore.customTable?.viewStore4?.title ?? "") { state in
+//            TableColumn(store.viewStore.customTable?.viewStore4?.title ?? "") { (_: InjectedState) in
 //                Insertable(state: .init(state), container: container, viewStore: store.viewStore.customTable?.viewStore4?.view ?? EmptyViewStore())
 //            }
-//            TableColumn(store.viewStore.customTable?.viewStore5?.title ?? "") { state in
+//            TableColumn(store.viewStore.customTable?.viewStore5?.title ?? "") { (_: InjectedState) in
 //                Insertable(state: .init(state), container: container, viewStore: store.viewStore.customTable?.viewStore5?.view ?? EmptyViewStore())
 //            }
         } rows: {

@@ -15,7 +15,7 @@ public struct InjectedFunctionBuilder {
     var operation: InjectedOperation
     static var cancellables = Set<AnyCancellable>()
     
-    static func buildBlock(_ components: InjectedFunctionBuilder...) -> InjectedFunctionBuilder {
+    public static func buildBlock(_ components: InjectedFunctionBuilder...) -> InjectedFunctionBuilder {
         return components.reduce(InjectedFunctionBuilder(stateSignal: nil, operation: .noOperation)) { partialResult, next in
             if let stateSignal = partialResult.stateSignal ?? next.stateSignal {
                 performOperation(stateSignal: stateSignal, operation: next.operation)
