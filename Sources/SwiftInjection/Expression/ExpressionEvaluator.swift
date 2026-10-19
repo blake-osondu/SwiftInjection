@@ -8,6 +8,14 @@ import Foundation
 /// Anything expressions can read variables from.
 public protocol ExpressionScope {
     func value(at path: [String]) -> RuntimeValue?
+    /// Invokes a host function for `{"call": ["name", args...]}`. Calls from expressions must not change state.
+    func call(_ name: String, _ args: [RuntimeValue]) throws -> RuntimeValue
+}
+
+extension ExpressionScope {
+    public func call(_ name: String, _ args: [RuntimeValue]) throws -> RuntimeValue {
+        throw EvaluationError.unknownFunction(name)
+    }
 }
 
 extension RuntimeValue: ExpressionScope {}
@@ -76,12 +84,13 @@ public struct ExpressionEvaluator {
             if let fallback { return try next(fallback) }
             throw EvaluationError.unknownVariable(path)
         case let .operation(op, args):
-            return try apply(op, args, next)
+            return try apply(op, args, scope, next)
         }
     }
 
     private func apply(_ op: InjectedExpression.Operator,
                        _ args: [InjectedExpression],
+                       _ scope: ExpressionScope,
                        _ eval: (InjectedExpression) throws -> RuntimeValue) throws -> RuntimeValue {
         let name = op.rawValue
 
@@ -181,6 +190,12 @@ public struct ExpressionEvaluator {
             case let (a, b):
                 throw EvaluationError.typeMismatch(op: name, expected: "(array, number) or (object, string)", got: "\(a.typeName), \(b.typeName)")
             }
+        case .call:
+            guard let first = args.first else { throw EvaluationError.arity(op: name, expected: "at least 1", got: 0) }
+            guard case .string(let function) = try eval(first) else {
+                throw EvaluationError.typeMismatch(op: name, expected: "function name", got: try eval(first).typeName)
+            }
+            return try scope.call(function, try args.dropFirst().map(eval))
         }
     }
 }

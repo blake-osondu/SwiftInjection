@@ -33,18 +33,18 @@ extension StateScope {
         for action in actions {
             switch action {
             case let .set(path, expression):
-                let value = try evaluator.evaluate(expression, in: DraftScope(root: draft, locals: locals))
+                let value = try evaluator.evaluate(expression, in: DraftScope(root: draft, locals: locals, functions: store.functions))
                 draft = draft.setting(value, at: try locals.writablePath(path.statePath))
 
             case let .if(condition, then, otherwise):
-                let branch = try evaluator.condition(condition, in: DraftScope(root: draft, locals: locals))
+                let branch = try evaluator.condition(condition, in: DraftScope(root: draft, locals: locals, functions: store.functions))
                 try run(branch ? then : otherwise, on: &draft, delayed: &delayed)
 
             case let .delay(seconds, actions):
                 delayed.append((seconds, actions))
 
             case let .call(name, args):
-                let scope = DraftScope(root: draft, locals: locals)
+                let scope = DraftScope(root: draft, locals: locals, functions: store.functions)
                 let values = try args.map { try evaluator.evaluate($0, in: scope) }
                 guard let function = store.functions[name] else {
                     throw EvaluationError.unknownFunction(name)

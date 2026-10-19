@@ -30,6 +30,8 @@ public indirect enum InjectedExpression: Hashable, Sendable {
         case concat, format, length
         // collections
         case count, at
+        // host functions: {"call": ["name", arg, ...]}
+        case call
     }
 }
 
