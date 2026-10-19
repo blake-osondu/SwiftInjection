@@ -46,7 +46,9 @@ jobs:
 
       - name: No warnings in Sources
         run: |
-          if grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u; then
+          warnings=$(grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u || true)
+          if [ -n "$warnings" ]; then
+            echo "$warnings"
             echo "::error::Compiler warnings in Sources/ (listed above)"
             exit 1
           fi
@@ -70,7 +72,9 @@ jobs:
 
       - name: No warnings in Sources
         run: |
-          if grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u; then
+          warnings=$(grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u || true)
+          if [ -n "$warnings" ]; then
+            echo "$warnings"
             echo "::error::Compiler warnings in Sources/ (listed above)"
             exit 1
           fi
