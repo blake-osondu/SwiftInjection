@@ -11,22 +11,15 @@ import SwiftUI
 extension Shape {
     
     func addShapeModifiers(modifiers: [InjectedModifier], state: StateSignal, container: ViewStoresContainer) -> any View {
-        let pathModifiers: [InjectedModifier] = modifiers.filter { modifier in
-            switch modifier {
-            case .path:
-                return true
-            default:
-                return false
-            }
-        }.compactMap {$0 }
-        
-        return pathModifiers.reduce(self as any Shape) { partialResult, modifier -> any Shape in
-            switch modifier {
-            case .path:
-                return partialResult.path(in: .zero)
-            default:
-                return partialResult
-            }
-        }.addModifiers(mods: modifiers, stateSignal: state, container: container)
+        let scope = state.snapshotScope
+        let shape = modifiers.reduce(self as any Shape) { shape, modifier -> any Shape in
+            guard case let .path(x, y, width, height) = modifier else { return shape }
+            let rect = CGRect(x: scope.resolve(x, as: CGFloat.self) ?? 0,
+                              y: scope.resolve(y, as: CGFloat.self) ?? 0,
+                              width: scope.resolve(width, as: CGFloat.self) ?? 0,
+                              height: scope.resolve(height, as: CGFloat.self) ?? 0)
+            return shape.path(in: rect)
+        }
+        return shape.addModifiers(mods: modifiers, stateSignal: state, container: container)
     }
 }

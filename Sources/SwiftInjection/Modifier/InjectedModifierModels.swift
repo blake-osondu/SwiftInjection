@@ -1,146 +1,314 @@
 //
 //  InjectedModifierModels.swift
-//  
 //
-//  Created by Blake Osonduagwueki on 9/25/23.
+//
+//  Created by Blake Osonduagwueki on 9/30/23.
 //
 
 import Foundation
 import SwiftUI
 
-public enum InjectedFontDesign: String, Codable  {
-    case none
+public enum InjectedFontDesign: String, Codable {
+    case `default`, serif, rounded, monospaced
     var render: Font.Design {
-        return .default
+        switch self {
+        case .default: return .default
+        case .serif: return .serif
+        case .rounded: return .rounded
+        case .monospaced: return .monospaced
+        }
     }
 }
+
 public enum InjectedFontWidth: String, Codable {
-    case none
+    case compressed, condensed, standard, expanded
     var render: Font.Width {
-        return .compressed
+        switch self {
+        case .compressed: return .compressed
+        case .condensed: return .condensed
+        case .standard: return .standard
+        case .expanded: return .expanded
+        }
     }
 }
+
 public enum InjectedTextLineStylePattern: String, Codable {
-    case none
+    case solid, dot, dash, dashDot, dashDotDot
     var render: Text.LineStyle.Pattern {
-        return .dash
+        switch self {
+        case .solid: return .solid
+        case .dot: return .dot
+        case .dash: return .dash
+        case .dashDot: return .dashDot
+        case .dashDotDot: return .dashDotDot
+        }
     }
 }
+
 public enum InjectedTextTruncation: String, Codable {
-    case none
+    case head, middle, tail
     var render: Text.TruncationMode {
-        return .head
+        switch self {
+        case .head: return .head
+        case .middle: return .middle
+        case .tail: return .tail
+        }
     }
 }
+
 public enum InjectedBlendMode: String, Codable {
-    case  none
+    case normal, multiply, screen, overlay, darken, lighten, colorDodge, colorBurn, softLight, hardLight,
+         difference, exclusion, hue, saturation, color, luminosity, sourceAtop, destinationOver, destinationOut,
+         plusDarker, plusLighter
     var render: BlendMode {
-        .color
+        switch self {
+        case .normal: return .normal
+        case .multiply: return .multiply
+        case .screen: return .screen
+        case .overlay: return .overlay
+        case .darken: return .darken
+        case .lighten: return .lighten
+        case .colorDodge: return .colorDodge
+        case .colorBurn: return .colorBurn
+        case .softLight: return .softLight
+        case .hardLight: return .hardLight
+        case .difference: return .difference
+        case .exclusion: return .exclusion
+        case .hue: return .hue
+        case .saturation: return .saturation
+        case .color: return .color
+        case .luminosity: return .luminosity
+        case .sourceAtop: return .sourceAtop
+        case .destinationOver: return .destinationOver
+        case .destinationOut: return .destinationOut
+        case .plusDarker: return .plusDarker
+        case .plusLighter: return .plusLighter
+        }
     }
 }
+
 public enum InjectedTextAlignment: String, Codable {
-    case none
+    case leading, center, trailing
     var render: TextAlignment {
-        .center
+        switch self {
+        case .leading: return .leading
+        case .center: return .center
+        case .trailing: return .trailing
+        }
     }
 }
+
 public enum InjectedImageScale: String, Codable {
-    case none
+    case small, medium, large
     var render: Image.Scale {
-        .medium
+        switch self {
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        }
     }
 }
+
 public enum InjectedAnimation: String, Codable {
-    case none
+    case `default`, linear, easeIn, easeOut, easeInOut, spring, bouncy, smooth, snappy
     var render: Animation {
-        return .default
+        switch self {
+        case .default: return .default
+        case .linear: return .linear
+        case .easeIn: return .easeIn
+        case .easeOut: return .easeOut
+        case .easeInOut: return .easeInOut
+        case .spring: return .spring()
+        case .bouncy: return .interpolatingSpring(stiffness: 170, damping: 12)
+        case .smooth: return .spring(response: 0.5, dampingFraction: 1)
+        case .snappy: return .spring(response: 0.3, dampingFraction: 0.85)
+        }
     }
 }
+
 public enum InjectedButtonStyle: String, Codable {
-    case none
-    var render: any PrimitiveButtonStyle {
-        DefaultButtonStyle()
+    case automatic, bordered, borderedProminent, borderless, plain
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.buttonStyle(.automatic))
+        case .bordered: return AnyView(view.buttonStyle(.bordered))
+        case .borderedProminent: return AnyView(view.buttonStyle(.borderedProminent))
+        case .borderless: return AnyView(view.buttonStyle(.borderless))
+        case .plain: return AnyView(view.buttonStyle(.plain))
+        }
     }
 }
+
 public enum InjectedProgressViewStyle: String, Codable {
-    case none
+    case automatic, circular, linear
 }
+
 public enum InjectedPickerStyle: String, Codable {
-    case none
-    var render: any PickerStyle {
-        DefaultPickerStyle()
+    case automatic, inline, menu, navigationLink, segmented, wheel
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.pickerStyle(.automatic))
+        case .inline: return AnyView(view.pickerStyle(.inline))
+        case .menu: return AnyView(view.pickerStyle(.menu))
+        case .navigationLink: return AnyView(view.pickerStyle(.navigationLink))
+        case .segmented: return AnyView(view.pickerStyle(.segmented))
+        case .wheel: return AnyView(view.pickerStyle(.wheel))
+        }
     }
 }
+
 public enum InjectedSymbolRenderingMode: String, Codable {
-    case none
+    case monochrome, hierarchical, multicolor, palette
     var render: SymbolRenderingMode {
-        .hierarchical
+        switch self {
+        case .monochrome: return .monochrome
+        case .hierarchical: return .hierarchical
+        case .multicolor: return .multicolor
+        case .palette: return .palette
+        }
     }
 }
+
 public enum InjectedResizingMode: String, Codable {
-    case none
+    case stretch, tile
     var render: Image.ResizingMode {
-        .stretch
+        switch self {
+        case .stretch: return .stretch
+        case .tile: return .tile
+        }
     }
 }
+
 public enum InjectedImageRenderingMode: String, Codable {
-    case none
+    case original, template
     var render: Image.TemplateRenderingMode {
-        .original
+        switch self {
+        case .original: return .original
+        case .template: return .template
+        }
     }
 }
+
 public enum InjectdDatePickerStyle: String, Codable {
-    case none
-    var render: any DatePickerStyle {
-        DefaultDatePickerStyle()
+    case automatic, compact, graphical, wheel
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.datePickerStyle(.automatic))
+        case .compact: return AnyView(view.datePickerStyle(.compact))
+        case .graphical: return AnyView(view.datePickerStyle(.graphical))
+        case .wheel: return AnyView(view.datePickerStyle(.wheel))
+        }
     }
 }
- 
+
 public enum InjectedVisbility: String, Codable {
-    case none
+    case automatic, visible, hidden
     var render: Visibility {
-        Visibility.automatic
+        switch self {
+        case .automatic: return .automatic
+        case .visible: return .visible
+        case .hidden: return .hidden
+        }
     }
 }
 
 public enum InjectedPopoverAttachmentAnchor: String, Codable {
-    case none
+    case bounds, top, bottom, leading, trailing, center
     var render: PopoverAttachmentAnchor {
-        .point(.bottom)
+        switch self {
+        case .bounds: return .rect(.bounds)
+        case .top: return .point(.top)
+        case .bottom: return .point(.bottom)
+        case .leading: return .point(.leading)
+        case .trailing: return .point(.trailing)
+        case .center: return .point(.center)
+        }
     }
 }
 
 public enum InjectedEdge: String, Codable {
-    case none
+    case top, bottom, leading, trailing
     var render: Edge {
-        .bottom
+        switch self {
+        case .top: return .top
+        case .bottom: return .bottom
+        case .leading: return .leading
+        case .trailing: return .trailing
+        }
     }
 }
 
 public enum InjectedKeyboardType: String, Codable {
-    case none
+    case `default`, asciiCapable, numbersAndPunctuation, URL, numberPad, phonePad, namePhonePad, emailAddress,
+         decimalPad, twitter, webSearch, asciiCapableNumberPad
     var render: UIKeyboardType {
-        .default
+        switch self {
+        case .default: return .default
+        case .asciiCapable: return .asciiCapable
+        case .numbersAndPunctuation: return .numbersAndPunctuation
+        case .URL: return .URL
+        case .numberPad: return .numberPad
+        case .phonePad: return .phonePad
+        case .namePhonePad: return .namePhonePad
+        case .emailAddress: return .emailAddress
+        case .decimalPad: return .decimalPad
+        case .twitter: return .twitter
+        case .webSearch: return .webSearch
+        case .asciiCapableNumberPad: return .asciiCapableNumberPad
+        }
     }
 }
 
 public enum InjectedTextInputAutoCapitalization: String, Codable {
-    case none
+    case never, words, sentences, characters
     var render: TextInputAutocapitalization {
-        .never
+        switch self {
+        case .never: return .never
+        case .words: return .words
+        case .sentences: return .sentences
+        case .characters: return .characters
+        }
     }
 }
 
 public enum InjectedTextContentType: String, Codable {
-    case none
+    case name, givenName, familyName, nickname, organizationName, jobTitle, location, fullStreetAddress,
+         addressCity, addressState, postalCode, countryName, telephoneNumber, emailAddress, URL,
+         creditCardNumber, username, password, newPassword, oneTimeCode, dateTime, flightNumber
     var render: UITextContentType {
-        .name
+        switch self {
+        case .name: return .name
+        case .givenName: return .givenName
+        case .familyName: return .familyName
+        case .nickname: return .nickname
+        case .organizationName: return .organizationName
+        case .jobTitle: return .jobTitle
+        case .location: return .location
+        case .fullStreetAddress: return .fullStreetAddress
+        case .addressCity: return .addressCity
+        case .addressState: return .addressState
+        case .postalCode: return .postalCode
+        case .countryName: return .countryName
+        case .telephoneNumber: return .telephoneNumber
+        case .emailAddress: return .emailAddress
+        case .URL: return .URL
+        case .creditCardNumber: return .creditCardNumber
+        case .username: return .username
+        case .password: return .password
+        case .newPassword: return .newPassword
+        case .oneTimeCode: return .oneTimeCode
+        case .dateTime: return .dateTime
+        case .flightNumber: return .flightNumber
+        }
     }
 }
 
 public enum InjectedRoundedCornerStyle: String, Codable {
-    case none
+    case circular, continuous
     var render: RoundedCornerStyle {
-        .circular
+        switch self {
+        case .circular: return .circular
+        case .continuous: return .continuous
+        }
     }
 }
