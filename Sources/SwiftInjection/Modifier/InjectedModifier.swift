@@ -7,72 +7,111 @@
 
 import Foundation
 
+/// A view modifier. Every scalar argument is an expression, so it can be a literal (`8`, `"#FF0000"`,
+/// `"leading"`) or read from state (`{"var": "theme.spacing"}`). Omitted arguments use SwiftUI's default.
+///
+/// JSON: `{"padding": {"edges": "horizontal", "length": 12}}`, `{"bold": {}}`.
+/// Presentation modifiers take `isPresented` as a state path so dismissing writes back to state.
 public enum InjectedModifier: Codable {
-    case systemFont(font: InjectedSystemFont)
-    case font(stateId: String = "", nameId: String = "", sizeId: String = "", fontName: String? = nil, fontSize: Double? = nil)
-    case fontWeight(weight: InjectedFontWeight)
-    case width(stateId: String = "", widthId: String = "", width: Double? = nil)
-    case height(stateId: String = "", heightId: String = "", height: Double? = nil)
-    case minWidth(stateId: String = "", widthId: String = "", width: Double? = nil)
-    case maxWidth(stateId: String = "", widthId: String = "", width: Double? = nil)
-    case minHeight(stateId: String = "", heightId: String = "", height: Double? = nil)
-    case maxHeight(stateId: String = "", heightId: String = "", height: Double? = nil)
-    case idealWidth(stateId: String = "", widthId: String = "", width: Double? = nil)
-    case idealHeight(stateId: String = "", heightId: String = "", height: Double? = nil)
-    case alignment(stateId: String = "", alignmentId: String = "", alignment: InjectedAlignment? = nil)
-    case padding(stateId: String = "", edgeSetId: String = "", lengthId: String = "", edgeSet: InjectedEdgeSet? = nil, length: Double? = nil)
-    case cornerRadius(stateId: String = "", valueId: String = "", radius: Double? = nil)
-    case borderline(stateId: String = "", widthId: String = "", colorId: String = "", width: Double? = nil, colorHex: String? = nil)
-    case foregroundColor(stateId: String = "", valueId: String = "", colorHex: String? = nil)
-    case background(content: InjectedView, alignment: InjectedAlignment? = nil)
-    case fullScreenCover(stateId: String = "", viewStore: InjectedView, isPresentedKey: String)
-    case sheet(stateId: String = "", viewStore: InjectedView, isPresentedKey: String)
-    case alert(stateId: String = "", isPresentedKey: String, alertView: InjectedAlert)
-    case confirmationDialog(stateId: String = "", titleKey: String, isPresentedKey: String, titleVisibility: InjectedVisbility? = nil, title: String? = nil, actions: InjectedView)
-    case popover(stateId: String = "", isPresentedKey: String, popoverAttachmentAnchor: InjectedPopoverAttachmentAnchor? = nil, edge: InjectedEdge? = nil, content: InjectedView)
-    case bold(stateId: String = "", isActiveKey: String = "")
-    case italic(stateId: String = "", isActiveKey: String = "")
-    case monoSpacedDigit
-    case monospaced(stateId: String = "", isActiveKey: String = "")
-    case fontDesign(design: InjectedFontDesign)
-    case fontWidth(width: InjectedFontWidth)
-    case spacingBetweenText(spacing: Double)
-    case tracking(Double)
-    case opacity(Double)
-    case strikeThrough(stateId: String = "", isActiveKey: String = "", patternKey: String =  "", pattern: InjectedTextLineStylePattern? = nil, colorKey: String = "", hexColor: String = "")
-    case underline(stateId: String = "", isActiveKey: String = "", patternKey: String =  "", pattern: InjectedTextLineStylePattern? = nil, colorKey: String = "", hexColor: String = "")
-    case lineLimit(stateId: String = "", limitKey: String = "", limit: Int? = nil)
-    case unredacted
-    case truncationMode(mode: InjectedTextTruncation)
-    case layoutPriority(priority: Double)
-    case tag(Int)
-    case blendMode(mode: InjectedBlendMode)
-    case fixedSizeView
-    case fixedSize(horizontal: Bool, vertical: Bool)
-    case multilineTextAlignment(alignment: InjectedTextAlignment)
-    case imageScale(scale: InjectedImageScale)
-    case minimumScaleFactor(factor: Double)
-    case animation(stateId: String = "", isActiveKey: String, animation: InjectedAnimation)
-    case edgesIgnoringSafeArea(edges: InjectedEdgeSet)
-    case disabled(stateId: String = "", isDisabledKey: String)
-    case buttonStyle(style: InjectedButtonStyle)
-    case position(stateId: String = "", xKey: String = "", yKey: String = "", x: Double? = nil, y: Double? = nil)
-    case shadow(stateId: String = "", colorKey: String = "", radiusKey: String = "", xKey: String = "", yKey: String = "", colorHex: String? = nil, radius: Double? = nil, x: Double? = nil, y: Double? = nil)
-    case pickerStyle(style: InjectedPickerStyle)
-    case blur(stateId: String = "", radiusKey: String = "", isOpaqueKey: String = "", radius: Double? = nil, isOpaque: Bool? = nil)
-    case brightness(stateId: String = "", amountKey: String = "", amount: Double? = nil)
-    case textRenderingMode(InjectedSymbolRenderingMode)
-    case antiAliased(stateId: String = "", isAntiAliasedKey: String = "", isAntialised: Bool? = nil)
-    case resizable(capInsets: InjectedEdgeInSets? = nil, resizingMode: InjectedResizingMode? = nil)
-    case imageRenderingMode(InjectedImageRenderingMode)
+    public typealias Expression = InjectedExpression
+
+    // MARK: Text & fonts
+    case systemFont(font: Expression)
+    case font(name: Expression, size: Expression)
+    case fontWeight(weight: Expression)
+    case fontDesign(design: Expression)
+    case fontWidth(width: Expression)
+    case bold(isActive: Expression? = nil)
+    case italic(isActive: Expression? = nil)
+    case monospaced(isActive: Expression? = nil)
+    case monospacedDigit
+    case kerning(value: Expression)
+    case tracking(value: Expression)
+    case strikethrough(isActive: Expression? = nil, pattern: Expression? = nil, color: Expression? = nil)
+    case underline(isActive: Expression? = nil, pattern: Expression? = nil, color: Expression? = nil)
+    case lineLimit(limit: Expression?)
+    case truncationMode(mode: Expression)
+    case multilineTextAlignment(alignment: Expression)
+    case minimumScaleFactor(factor: Expression)
+
+    // MARK: Layout
+    /// Fixed (`width`, `height`) and flexible (`min…`, `ideal…`, `max…`) frames. `"infinity"` is accepted for sizes.
+    case frame(width: Expression? = nil, height: Expression? = nil,
+               minWidth: Expression? = nil, idealWidth: Expression? = nil, maxWidth: Expression? = nil,
+               minHeight: Expression? = nil, idealHeight: Expression? = nil, maxHeight: Expression? = nil,
+               alignment: Expression? = nil)
+    case padding(edges: Expression? = nil, length: Expression? = nil)
+    case position(x: Expression? = nil, y: Expression? = nil)
+    case layoutPriority(priority: Expression)
+    case fixedSize(horizontal: Expression? = nil, vertical: Expression? = nil)
+    case ignoresSafeArea(edges: Expression? = nil)
+
+    // MARK: Appearance
+    case foregroundColor(color: Expression)
+    case background(content: InjectedView, alignment: Expression? = nil)
+    case cornerRadius(radius: Expression)
+    case border(color: Expression, width: Expression? = nil)
+    case opacity(value: Expression)
+    case shadow(color: Expression? = nil, radius: Expression? = nil, x: Expression? = nil, y: Expression? = nil)
+    case blur(radius: Expression, isOpaque: Expression? = nil)
+    case brightness(amount: Expression)
+    case blendMode(mode: Expression)
     case colorInvert
-    case colorMultiply(stateId: String = "", colorKey: String = "", colorHex: String = "")
-    case datePickerStyle(InjectdDatePickerStyle)
-    case badge(stateId: String = "", badgeKey: String)
-    case tabItem(item: InjectedView)
-    case keyboardType(keyboard: InjectedKeyboardType)
-    case autoCorrectionDisabled(stateId: String = "", isDisabledKey: String = "", isDisabled: Bool = true)
-    case textInputAutoCapitalization(capitalization: InjectedTextInputAutoCapitalization)
-    case textContentType(contentType: InjectedTextContentType)
-    case path(stateId: String = "", xKey: String = "", yKey: String = "", widthKey: String = "", heightKey: String = "", x: Double? = nil, y: Double? = nil, width: Double? = nil, height: Double? = nil)
+    case colorMultiply(color: Expression)
+    case symbolRenderingMode(mode: Expression)
+    case imageScale(scale: Expression)
+    case unredacted
+    case animation(animation: Expression, value: Expression)
+
+    // MARK: Presentation
+    case sheet(isPresented: String, content: InjectedView)
+    case fullScreenCover(isPresented: String, content: InjectedView)
+    case popover(isPresented: String, attachmentAnchor: Expression? = nil, arrowEdge: Expression? = nil, content: InjectedView)
+    case alert(isPresented: String, alert: InjectedAlert)
+    case confirmationDialog(isPresented: String, title: Expression, titleVisibility: Expression? = nil, actions: InjectedView)
+
+    // MARK: Controls & input
+    case disabled(isDisabled: Expression)
+    case buttonStyle(style: Expression)
+    case pickerStyle(style: Expression)
+    case datePickerStyle(style: Expression)
+    case tag(value: Expression)
+    case badge(value: Expression)
+    case tabItem(content: InjectedView)
+    case keyboardType(type: Expression)
+    case autocorrectionDisabled(isDisabled: Expression? = nil)
+    case textInputAutocapitalization(mode: Expression)
+    case textContentType(type: Expression)
+
+    // MARK: Image- and shape-only (applied by Image_Ext / Shape_Ext, ignored elsewhere)
+    case antialiased(isActive: Expression)
+    case resizable(capInsets: InjectedEdgeInSets? = nil, resizingMode: Expression? = nil)
+    case renderingMode(mode: Expression)
+    case path(x: Expression? = nil, y: Expression? = nil, width: Expression? = nil, height: Expression? = nil)
 }
+
+// String-backed option enums used as modifier arguments.
+extension InjectedAlignment: RuntimeConvertible {}
+extension InjectedAnimation: RuntimeConvertible {}
+extension InjectedBlendMode: RuntimeConvertible {}
+extension InjectedButtonStyle: RuntimeConvertible {}
+extension InjectedEdge: RuntimeConvertible {}
+extension InjectedEdgeSet: RuntimeConvertible {}
+extension InjectedFontDesign: RuntimeConvertible {}
+extension InjectedFontWeight: RuntimeConvertible {}
+extension InjectedFontWidth: RuntimeConvertible {}
+extension InjectedImageRenderingMode: RuntimeConvertible {}
+extension InjectedImageScale: RuntimeConvertible {}
+extension InjectedKeyboardType: RuntimeConvertible {}
+extension InjectedPickerStyle: RuntimeConvertible {}
+extension InjectedPopoverAttachmentAnchor: RuntimeConvertible {}
+extension InjectedResizingMode: RuntimeConvertible {}
+extension InjectedSymbolRenderingMode: RuntimeConvertible {}
+extension InjectedSystemFont: RuntimeConvertible {}
+extension InjectedTextAlignment: RuntimeConvertible {}
+extension InjectedTextContentType: RuntimeConvertible {}
+extension InjectedTextInputAutoCapitalization: RuntimeConvertible {}
+extension InjectedTextLineStylePattern: RuntimeConvertible {}
+extension InjectedTextTruncation: RuntimeConvertible {}
+extension InjectedVisbility: RuntimeConvertible {}
+extension InjectdDatePickerStyle: RuntimeConvertible {}

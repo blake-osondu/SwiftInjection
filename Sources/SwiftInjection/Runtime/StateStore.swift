@@ -14,8 +14,10 @@ public final class StateStore: ObservableObject {
 
     @Published public private(set) var root: RuntimeValue
     public var functions: [String: HostFunction] = [:]
-    /// Called for evaluation and action failures. Defaults to logging.
-    public var onError: (Error) -> Void = { print("SwiftInjection: \($0)") }
+    /// The handler new stores start with. Set it to route errors to your logging or analytics.
+    public static var defaultOnError: (Error) -> Void = { print("SwiftInjection: \($0)") }
+    /// Called for evaluation and action failures.
+    public var onError: (Error) -> Void = StateStore.defaultOnError
 
     public init(_ root: RuntimeValue = [:]) {
         self.root = root

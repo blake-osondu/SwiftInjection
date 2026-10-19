@@ -16,28 +16,15 @@ extension Image {
     }
     
     func addModifier(modifier: InjectedModifier, state: StateSignal, container: ViewStoresContainer) -> Image {
+        let scope = state.snapshotScope
         switch modifier {
-        case let .antiAliased(stateId, isAntiAliasedKey, isAntialiased):
-            if let isAntialiased = findBooleanValue(stateId: stateId, id: isAntiAliasedKey, state: state.value) {
-                return self.antialiased(isAntialiased)
-            } else if let isAntialiased = isAntialiased {
-                return self.antialiased(isAntialiased)
-            } else {
-                return self
-            }
+        case let .antialiased(isActive):
+            return scope.resolve(isActive, as: Bool.self).map { self.antialiased($0) } ?? self
         case let .resizable(capInsets, resizingMode):
-            switch (capInsets, resizingMode) {
-            case (.some(let insets), .some(let mode)):
-                return self.resizable(capInsets: insets.render, resizingMode: mode.render)
-            case (.some(let insets), .none):
-                return self.resizable(capInsets: insets.render)
-            case (.none, .some(let mode)):
-                return self.resizable(resizingMode: mode.render)
-            case (.none, .none):
-                return self.resizable()
-            }
-        case let .imageRenderingMode(mode):
-            return self.renderingMode(mode.render)
+            return self.resizable(capInsets: capInsets?.render ?? EdgeInsets(),
+                                  resizingMode: scope.resolve(resizingMode, as: InjectedResizingMode.self)?.render ?? .stretch)
+        case let .renderingMode(mode):
+            return self.renderingMode(scope.resolve(mode, as: InjectedImageRenderingMode.self)?.render)
         default:
             return self
         }
