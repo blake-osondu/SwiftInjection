@@ -1,15 +1,19 @@
 //
 //  TextViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
+/// `{"text": {"value": {"format": ["Hi {0}", {"var": "name"}]}}}`
 public struct TextViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var textKey: String = ""
-    var text: String? = nil
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var value: InjectedExpression
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], value: InjectedExpression) {
+        self.id = id
+        self.modifiers = modifiers
+        self.value = value
+    }
 }

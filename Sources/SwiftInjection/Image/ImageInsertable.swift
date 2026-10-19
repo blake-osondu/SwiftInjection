@@ -1,44 +1,38 @@
 //
 //  ImageInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/29/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
+struct ImageInsertable: View {
+    let viewStore: ImageViewStore
 
-public struct ImageInsertable: View {
-   @ObservedObject var store: ImageStore
-    var container: ViewStoresContainer
-    public var body: some View {
-        switch store.imageResult {
-        case .none:
-            EmptyView()
-        case let .system(name):
-            Image(systemName: name)
-                .addModifiers(modifiers: store.viewStore.modifiers,
-                              state: store.stateSignal,
-                              container: container)
-        case let .local(name):
-            Image(name)
-                .addModifiers(modifiers: store.viewStore.modifiers,
-                              state: store.stateSignal,
-                              container: container)
-        case let .async(url, scale, placeholder):
-            if let placeholder = placeholder {
-                AsyncImage(url: url, scale: CGFloat(scale)) { image in
-                    image
-                        .addModifiers(modifiers: store.viewStore.modifiers,
-                                      state: store.stateSignal,
-                                      container: container)
+    var body: some View {
+        ScopeReader { scope in
+            if let url = scope.resolve(viewStore.url, as: String.self) {
+                AsyncImage(url: URL(string: url), scale: scope.resolve(viewStore.scale, as: CGFloat.self) ?? 1) { image in
+                    styled(image, scope)
                 } placeholder: {
-                    Insertable(stateSignal: store.stateSignal, container: container, viewStore: placeholder).eraseToAnyView()
+                    if let placeholder = viewStore.placeholder {
+                        InjectedContent(placeholder)
+                    } else {
+                        ProgressView()
+                    }
                 }
+            } else if let systemName = scope.resolve(viewStore.systemName, as: String.self) {
+                styled(Image(systemName: systemName), scope)
+            } else if let name = scope.resolve(viewStore.name, as: String.self) {
+                styled(Image(name), scope)
             } else {
-                AsyncImage(url: url, scale: CGFloat(scale))
+                styled(Image(systemName: "photo"), scope)
             }
         }
+    }
+
+    private func styled(_ image: Image, _ scope: StateScope) -> some View {
+        image
+            .applyImageModifiers(viewStore.modifiers, scope: scope)
+            .injectedModifiers(viewStore.modifiers, scope: scope)
     }
 }

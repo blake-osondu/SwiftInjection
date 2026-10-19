@@ -1,22 +1,23 @@
 //
 //  ListInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/31/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
-import Combine
 
-public struct ListInsertable: View {
-    @ObservedObject var store: ListStore
-    var container: ViewStoresContainer
+struct ListInsertable: View {
+    let viewStore: ListViewStore
 
-    public var body: some View {
-        List(store.listStates, id: \.self) { itemState in
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content)
+    var body: some View {
+        ScopeReader { scope in
+            List {
+                InjectedChildren(viewStore.children)
+                if let items = viewStore.items, let content = viewStore.content {
+                    InjectedRows(scope: scope, items: items, itemName: viewStore.itemName,
+                                 identity: viewStore.identity, content: content)
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
         }
-        .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
     }
 }

@@ -1,19 +1,19 @@
 //
 //  NavigationStackInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 9/27/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct NavigationStackInsertable: View {
-    @ObservedObject var store: NavigationStackStore
-    var container: ViewStoresContainer
+    let viewStore: NavigationStackViewStore
+
     var body: some View {
-        NavigationStack(root: {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.root)
-        }).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+        ScopeReader { scope in
+            NavigationStack {
+                InjectedContent(viewStore.root)
+            }
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

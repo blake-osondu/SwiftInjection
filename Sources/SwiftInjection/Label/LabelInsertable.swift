@@ -1,42 +1,31 @@
 //
 //  LabelInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/2/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct LabelInsertable: View {
-    @ObservedObject var store: LabelStore
-    var container: ViewStoresContainer
-    var body: some View {
-        switch store.labelResult {
-        case let .titleImage(title, image):
-            
-            Label(title, image: image)
-                .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .titleSystemImage(title, systemImage):
-            
-            Label(title, systemImage: systemImage)
-                .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .titleIcon(title, icon):
-            
-            Label {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: title)
-                    .eraseToAnyView()
-                    .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container).eraseToAnyView()
-            } icon: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: icon)
-                    .eraseToAnyView()
-                    .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container).eraseToAnyView()
-            }
+    let viewStore: LabelViewStore
 
-        case .none:
-            EmptyView()
+    var body: some View {
+        ScopeReader { scope in
+            Label {
+                if let titleView = viewStore.titleView {
+                    InjectedContent(titleView)
+                } else {
+                    Text(scope.string(viewStore.title))
+                }
+            } icon: {
+                if let iconView = viewStore.iconView {
+                    InjectedContent(iconView)
+                } else if let systemImage = scope.resolve(viewStore.systemImage, as: String.self) {
+                    Image(systemName: systemImage)
+                } else if let image = scope.resolve(viewStore.image, as: String.self) {
+                    Image(image)
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
         }
     }
 }

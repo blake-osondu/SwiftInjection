@@ -1,34 +1,25 @@
 //
 //  DatePickerInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/24/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct DatePickerInsertable: View {
-    @ObservedObject var store: DatePickerStore
-    var container: ViewStoresContainer
+    let viewStore: DatePickerViewStore
+
     var body: some View {
-        switch store.composition {
-        case let .title_selection_components(title, selection, components):
-            
-            DatePicker(title, selection: selection, displayedComponents: components.render).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .selection_components_label(selection, components, label):
-            
-            DatePicker(selection: selection, displayedComponents: components.render) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .selection_lowerRange_upperRange_components_label(selection, range, components, label):
-            
-            DatePicker(selection: selection, in: range, displayedComponents: components.render) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+        ScopeReader { scope in
+            let range = (scope.resolve(viewStore.minimum, as: Date.self) ?? .distantPast)...(scope.resolve(viewStore.maximum, as: Date.self) ?? .distantFuture)
+            DatePicker(selection: scope.dateBinding(viewStore.selection), in: range,
+                       displayedComponents: (viewStore.components ?? [.date, .hourAndMinute]).render) {
+                if let label = viewStore.label {
+                    InjectedContent(label)
+                } else {
+                    Text(scope.string(viewStore.title))
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
         }
     }
 }
-

@@ -11,17 +11,13 @@ import SwiftUI
 struct ModifierStore: ViewModifier {
     var modifier: InjectedModifier
     var scope: StateScope
-    /// Nested content (backgrounds, sheets, …) still renders through the StateSignal-based Insertable
-    /// until components move to StateScope.
-    var state: StateSignal
-    var container: ViewStoresContainer
 
     func body(content: Content) -> some View {
         render(content)
     }
 
     private func nested(_ view: InjectedView) -> some View {
-        Insertable(stateSignal: state, container: container, viewStore: view)
+        InjectedContent(view)
     }
 
     private func color(_ expression: InjectedExpression?) -> Color? {
@@ -168,12 +164,15 @@ struct ModifierStore: ViewModifier {
                 attachmentAnchor: scope.resolve(anchor, as: InjectedPopoverAttachmentAnchor.self)?.render ?? .rect(.bounds),
                 arrowEdge: scope.resolve(edge, as: InjectedEdge.self)?.render ?? .top) { nested(view) })
         case let .alert(isPresented, alert):
-            return AnyView(content.alert(isPresented: scope.boolBinding(isPresented)) {
-                switch alert {
-                case let .dismissAlert(store):
-                    return DismissAlertView(viewStore: store, state: state, container: container).render
-                case let .primarySecondaryAlert(store):
-                    return PrimarySecondaryAlertView(viewStore: store, state: state, container: container).render
+            return AnyView(content.alert(scope.string(alert.title), isPresented: scope.boolBinding(isPresented)) {
+                ForEach(Array(alert.buttons.enumerated()), id: \.offset) { _, button in
+                    Button(scope.string(button.label), role: button.role?.render) {
+                        scope.perform(button.action)
+                    }
+                }
+            } message: {
+                if let message = alert.message {
+                    Text(scope.string(message))
                 }
             })
         case let .confirmationDialog(isPresented, title, visibility, actions):
@@ -181,6 +180,18 @@ struct ModifierStore: ViewModifier {
                 scope.string(title),
                 isPresented: scope.boolBinding(isPresented),
                 titleVisibility: scope.resolve(visibility, as: InjectedVisbility.self)?.render ?? .automatic) { nested(actions) })
+
+        // MARK: Events
+        case let .onAppear(actions):
+            return AnyView(content.onAppear { scope.perform(actions) })
+        case let .onDisappear(actions):
+            return AnyView(content.onDisappear { scope.perform(actions) })
+        case let .onTapGesture(count, actions):
+            return AnyView(content.onTapGesture(count: scope.resolve(count, as: Int.self) ?? 1) { scope.perform(actions) })
+        case let .onChange(value, actions):
+            return AnyView(content.onChange(of: scope.evaluate(value) ?? .null) { _ in scope.perform(actions) })
+        case let .onSubmit(actions):
+            return AnyView(content.onSubmit { scope.perform(actions) })
 
         // MARK: Controls & input
         case let .disabled(isDisabled):

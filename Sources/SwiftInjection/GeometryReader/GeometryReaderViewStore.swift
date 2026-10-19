@@ -1,37 +1,22 @@
 //
 //  GeometryReaderViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/23/23.
+//  SwiftInjection
 //
 
 import Foundation
 
-
+/// Renders `content` with a read-only `geometry` local (or `name`):
+/// `{"width", "height", "safeArea": {"top", "leading", "bottom", "trailing"}}`.
 public struct GeometryReaderViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    public var geometryProxyWidthKey: String
-    public var geometryProxyHeightKey: String
-    public var geometryProxyBottomKey: String
-    public var geometryProxyLeadingKey: String
-    public var geometryProxyTopKey: String
-    public var geometryProxyTrailingKey: String
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var name: String?
     public var content: InjectedView
-    
-    init(id: String = "", modifiers: [InjectedModifier] = [], geometryProxyWidthKey: String = "", geometryProxyHeightKey: String = "",
-         geometryProxyBottomKey: String = "",
-         geometryProxyLeadingKey: String = "",
-         geometryProxyTopKey: String = "",
-         geometryProxyTrailingKey: String, content: InjectedView) {
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], name: String? = nil, content: InjectedView) {
         self.id = id
         self.modifiers = modifiers
-        self.geometryProxyWidthKey = geometryProxyWidthKey
-        self.geometryProxyHeightKey = geometryProxyHeightKey
-        self.geometryProxyBottomKey = geometryProxyBottomKey
-        self.geometryProxyLeadingKey = geometryProxyLeadingKey
-        self.geometryProxyTopKey = geometryProxyTopKey
-        self.geometryProxyTrailingKey = geometryProxyTrailingKey
+        self.name = name
         self.content = content
     }
 }

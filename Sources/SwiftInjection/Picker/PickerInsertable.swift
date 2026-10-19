@@ -1,109 +1,36 @@
 //
 //  PickerInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/9/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct PickerInsertable: View {
-    @ObservedObject var store: PickerStore
-    var container: ViewStoresContainer
+    let viewStore: PickerViewStore
+
     var body: some View {
-        switch store.composition {
-        case .none:
-            EmptyView()
-        case let .double_title_selection_content(title, pickerList, selection, content):
-            
-            Picker(title, selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .double(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .double_selection_content_label(pickerList, selection, content, label):
-            
-            Picker(selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal:  .init(.init(id: "", parameter1: .double(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
+        ScopeReader { scope in
+            Picker(selection: scope.binding(viewStore.selection)) {
+                ForEach(Array(scope.items(at: viewStore.items).enumerated()), id: \.offset) { index, _ in
+                    let itemScope = scope.itemScope(viewStore.items, index: index, name: viewStore.itemName ?? "item")
+                    Group {
+                        if let content = viewStore.content {
+                            InjectedContent(content)
+                        } else {
+                            Text(itemScope.string(.var(viewStore.itemName ?? "item")))
+                        }
+                    }
+                    .tag(itemScope.evaluate(viewStore.value ?? .var(viewStore.itemName ?? "item")) ?? .null)
+                    .scopeLocals(itemScope.locals)
                 }
             } label: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label).eraseToAnyView()
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .integer_title_selection_content(title, pickerList, selection, content):
-            
-            Picker(title, selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .integer(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
+                if let label = viewStore.label {
+                    InjectedContent(label)
+                } else {
+                    Text(scope.string(viewStore.title))
                 }
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .integer_selection_content_label(pickerList, selection, content, label):
-            
-            Picker(selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .integer(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            } label: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label).eraseToAnyView()
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-        
-        case let .string_title_selection_content(title, pickerList, selection, content):
-            
-            Picker(title, selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .string(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .string_selection_content_label(pickerList, selection, content, label):
-            
-            Picker(selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .string(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            } label: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label).eraseToAnyView()
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-        
-        case let .boolean_title_selection_content(title, pickerList, selection, content):
-            
-            Picker(title, selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .boolean(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .boolean_selection_content_label(pickerList, selection, content, label):
-            
-            Picker(selection: selection) {
-                ForEach(pickerList, id: \.self) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .boolean(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            } label: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label).eraseToAnyView()
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-        
-        case let .state_title_selection_content(title, pickerList, selection, content):
-            
-            Picker(title, selection: selection) {
-                ForEach(pickerList) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .state(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .state_selection_content_label(pickerList, selection, content, label):
-            
-            Picker(selection: selection) {
-                ForEach(pickerList) { item in
-                    Insertable(stateSignal: .init(.init(id: "", parameter1: .state(stateId: "", id: "", value: item))), container: container, viewStore: content).eraseToAnyView()
-                }
-            } label: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label).eraseToAnyView()
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
         }
     }
 }

@@ -1,13 +1,16 @@
 //
 //  RectangleViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct RectangleViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+
+    public init(id: String = "", modifiers: [InjectedModifier] = []) {
+        self.id = id
+        self.modifiers = modifiers
+    }
 }

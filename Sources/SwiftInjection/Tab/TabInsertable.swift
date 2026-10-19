@@ -1,50 +1,36 @@
 //
 //  TabInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 9/27/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct TabInsertable: View {
-    
-    @ObservedObject var store: TabStore
-    var container: ViewStoresContainer
-    
-    var body: some View {
-        TabView {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content1).eraseToAnyView()
-            
-            if let content = store.viewStore.content2 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content3 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content4 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content5 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content6 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content7 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content8 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content9 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content10 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
+    let viewStore: TabViewStore
+
+    private var tabs: some View {
+        ForEach(Array(viewStore.children.enumerated()), id: \.offset) { index, child in
+            InjectedContent(child).tag(index)
         }
-        .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    }
+
+    private func indexBinding(_ scope: StateScope, _ path: String) -> Binding<Int> {
+        let binding = scope.binding(path)
+        return Binding(
+            get: { Int(runtimeValue: binding.wrappedValue) ?? 0 },
+            set: { binding.wrappedValue = .number(Double($0)) })
+    }
+
+    var body: some View {
+        ScopeReader { scope in
+            Group {
+                if let selection = viewStore.selection {
+                    TabView(selection: indexBinding(scope, selection)) { tabs }
+                } else {
+                    TabView { tabs }
+                }
+            }
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

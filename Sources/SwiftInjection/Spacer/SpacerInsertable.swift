@@ -1,18 +1,17 @@
 //
 //  SpacerInsertable.swift
-//  Insertable
+//  SwiftInjection
 //
-//  Created by Blake Osonduagwueki on 8/19/23.
-//
-import Foundation
+
 import SwiftUI
 
-public struct SpacerInsertable: View {
-    @ObservedObject var store: SpacerStore
-    var container: ViewStoresContainer
+struct SpacerInsertable: View {
+    let viewStore: SpacerViewStore
 
-    public var body: some View {
-        Spacer()
-            .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    var body: some View {
+        ScopeReader { scope in
+            Spacer(minLength: scope.resolve(viewStore.minLength, as: CGFloat.self))
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

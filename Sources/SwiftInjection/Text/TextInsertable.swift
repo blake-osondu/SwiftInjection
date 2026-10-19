@@ -1,20 +1,17 @@
 //
 //  TextInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/17/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
-import Combine
 
-public struct TextInsertable: View {
-    @ObservedObject var store: TextStore
-    var container: ViewStoresContainer
-    
-    public var body: some View {
-        Text(store.text)
-            .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+struct TextInsertable: View {
+    let viewStore: TextViewStore
+
+    var body: some View {
+        ScopeReader { scope in
+            Text(scope.string(viewStore.value))
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

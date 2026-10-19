@@ -1,12 +1,16 @@
 //
-// DividerViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/8/23.
+//  DividerViewStore.swift
+//  SwiftInjection
 //
 
 import Foundation
+
 public struct DividerViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+
+    public init(id: String = "", modifiers: [InjectedModifier] = []) {
+        self.id = id
+        self.modifiers = modifiers
+    }
 }

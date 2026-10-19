@@ -1,22 +1,47 @@
 //
 //  ForEachInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/2/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public struct ForEachInsertable: View {
+struct ForEachInsertable: View {
+    let viewStore: ForEachViewStore
 
-    @ObservedObject var store: ForEachStore
-    var container: ViewStoresContainer
-
-    public var body: some View {
-        ForEach(store.forEachStates, id: \.self) { forEachState in
-            Insertable(stateSignal: store.stateForItem(forEachState), container: container, viewStore: store.viewStore.content)
+    var body: some View {
+        ScopeReader { scope in
+            InjectedRows(scope: scope, items: viewStore.items, itemName: viewStore.itemName,
+                         identity: viewStore.identity, content: viewStore.content)
+                .injectedModifiers(viewStore.modifiers, scope: scope)
         }
-        .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    }
+}
+
+/// One `content` per element of the array at `items`, each rendered with its item scope.
+struct InjectedRows: View {
+    let scope: StateScope
+    let items: String
+    let itemName: String?
+    let identity: InjectedExpression?
+    let content: InjectedView
+
+    struct Row: Identifiable {
+        let id: RuntimeValue
+        let scope: StateScope
+    }
+
+    var rows: [Row] {
+        scope.items(at: items).indices.map { index in
+            let itemScope = scope.itemScope(items, index: index, name: itemName ?? "item")
+            let id = identity.flatMap { itemScope.evaluate($0) } ?? .number(Double(index))
+            return Row(id: id, scope: itemScope)
+        }
+    }
+
+    var body: some View {
+        ForEach(rows) { row in
+            InjectedContent(content)
+                .scopeLocals(row.scope.locals)
+        }
     }
 }

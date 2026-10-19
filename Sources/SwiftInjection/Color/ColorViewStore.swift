@@ -1,15 +1,20 @@
 //
 //  ColorViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
-
+/// `{"color": {"color": "#FF8800"}}`
 public struct ColorViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var colorKey: String = ""
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    /// Hex string.
+    public var color: InjectedExpression
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], color: InjectedExpression) {
+        self.id = id
+        self.modifiers = modifiers
+        self.color = color
+    }
 }

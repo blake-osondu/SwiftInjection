@@ -1,24 +1,29 @@
 //
 //  IfViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
+/// `{"if": {"condition": {"gt": [{"var": "count"}, 0]}, "then": {...}, "else": {...}}}`
 public struct IfViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    var conditionKey: String
-    /// Takes precedence over `conditionKey` when present.
-    var condition: InjectedExpression?
-    var content: InjectedView
-    init(id: String = "", modifiers: [InjectedModifier], conditionKey: String = "", condition: InjectedExpression? = nil, content: InjectedView) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var condition: InjectedExpression
+    public var then: InjectedView
+    public var otherwise: InjectedView?
+
+    enum CodingKeys: String, CodingKey {
+        case id, modifiers, condition, then
+        case otherwise = "else"
+    }
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], condition: InjectedExpression,
+                then: InjectedView, otherwise: InjectedView? = nil) {
         self.id = id
         self.modifiers = modifiers
-        self.conditionKey = conditionKey
         self.condition = condition
-        self.content = content
+        self.then = then
+        self.otherwise = otherwise
     }
 }

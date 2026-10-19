@@ -1,38 +1,37 @@
 //
 //  ProgressViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/9/23.
+//  SwiftInjection
 //
 
 import Foundation
 
+/// Determinate with `value` (and `total`, default 1), a timer with `timerStart`/`timerEnd` (ISO 8601),
+/// or indeterminate when neither is given.
 public struct ProgressViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var composition: ProgressViewComposition
-    init(id: String = "", modifiers: [InjectedModifier] = [], composition: ProgressViewComposition) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var title: InjectedExpression?
+    public var label: InjectedView?
+    public var currentValueLabel: InjectedView?
+    public var value: InjectedExpression?
+    public var total: InjectedExpression?
+    public var timerStart: InjectedExpression?
+    public var timerEnd: InjectedExpression?
+    public var countsDown: InjectedExpression?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], title: InjectedExpression? = nil,
+                label: InjectedView? = nil, currentValueLabel: InjectedView? = nil, value: InjectedExpression? = nil,
+                total: InjectedExpression? = nil, timerStart: InjectedExpression? = nil,
+                timerEnd: InjectedExpression? = nil, countsDown: InjectedExpression? = nil) {
         self.id = id
         self.modifiers = modifiers
-        self.composition = composition
-    }
-}
-
-extension ProgressViewStore {
-    enum ProgressViewComposition: Codable {
-        case standard
-        case title(titleKey: String = "", title: String = "")
-        case title_value(titleKey: String = "", valueKey: String = "", totalKey: String = "", title: String = "")
-        case label(InjectedView)
-        case timerInterval(lowerDate: Date, upperDate: Date)
-        case timerInterval_label(lowerDate: Date, upperDate: Date, label: InjectedView)
-        case timerInterval_countsdown_label_currentValueLabel(lowerDate: Date,
-                                                              upperDate: Date,
-                                                              countsdown: Bool,
-                                                              label: InjectedView,
-                                                              currentValueLabel: InjectedView)
-        case value_total(valueKey: String, totalKey: String)
-        case value_total_label(valueKey: String, totalKey: String, label: InjectedView)
-        case value_total_label_currentValueLabel(valueKey: String, totalKey: String, label: InjectedView, currentValueLabel: InjectedView)
+        self.title = title
+        self.label = label
+        self.currentValueLabel = currentValueLabel
+        self.value = value
+        self.total = total
+        self.timerStart = timerStart
+        self.timerEnd = timerEnd
+        self.countsDown = countsDown
     }
 }

@@ -83,6 +83,14 @@ public enum InjectedModifier: Codable {
     case textInputAutocapitalization(mode: Expression)
     case textContentType(type: Expression)
 
+    // MARK: Events
+    case onAppear(do: [InjectedAction])
+    case onDisappear(do: [InjectedAction])
+    case onTapGesture(count: Expression? = nil, do: [InjectedAction])
+    /// Runs when `of` evaluates to a different value.
+    case onChange(of: Expression, do: [InjectedAction])
+    case onSubmit(do: [InjectedAction])
+
     // MARK: Image- and shape-only (applied by Image_Ext / Shape_Ext, ignored elsewhere)
     case antialiased(isActive: Expression)
     case resizable(capInsets: InjectedEdgeInSets? = nil, resizingMode: Expression? = nil)
@@ -105,6 +113,9 @@ extension InjectedImageScale: RuntimeConvertible {}
 extension InjectedKeyboardType: RuntimeConvertible {}
 extension InjectedPickerStyle: RuntimeConvertible {}
 extension InjectedPopoverAttachmentAnchor: RuntimeConvertible {}
+extension InjectedRoundedCornerStyle: RuntimeConvertible {}
+extension InjectedHorizontalAlignment: RuntimeConvertible {}
+extension InjectedVerticalAlignment: RuntimeConvertible {}
 extension InjectedResizingMode: RuntimeConvertible {}
 extension InjectedSymbolRenderingMode: RuntimeConvertible {}
 extension InjectedSystemFont: RuntimeConvertible {}

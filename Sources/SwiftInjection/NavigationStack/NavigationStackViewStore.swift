@@ -1,18 +1,16 @@
 //
 //  NavigationStackViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 9/27/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct NavigationStackViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    var root: InjectedView
-    
-    init(id: String = "", modifiers: [InjectedModifier] = [], root: InjectedView) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var root: InjectedView
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], root: InjectedView) {
         self.id = id
         self.modifiers = modifiers
         self.root = root

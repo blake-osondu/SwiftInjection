@@ -1,13 +1,18 @@
 //
 //  SpacerViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct SpacerViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var minLength: InjectedExpression?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], minLength: InjectedExpression? = nil) {
+        self.id = id
+        self.modifiers = modifiers
+        self.minLength = minLength
+    }
 }

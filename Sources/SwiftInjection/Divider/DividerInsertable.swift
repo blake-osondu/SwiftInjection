@@ -1,18 +1,17 @@
 //
 //  DividerInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/8/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct DividerInsertable: View {
-    @ObservedObject var store: DividerStore
-    var container: ViewStoresContainer
-    
+    let viewStore: DividerViewStore
+
     var body: some View {
-        Divider().addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+        ScopeReader { scope in
+            Divider()
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

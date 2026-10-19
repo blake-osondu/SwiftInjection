@@ -1,17 +1,19 @@
 //
 //  CapsuleViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct CapsuleViewStore: Codable {
-    public static func ==(lhs: CapsuleViewStore, rhs: CapsuleViewStore) -> Bool {
-        lhs.id == rhs.id
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    /// "circular" or "continuous"
+    public var style: InjectedExpression?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], style: InjectedExpression? = nil) {
+        self.id = id
+        self.modifiers = modifiers
+        self.style = style
     }
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var style: InjectedRoundedCornerStyle? = nil
 }
