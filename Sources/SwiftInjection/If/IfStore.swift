@@ -18,14 +18,26 @@ class IfStore: ObservableObject {
         self.viewStore = viewStore
         self.stateSignal = stateSignal
         self.state = stateSignal.value
-        self.condition = findBooleanValue(stateId: stateSignal.value.id, id: viewStore.conditionKey, state: state) ?? false
+        self.condition = Self.evaluate(viewStore, state) ?? false
 
         self.stateSignal.eraseToAnyPublisher().assign(to: &$state)
 
-        stateSignal.map { state in 
-            findBooleanValue(stateId: state.id, id: viewStore.conditionKey, state: state)
+        stateSignal.map { state in
+            Self.evaluate(viewStore, state)
         }
         .compactMap { $0 }
         .assign(to: &$condition)
+    }
+
+    private static func evaluate(_ viewStore: IfViewStore, _ state: InjectedState) -> Bool? {
+        guard let condition = viewStore.condition else {
+            return findBooleanValue(stateId: state.id, id: viewStore.conditionKey, state: state)
+        }
+        do {
+            return try ExpressionEvaluator().condition(condition, in: state)
+        } catch {
+            print("SwiftInjection: if '\(viewStore.id)' condition failed: \(error)")
+            return false
+        }
     }
 }
