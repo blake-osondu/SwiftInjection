@@ -139,14 +139,4 @@ final class ExpressionTests: XCTestCase {
         ])
         XCTAssertTrue(try ExpressionEvaluator().condition(expression, in: state))
     }
-
-    func testIfStoreUsesExpressionCondition() {
-        let signal = StateSignal(InjectedState(id: "screen", parameter1: .integer(stateId: "screen", id: "count", value: 1)))
-        let viewStore = IfViewStore(modifiers: [], condition: .operation(.gt, [.var("count"), 5]), content: .empty())
-        let store = IfStore(viewStore: viewStore, stateSignal: signal)
-        XCTAssertFalse(store.condition)
-
-        signal.value = updateState(state: signal.value, newValue: .integer(stateId: "screen", id: "count", value: 6))
-        XCTAssertTrue(store.condition)
-    }
 }

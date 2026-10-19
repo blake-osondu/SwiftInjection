@@ -1,20 +1,23 @@
 //
 //  IfInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public struct IfInsertable: View {
-    @ObservedObject var store: IfStore
-    var container: ViewStoresContainer
-    
-    public var body: some View {
-        if store.condition {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content)
+struct IfInsertable: View {
+    let viewStore: IfViewStore
+
+    var body: some View {
+        ScopeReader { scope in
+            Group {
+                if scope.bool(viewStore.condition) {
+                    InjectedContent(viewStore.then)
+                } else if let otherwise = viewStore.otherwise {
+                    InjectedContent(otherwise)
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
         }
     }
 }

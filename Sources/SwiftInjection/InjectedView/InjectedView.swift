@@ -49,8 +49,7 @@ indirect public enum InjectedView: Codable, Hashable {
     case divider(viewStore: DividerViewStore)
     case `if`(viewStore: IfViewStore)
     case progressView(viewStore: ProgressViewStore)
-    case standardTable(viewStore: StandardTableViewStore)
-    case customTable(viewStore: CustomTableViewStore)
+    case table(viewStore: TableViewStore)
     case group(viewStore: GroupViewStore)
     case controlGroup(viewStore: ControlGroupViewStore)
     case form(viewStore: FormViewStore)
@@ -96,8 +95,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .divider(let viewStore): return viewStore
         case .if(let viewStore): return viewStore
         case .progressView(let viewStore): return viewStore
-        case .standardTable(let viewStore): return viewStore
-        case .customTable(let viewStore): return viewStore
+        case .table(let viewStore): return viewStore
         case .group(let viewStore): return viewStore
         case .controlGroup(let viewStore): return viewStore
         case .form(let viewStore): return viewStore
@@ -151,8 +149,7 @@ indirect public enum InjectedView: Codable, Hashable {
             case .divider(var viewStore): viewStore.modifiers = newValue; self = .divider(viewStore: viewStore)
             case .if(var viewStore): viewStore.modifiers = newValue; self = .if(viewStore: viewStore)
             case .progressView(var viewStore): viewStore.modifiers = newValue; self = .progressView(viewStore: viewStore)
-            case .standardTable(var viewStore): viewStore.modifiers = newValue; self = .standardTable(viewStore: viewStore)
-            case .customTable(var viewStore): viewStore.modifiers = newValue; self = .customTable(viewStore: viewStore)
+            case .table(var viewStore): viewStore.modifiers = newValue; self = .table(viewStore: viewStore)
             case .group(var viewStore): viewStore.modifiers = newValue; self = .group(viewStore: viewStore)
             case .controlGroup(var viewStore): viewStore.modifiers = newValue; self = .controlGroup(viewStore: viewStore)
             case .form(var viewStore): viewStore.modifiers = newValue; self = .form(viewStore: viewStore)
@@ -214,8 +211,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case "divider": self = .divider(viewStore: try container.decode(DividerViewStore.self, forKey: key))
         case "if": self = .if(viewStore: try container.decode(IfViewStore.self, forKey: key))
         case "progressView": self = .progressView(viewStore: try container.decode(ProgressViewStore.self, forKey: key))
-        case "standardTable": self = .standardTable(viewStore: try container.decode(StandardTableViewStore.self, forKey: key))
-        case "customTable": self = .customTable(viewStore: try container.decode(CustomTableViewStore.self, forKey: key))
+        case "table": self = .table(viewStore: try container.decode(TableViewStore.self, forKey: key))
         case "group": self = .group(viewStore: try container.decode(GroupViewStore.self, forKey: key))
         case "controlGroup": self = .controlGroup(viewStore: try container.decode(ControlGroupViewStore.self, forKey: key))
         case "form": self = .form(viewStore: try container.decode(FormViewStore.self, forKey: key))
@@ -264,8 +260,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .divider(let viewStore): try container.encode(viewStore, forKey: Key("divider"))
         case .if(let viewStore): try container.encode(viewStore, forKey: Key("if"))
         case .progressView(let viewStore): try container.encode(viewStore, forKey: Key("progressView"))
-        case .standardTable(let viewStore): try container.encode(viewStore, forKey: Key("standardTable"))
-        case .customTable(let viewStore): try container.encode(viewStore, forKey: Key("customTable"))
+        case .table(let viewStore): try container.encode(viewStore, forKey: Key("table"))
         case .group(let viewStore): try container.encode(viewStore, forKey: Key("group"))
         case .controlGroup(let viewStore): try container.encode(viewStore, forKey: Key("controlGroup"))
         case .form(let viewStore): try container.encode(viewStore, forKey: Key("form"))
@@ -291,7 +286,6 @@ extension CapsuleViewStore: InjectedViewStore {}
 extension CircleViewStore: InjectedViewStore {}
 extension ColorViewStore: InjectedViewStore {}
 extension ControlGroupViewStore: InjectedViewStore {}
-extension CustomTableViewStore: InjectedViewStore {}
 extension DatePickerViewStore: InjectedViewStore {}
 extension DividerViewStore: InjectedViewStore {}
 extension EllipseViewStore: InjectedViewStore {}
@@ -319,7 +313,7 @@ extension ScrollViewStore: InjectedViewStore {}
 extension SectionViewStore: InjectedViewStore {}
 extension SecureFieldViewStore: InjectedViewStore {}
 extension SpacerViewStore: InjectedViewStore {}
-extension StandardTableViewStore: InjectedViewStore {}
+extension TableViewStore: InjectedViewStore {}
 extension TabViewStore: InjectedViewStore {}
 extension TextViewStore: InjectedViewStore {}
 extension VStackViewStore: InjectedViewStore {}

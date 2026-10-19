@@ -35,17 +35,11 @@ public struct Insertable: View {
             ZStackInsertable(viewStore: viewStore)
 
         case .list(let viewStore):
-            
-            ListInsertable(
-                store: .init(viewStore: viewStore, stateSignal: stateSignal),
-                container: container)
-            
+            ListInsertable(viewStore: viewStore)
+
         case .forEach(let viewStore):
-            
-            ForEachInsertable(
-                store: .init(viewStore: viewStore, stateSignal: stateSignal),
-                container: container)
-            
+            ForEachInsertable(viewStore: viewStore)
+
         case .button(let viewStore):
             ButtonInsertable(viewStore: viewStore)
 
@@ -98,9 +92,8 @@ public struct Insertable: View {
             DividerInsertable(viewStore: viewStore)
 
         case .if(let viewStore):
-            
-            IfInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            IfInsertable(viewStore: viewStore)
+
         case .viewStoreReference(let id):
             
             if let viewStore = container.viewStores.first(where: {$0.id == id })  {
@@ -132,14 +125,9 @@ public struct Insertable: View {
         case .progressView(let viewStore):
             ProgressViewInsertable(viewStore: viewStore)
 
-        case .standardTable(viewStore: let viewStore):
-            
-            StandardTableInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .customTable(viewStore: let viewStore):
-            
-            CustomTableInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .table(let viewStore):
+            TableInsertable(viewStore: viewStore)
+
         case .group(let viewStore):
             GroupInsertable(viewStore: viewStore)
 
@@ -152,10 +140,9 @@ public struct Insertable: View {
         case .section(let viewStore):
             SectionInsertable(viewStore: viewStore)
 
-        case .geometryReader(viewStore: let viewStore):
-            
-            GeometryReaderInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .geometryReader(let viewStore):
+            GeometryReaderInsertable(viewStore: viewStore)
+
         case .picker(let viewStore):
             PickerInsertable(viewStore: viewStore)
 

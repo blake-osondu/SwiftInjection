@@ -91,13 +91,12 @@ final class ContainerComponentTests: XCTestCase {
         XCTAssertEqual(screen.reportedErrors, [])
     }
 
-    func testMigratedContainerRendersNotYetMigratedChild() throws {
+    func testContainersNestAndShareState() throws {
         let screen = try RenderedScreen(#"""
         {"vStack": {"children": [
-          {"text": {"value": "new"}},
-          {"if": {"id": "", "modifiers": [], "conditionKey": "", "condition": true, "content": {"text": {"value": "inside old if"}}}}
+          {"hStack": {"children": [{"text": {"value": {"var": "a"}}}, {"zStack": {"children": [{"text": {"value": {"var": "b"}}}]}}]}}
         ]}}
-        """#)
-        XCTAssertEqual(try screen.texts(), ["new", "inside old if"])
+        """#, state: ["a": "outer", "b": "inner"])
+        XCTAssertEqual(try screen.texts(), ["outer", "inner"])
     }
 }

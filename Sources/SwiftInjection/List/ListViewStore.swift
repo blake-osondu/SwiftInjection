@@ -1,22 +1,29 @@
 //
 //  ListViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
+/// Static `children` rows, followed by one row per element of `items` (see `forEach`).
 public struct ListViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    var listKey: String
-    var content: InjectedView
-    init(id: String = "", modifiers: [InjectedModifier] = [], listKey: String = "", content: InjectedView) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    @OrEmpty public var children: [InjectedView]
+    public var items: String?
+    public var itemName: String?
+    public var identity: InjectedExpression?
+    public var content: InjectedView?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], children: [InjectedView] = [],
+                items: String? = nil, itemName: String? = nil, identity: InjectedExpression? = nil,
+                content: InjectedView? = nil) {
         self.id = id
         self.modifiers = modifiers
-        self.listKey = listKey
+        self.children = children
+        self.items = items
+        self.itemName = itemName
+        self.identity = identity
         self.content = content
     }
-    
 }
