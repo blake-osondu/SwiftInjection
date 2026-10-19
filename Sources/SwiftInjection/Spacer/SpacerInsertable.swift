@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct SpacerInsertable: View {
     let viewStore: SpacerViewStore

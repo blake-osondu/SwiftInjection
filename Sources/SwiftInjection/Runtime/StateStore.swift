@@ -5,6 +5,7 @@
 
 import Foundation
 import Combine
+import SwiftInjectionCore
 
 /// The single source of truth for a screen's state. Use from the main thread.
 public final class StateStore: ObservableObject {

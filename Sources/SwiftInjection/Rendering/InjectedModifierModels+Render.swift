@@ -1,15 +1,12 @@
 //
-//  InjectedModifierModels.swift
-//
-//
-//  Created by Blake Osonduagwueki on 9/30/23.
+//  InjectedModifierModels+Render.swift
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedFontDesign: String, Codable {
-    case `default`, serif, rounded, monospaced
+extension InjectedFontDesign {
     var render: Font.Design {
         switch self {
         case .default: return .default
@@ -20,8 +17,7 @@ public enum InjectedFontDesign: String, Codable {
     }
 }
 
-public enum InjectedFontWidth: String, Codable {
-    case compressed, condensed, standard, expanded
+extension InjectedFontWidth {
     var render: Font.Width {
         switch self {
         case .compressed: return .compressed
@@ -32,8 +28,7 @@ public enum InjectedFontWidth: String, Codable {
     }
 }
 
-public enum InjectedTextLineStylePattern: String, Codable {
-    case solid, dot, dash, dashDot, dashDotDot
+extension InjectedTextLineStylePattern {
     var render: Text.LineStyle.Pattern {
         switch self {
         case .solid: return .solid
@@ -45,8 +40,7 @@ public enum InjectedTextLineStylePattern: String, Codable {
     }
 }
 
-public enum InjectedTextTruncation: String, Codable {
-    case head, middle, tail
+extension InjectedTextTruncation {
     var render: Text.TruncationMode {
         switch self {
         case .head: return .head
@@ -56,10 +50,7 @@ public enum InjectedTextTruncation: String, Codable {
     }
 }
 
-public enum InjectedBlendMode: String, Codable {
-    case normal, multiply, screen, overlay, darken, lighten, colorDodge, colorBurn, softLight, hardLight,
-         difference, exclusion, hue, saturation, color, luminosity, sourceAtop, destinationOver, destinationOut,
-         plusDarker, plusLighter
+extension InjectedBlendMode {
     var render: BlendMode {
         switch self {
         case .normal: return .normal
@@ -87,8 +78,7 @@ public enum InjectedBlendMode: String, Codable {
     }
 }
 
-public enum InjectedTextAlignment: String, Codable {
-    case leading, center, trailing
+extension InjectedTextAlignment {
     var render: TextAlignment {
         switch self {
         case .leading: return .leading
@@ -98,8 +88,7 @@ public enum InjectedTextAlignment: String, Codable {
     }
 }
 
-public enum InjectedImageScale: String, Codable {
-    case small, medium, large
+extension InjectedImageScale {
     var render: Image.Scale {
         switch self {
         case .small: return .small
@@ -109,8 +98,7 @@ public enum InjectedImageScale: String, Codable {
     }
 }
 
-public enum InjectedAnimation: String, Codable {
-    case `default`, linear, easeIn, easeOut, easeInOut, spring, bouncy, smooth, snappy
+extension InjectedAnimation {
     var render: Animation {
         switch self {
         case .default: return .default
@@ -126,39 +114,7 @@ public enum InjectedAnimation: String, Codable {
     }
 }
 
-public enum InjectedButtonStyle: String, Codable {
-    case automatic, bordered, borderedProminent, borderless, plain
-    func apply<V: View>(to view: V) -> AnyView {
-        switch self {
-        case .automatic: return AnyView(view.buttonStyle(.automatic))
-        case .bordered: return AnyView(view.buttonStyle(.bordered))
-        case .borderedProminent: return AnyView(view.buttonStyle(.borderedProminent))
-        case .borderless: return AnyView(view.buttonStyle(.borderless))
-        case .plain: return AnyView(view.buttonStyle(.plain))
-        }
-    }
-}
-
-public enum InjectedProgressViewStyle: String, Codable {
-    case automatic, circular, linear
-}
-
-public enum InjectedPickerStyle: String, Codable {
-    case automatic, inline, menu, navigationLink, segmented, wheel
-    func apply<V: View>(to view: V) -> AnyView {
-        switch self {
-        case .automatic: return AnyView(view.pickerStyle(.automatic))
-        case .inline: return AnyView(view.pickerStyle(.inline))
-        case .menu: return AnyView(view.pickerStyle(.menu))
-        case .navigationLink: return AnyView(view.pickerStyle(.navigationLink))
-        case .segmented: return AnyView(view.pickerStyle(.segmented))
-        case .wheel: return AnyView(view.pickerStyle(.wheel))
-        }
-    }
-}
-
-public enum InjectedSymbolRenderingMode: String, Codable {
-    case monochrome, hierarchical, multicolor, palette
+extension InjectedSymbolRenderingMode {
     var render: SymbolRenderingMode {
         switch self {
         case .monochrome: return .monochrome
@@ -169,8 +125,7 @@ public enum InjectedSymbolRenderingMode: String, Codable {
     }
 }
 
-public enum InjectedResizingMode: String, Codable {
-    case stretch, tile
+extension InjectedResizingMode {
     var render: Image.ResizingMode {
         switch self {
         case .stretch: return .stretch
@@ -179,8 +134,7 @@ public enum InjectedResizingMode: String, Codable {
     }
 }
 
-public enum InjectedImageRenderingMode: String, Codable {
-    case original, template
+extension InjectedImageRenderingMode {
     var render: Image.TemplateRenderingMode {
         switch self {
         case .original: return .original
@@ -189,20 +143,7 @@ public enum InjectedImageRenderingMode: String, Codable {
     }
 }
 
-public enum InjectdDatePickerStyle: String, Codable {
-    case automatic, compact, graphical, wheel
-    func apply<V: View>(to view: V) -> AnyView {
-        switch self {
-        case .automatic: return AnyView(view.datePickerStyle(.automatic))
-        case .compact: return AnyView(view.datePickerStyle(.compact))
-        case .graphical: return AnyView(view.datePickerStyle(.graphical))
-        case .wheel: return AnyView(view.datePickerStyle(.wheel))
-        }
-    }
-}
-
-public enum InjectedVisbility: String, Codable {
-    case automatic, visible, hidden
+extension InjectedVisbility {
     var render: Visibility {
         switch self {
         case .automatic: return .automatic
@@ -212,8 +153,7 @@ public enum InjectedVisbility: String, Codable {
     }
 }
 
-public enum InjectedPopoverAttachmentAnchor: String, Codable {
-    case bounds, top, bottom, leading, trailing, center
+extension InjectedPopoverAttachmentAnchor {
     var render: PopoverAttachmentAnchor {
         switch self {
         case .bounds: return .rect(.bounds)
@@ -226,8 +166,7 @@ public enum InjectedPopoverAttachmentAnchor: String, Codable {
     }
 }
 
-public enum InjectedEdge: String, Codable {
-    case top, bottom, leading, trailing
+extension InjectedEdge {
     var render: Edge {
         switch self {
         case .top: return .top
@@ -238,9 +177,7 @@ public enum InjectedEdge: String, Codable {
     }
 }
 
-public enum InjectedKeyboardType: String, Codable {
-    case `default`, asciiCapable, numbersAndPunctuation, URL, numberPad, phonePad, namePhonePad, emailAddress,
-         decimalPad, twitter, webSearch, asciiCapableNumberPad
+extension InjectedKeyboardType {
     var render: UIKeyboardType {
         switch self {
         case .default: return .default
@@ -259,8 +196,7 @@ public enum InjectedKeyboardType: String, Codable {
     }
 }
 
-public enum InjectedTextInputAutoCapitalization: String, Codable {
-    case never, words, sentences, characters
+extension InjectedTextInputAutoCapitalization {
     var render: TextInputAutocapitalization {
         switch self {
         case .never: return .never
@@ -271,10 +207,7 @@ public enum InjectedTextInputAutoCapitalization: String, Codable {
     }
 }
 
-public enum InjectedTextContentType: String, Codable {
-    case name, givenName, familyName, nickname, organizationName, jobTitle, location, fullStreetAddress,
-         addressCity, addressState, postalCode, countryName, telephoneNumber, emailAddress, URL,
-         creditCardNumber, username, password, newPassword, oneTimeCode, dateTime, flightNumber
+extension InjectedTextContentType {
     var render: UITextContentType {
         switch self {
         case .name: return .name
@@ -303,12 +236,47 @@ public enum InjectedTextContentType: String, Codable {
     }
 }
 
-public enum InjectedRoundedCornerStyle: String, Codable {
-    case circular, continuous
+extension InjectedRoundedCornerStyle {
     var render: RoundedCornerStyle {
         switch self {
         case .circular: return .circular
         case .continuous: return .continuous
+        }
+    }
+}
+
+extension InjectedButtonStyle {
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.buttonStyle(.automatic))
+        case .bordered: return AnyView(view.buttonStyle(.bordered))
+        case .borderedProminent: return AnyView(view.buttonStyle(.borderedProminent))
+        case .borderless: return AnyView(view.buttonStyle(.borderless))
+        case .plain: return AnyView(view.buttonStyle(.plain))
+        }
+    }
+}
+
+extension InjectedPickerStyle {
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.pickerStyle(.automatic))
+        case .inline: return AnyView(view.pickerStyle(.inline))
+        case .menu: return AnyView(view.pickerStyle(.menu))
+        case .navigationLink: return AnyView(view.pickerStyle(.navigationLink))
+        case .segmented: return AnyView(view.pickerStyle(.segmented))
+        case .wheel: return AnyView(view.pickerStyle(.wheel))
+        }
+    }
+}
+
+extension InjectdDatePickerStyle {
+    func apply<V: View>(to view: V) -> AnyView {
+        switch self {
+        case .automatic: return AnyView(view.datePickerStyle(.automatic))
+        case .compact: return AnyView(view.datePickerStyle(.compact))
+        case .graphical: return AnyView(view.datePickerStyle(.graphical))
+        case .wheel: return AnyView(view.datePickerStyle(.wheel))
         }
     }
 }

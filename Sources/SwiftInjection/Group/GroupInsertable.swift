@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct GroupInsertable: View {
     let viewStore: GroupViewStore

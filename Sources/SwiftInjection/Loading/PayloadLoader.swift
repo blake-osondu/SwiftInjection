@@ -5,6 +5,7 @@
 
 import Foundation
 import CryptoKit
+import SwiftInjectionCore
 
 /// Loads a screen's payload from a URL, falling back to the last good cached copy and then to a payload
 /// bundled with the app. Every source is validated (signature, schema version, decoding) before use, and

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ProgressViewInsertable: View {
     let viewStore: ProgressViewStore

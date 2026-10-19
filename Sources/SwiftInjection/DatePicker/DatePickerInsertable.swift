@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct DatePickerInsertable: View {
     let viewStore: DatePickerViewStore

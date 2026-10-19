@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
 /// Local names in effect at a point in the view tree, e.g. `item` inside a `forEach`.
 public struct ScopeLocals: Hashable {

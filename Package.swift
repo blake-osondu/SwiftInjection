@@ -1,28 +1,23 @@
-// swift-tools-version: 5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
     name: "SwiftInjection",
-    platforms: [.iOS(.v16)],
+    platforms: [.iOS(.v16), .macOS(.v13)],
     products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(
-            name: "SwiftInjection",
-            targets: ["SwiftInjection"]),
+        /// The SwiftUI runtime that renders payloads (iOS).
+        .library(name: "SwiftInjection", targets: ["SwiftInjection"]),
+        /// The platform-neutral payload model: views, expressions, actions, validation and signing.
+        .library(name: "SwiftInjectionCore", targets: ["SwiftInjectionCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "SwiftInjection",
-            dependencies: []),
-        .testTarget(
-            name: "SwiftInjectionTests",
-            dependencies: ["SwiftInjection", "ViewInspector"]),
+        .target(name: "SwiftInjectionCore"),
+        .target(name: "SwiftInjection", dependencies: ["SwiftInjectionCore"]),
+        .testTarget(name: "SwiftInjectionCoreTests", dependencies: ["SwiftInjectionCore"]),
+        .testTarget(name: "SwiftInjectionTests", dependencies: ["SwiftInjection", "ViewInspector"]),
     ]
 )

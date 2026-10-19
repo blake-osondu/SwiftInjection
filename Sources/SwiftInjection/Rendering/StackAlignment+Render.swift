@@ -1,16 +1,12 @@
 //
-//  StackAlignment.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/29/23.
+//  StackAlignment+Render.swift
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedHorizontalAlignment: String, Codable {
-    case center, leading, trailing, listRowSeparatorLeading, listRowSeparatorTrailing
-    
+extension InjectedHorizontalAlignment {
     var render: HorizontalAlignment {
         switch self {
         case .center:
@@ -27,9 +23,7 @@ public enum InjectedHorizontalAlignment: String, Codable {
     }
 }
 
-public enum InjectedVerticalAlignment: String, Codable {
-    case bottom, center, top, firstTextBaseline, lastTextBaseline
-    
+extension InjectedVerticalAlignment {
     var render: VerticalAlignment {
         switch self {
         case .center:
@@ -46,9 +40,7 @@ public enum InjectedVerticalAlignment: String, Codable {
     }
 }
 
-public enum InjectedAlignment: String, Codable {
-    case trailing, leading, center, top, bottom, bottomLeading, bottomTrailing, topLeading, topTrailing, centerFirstTextBaseline, centerLastTextBaseline, leadingFirstTextBaseline, leadingLastTextBaseline, trailingFirstTextBaseline, trailingLastTextBaseline
-    
+extension InjectedAlignment {
     var render: Alignment {
         switch self {
         case .trailing:

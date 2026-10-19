@@ -1,13 +1,10 @@
 //
-//  InjectedDatePickerComponents.swift
+//  InjectedDatePickerComponents+Render.swift
 //  SwiftInjection
 //
 
 import SwiftUI
-
-public enum InjectedDatePickerComponents: String, Codable {
-    case date, hourAndMinute
-}
+import SwiftInjectionCore
 
 extension Array where Element == InjectedDatePickerComponents {
     var render: DatePickerComponents {

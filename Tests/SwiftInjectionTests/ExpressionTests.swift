@@ -1,5 +1,6 @@
 import XCTest
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 final class ExpressionTests: XCTestCase {
 

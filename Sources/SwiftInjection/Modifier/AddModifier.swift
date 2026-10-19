@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 extension View {
     /// Applies payload modifiers in order, evaluating their arguments in `scope`.

@@ -1,22 +1,12 @@
 //
-//  InjectedEdgeSet.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/12/23.
+//  InjectedEdgeSet+Render.swift
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedEdgeSet: String, Codable {
-    case all
-    case bottom
-    case horizontal
-    case leading
-    case top
-    case trailing
-    case vertical
-    
+extension InjectedEdgeSet {
     var render: Edge.Set {
         switch self {
         case .all: return Edge.Set.all

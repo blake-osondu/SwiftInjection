@@ -2,6 +2,7 @@ import XCTest
 import SwiftUI
 import ViewInspector
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 final class ScriptRuntimeTests: XCTestCase {
 

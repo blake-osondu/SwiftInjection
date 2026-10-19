@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct SecureFieldInsertable: View {
     let viewStore: SecureFieldViewStore

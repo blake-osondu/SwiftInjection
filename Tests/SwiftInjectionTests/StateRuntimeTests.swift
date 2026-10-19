@@ -1,6 +1,7 @@
 import XCTest
 import Combine
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 final class StateRuntimeTests: XCTestCase {
 

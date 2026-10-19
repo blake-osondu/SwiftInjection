@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct FormInsertable: View {
     let viewStore: FormViewStore

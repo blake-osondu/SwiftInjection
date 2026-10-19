@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftInjectionCore
 
 extension StateScope {
     /// Runs an action list as one transaction: later actions see earlier writes, the store publishes once,

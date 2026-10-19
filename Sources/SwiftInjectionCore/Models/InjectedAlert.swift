@@ -1,9 +1,9 @@
 //
 //  InjectedAlert.swift
-//  SwiftInjection
+//  SwiftInjectionCore
 //
 
-import SwiftUI
+import Foundation
 
 /// Used by the `alert` modifier:
 /// `{"alert": {"isPresented": "showDelete", "alert": {"title": "Delete?", "message": "This can't be undone.",
@@ -36,11 +36,4 @@ public struct InjectedAlertButton: Codable {
 
 public enum InjectedButtonRole: String, Codable {
     case cancel, destructive
-
-    var render: ButtonRole {
-        switch self {
-        case .cancel: return .cancel
-        case .destructive: return .destructive
-        }
-    }
 }

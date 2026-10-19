@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ImageInsertable: View {
     let viewStore: ImageViewStore

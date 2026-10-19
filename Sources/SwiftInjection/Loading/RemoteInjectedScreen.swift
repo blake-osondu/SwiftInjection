@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 /// When a newer remote payload is applied once a screen is already showing.
 public enum PayloadUpdatePolicy {

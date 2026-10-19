@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct TextFieldInsertable: View {
     let viewStore: FieldViewStore

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 /// Dispatches a payload view to its component. Use `InjectedContent` to render a child.
 struct Insertable: View {

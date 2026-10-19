@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct GridInsertable: View {
     let viewStore: GridViewStore

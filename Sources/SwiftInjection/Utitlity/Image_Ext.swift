@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
 extension Image {
     /// Applies the Image-only modifiers (`resizable`, `renderingMode`, `antialiased`), which must run

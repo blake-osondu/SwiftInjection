@@ -1,6 +1,7 @@
 import XCTest
 import SwiftUI
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 final class ModifierTests: XCTestCase {
 

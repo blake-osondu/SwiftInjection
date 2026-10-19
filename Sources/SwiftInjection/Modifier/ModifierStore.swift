@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
 struct ModifierStore: ViewModifier {
     var modifier: InjectedModifier

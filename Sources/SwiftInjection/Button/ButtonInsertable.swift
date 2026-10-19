@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ButtonInsertable: View {
     let viewStore: ButtonViewStore

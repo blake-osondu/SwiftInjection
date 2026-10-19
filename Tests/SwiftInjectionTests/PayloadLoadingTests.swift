@@ -3,6 +3,7 @@ import CryptoKit
 import SwiftUI
 import ViewInspector
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 /// Serves canned responses; URLs without a response fail like an offline network.
 final class StubURLProtocol: URLProtocol {

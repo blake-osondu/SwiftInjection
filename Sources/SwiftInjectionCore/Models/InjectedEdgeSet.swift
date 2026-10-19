@@ -1,0 +1,16 @@
+//
+//  InjectedEdgeSet.swift
+//  SwiftInjectionCore
+//
+
+import Foundation
+
+public enum InjectedEdgeSet: String, Codable {
+    case all
+    case bottom
+    case horizontal
+    case leading
+    case top
+    case trailing
+    case vertical
+}
