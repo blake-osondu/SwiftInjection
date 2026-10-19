@@ -15,10 +15,12 @@ public struct ValidatedPayload {
 public struct PayloadValidator {
     public var verifier: PayloadVerifier?
     public var runtimeVersion: SchemaVersion
+    public var limits: PayloadLimits
 
-    public init(verifier: PayloadVerifier? = nil, runtimeVersion: SchemaVersion = .current) {
+    public init(verifier: PayloadVerifier? = nil, runtimeVersion: SchemaVersion = .current, limits: PayloadLimits = .default) {
         self.verifier = verifier
         self.runtimeVersion = runtimeVersion
+        self.limits = limits
     }
 
     /// `signature` is required when a verifier is configured; pass `requireSignature: false` for
@@ -28,6 +30,7 @@ public struct PayloadValidator {
             guard let signature else { throw PayloadError.signatureMissing }
             try verifier.verify(data, signature: signature)
         }
+        try limits.checkStructure(of: data)
 
         let warnings = PayloadWarnings()
         let decoder = JSONDecoder()
@@ -39,6 +42,7 @@ public struct PayloadValidator {
             throw PayloadError.invalid(Self.describe(error))
         }
 
+        try limits.checkScripts(payload.scripts)
         guard let schemaVersion = payload.schemaVersion else { throw PayloadError.missingSchemaVersion }
         guard schemaVersion.isSupported(by: runtimeVersion) else {
             throw PayloadError.unsupportedSchemaVersion(schemaVersion, runtime: runtimeVersion)

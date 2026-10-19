@@ -66,6 +66,7 @@ final class PayloadLoadingTests: XCTestCase {
             try bundled.write(to: bundledURL!)
         }
         return PayloadLoader(configuration: .init(url: url, bundled: bundledURL, verifier: verifier,
+                                                  allowUnsigned: verifier == nil,
                                                   cacheDirectory: directory.appendingPathComponent("cache"),
                                                   session: StubURLProtocol.session, runtimeVersion: runtime))
     }
@@ -295,5 +296,98 @@ final class PayloadLoadingTests: XCTestCase {
         await model.start()
         XCTAssertNil(model.payload)
         guard case .network? = model.error else { return XCTFail("\(String(describing: model.error))") }
+    }
+
+    // MARK: secure defaults
+
+    func testUnsignedLoadingIsRefusedByDefault() async throws {
+        StubURLProtocol.responses[url] = (200, payload("remote"))
+        let bundled = directory.appendingPathComponent("bundled.json")
+        try payload("bundled").write(to: bundled)
+        let loader = PayloadLoader(configuration: .init(url: url, bundled: bundled,
+                                                        cacheDirectory: directory.appendingPathComponent("cache"),
+                                                        session: StubURLProtocol.session))
+        let loaded = try await loader.load()
+        XCTAssertEqual(loaded.source, .bundle)  // bundled payloads are trusted by the app's own signature
+        XCTAssertEqual(loaded.skipped.first, .insecureConfiguration("no signature verifier (set allowUnsigned for local development)"))
+        XCTAssertTrue(StubURLProtocol.requested.isEmpty, "nothing should be fetched with an insecure configuration")
+    }
+
+    func testAllowUnsignedOptsOutWithAWarning() async throws {
+        var logs: [String] = []
+        let previous = PayloadLoader.log
+        PayloadLoader.log = { logs.append($0) }
+        defer { PayloadLoader.log = previous }
+
+        StubURLProtocol.responses[url] = (200, payload("remote"))
+        let loader = PayloadLoader(configuration: .init(url: url, allowUnsigned: true,
+                                                        cacheDirectory: directory.appendingPathComponent("cache"),
+                                                        session: StubURLProtocol.session))
+        let loaded = try await loader.load()
+        XCTAssertEqual(loaded.source, .remote)
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertTrue(logs[0].contains("unsigned"), logs[0])
+    }
+
+    func testPlainHTTPIsRefusedUnlessAllowed() async throws {
+        let http = URL(string: "http://192.168.1.10:8080/home.json")!
+        StubURLProtocol.responses[http] = (200, payload("over http"))
+        let key = Curve25519.Signing.PrivateKey()
+        StubURLProtocol.responses[http.appendingPathExtension("sig")] = (200, try PayloadSigner.signature(for: payload("over http"), using: key))
+        let verifier = PayloadVerifier(publicKeys: [key.publicKey])
+
+        let refused = PayloadLoader(configuration: .init(url: http, verifier: verifier,
+                                                         cacheDirectory: directory.appendingPathComponent("a"), session: StubURLProtocol.session))
+        do {
+            _ = try await refused.loadRemote()
+            XCTFail("Expected an insecure configuration error")
+        } catch {
+            XCTAssertEqual(error as? PayloadError, .insecureConfiguration("http://192.168.1.10:8080/home.json isn't HTTPS (set allowInsecureHTTP for local development)"))
+        }
+
+        let allowed = PayloadLoader(configuration: .init(url: http, verifier: verifier, allowInsecureHTTP: true,
+                                                         cacheDirectory: directory.appendingPathComponent("b"), session: StubURLProtocol.session))
+        let loaded = try await allowed.loadRemote()
+        XCTAssertEqual(text(of: loaded.payload), "over http")
+    }
+
+    // MARK: limits
+
+    func testLimitsAreEnforcedBeforeDecoding() {
+        func rejects(_ data: Data, _ limits: PayloadLimits, file: StaticString = #filePath, line: UInt = #line) {
+            XCTAssertThrowsError(try PayloadValidator(limits: limits).validate(data, signature: nil), file: file, line: line) {
+                guard case .limitExceeded? = $0 as? PayloadError else { return XCTFail("\($0)", file: file, line: line) }
+            }
+        }
+        var tight = PayloadLimits.default
+        tight.maxBytes = 50
+        rejects(payload("this payload is longer than fifty bytes"), tight)
+
+        tight = .default
+        tight.maxDepth = 10
+        let deep = String(repeating: #"{"group": {"children": ["#, count: 5) + #"{"empty": {}}"# + String(repeating: "]}}", count: 5)
+        rejects(Data(#"{"schemaVersion": "1.0", "body": \#(deep)}"#.utf8), tight)
+
+        tight = .default
+        tight.maxObjects = 3
+        rejects(Data(#"{"schemaVersion": "1.0", "body": {"vStack": {"children": [{"empty": {}}, {"empty": {}}]}}}"#.utf8), tight)
+
+        tight = .default
+        tight.maxScriptBytes = 10
+        rejects(Data(#"{"schemaVersion": "1.0", "scripts": {"long": "(a, b) => a + b + 1"}, "body": {"empty": {}}}"#.utf8), tight)
+    }
+
+    func testDepthScanIgnoresBracketsInsideStrings() throws {
+        var limits = PayloadLimits.default
+        limits.maxDepth = 6
+        let data = Data(#"{"schemaVersion": "1.0", "body": {"text": {"value": "[[[[{{{{ \"quoted\" ]]]] }}}}"}}}"#.utf8)
+        XCTAssertNoThrow(try PayloadValidator(limits: limits).validate(data, signature: nil))
+    }
+
+    func testHugeNestingFailsCleanlyInsteadOfCrashing() {
+        let data = Data((#"{"schemaVersion": "1.0", "body": "# + String(repeating: "[", count: 100_000)).utf8)
+        XCTAssertThrowsError(try PayloadValidator().validate(data, signature: nil)) {
+            XCTAssertEqual($0 as? PayloadError, .limitExceeded("nesting is deeper than 128 levels"))
+        }
     }
 }
