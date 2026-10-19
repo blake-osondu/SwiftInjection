@@ -21,6 +21,10 @@ public final class StateStore: ObservableObject {
     public var onError: (Error) -> Void = StateStore.defaultOnError
     /// Receives `console.log` output from payload scripts.
     public var onLog: (String) -> Void = { print("SwiftInjection script: \($0)") }
+    /// Host-app views available to payloads as `{"custom": {"name": ...}}`. Starts as `defaultComponents`.
+    public var components: [String: InjectedComponent] = StateStore.defaultComponents
+    /// Components every new store starts with; register app-wide views here once.
+    public static var defaultComponents: [String: InjectedComponent] = [:]
     /// Keeps installed scripts alive for as long as the store.
     var scriptRuntime: ScriptRuntime?
 

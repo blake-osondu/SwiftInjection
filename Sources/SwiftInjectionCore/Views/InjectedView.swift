@@ -58,6 +58,8 @@ indirect public enum InjectedView: Codable, Hashable {
     case picker(viewStore: PickerViewStore)
     case datePicker(viewStore: DatePickerViewStore)
     case scrollView(viewStore: ScrollViewStore)
+    /// A view registered by the host app.
+    case custom(viewStore: CustomViewStore)
     /// A view defined once in the container and referenced by id.
     case viewStoreReference(id: String)
     case empty(id: String = "")
@@ -106,6 +108,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .picker(let viewStore): return viewStore
         case .datePicker(let viewStore): return viewStore
         case .scrollView(let viewStore): return viewStore
+        case .custom(let viewStore): return viewStore
         case .viewStoreReference, .empty, .unsupported: return nil
         }
     }
@@ -161,6 +164,7 @@ indirect public enum InjectedView: Codable, Hashable {
             case .picker(var viewStore): viewStore.modifiers = newValue; self = .picker(viewStore: viewStore)
             case .datePicker(var viewStore): viewStore.modifiers = newValue; self = .datePicker(viewStore: viewStore)
             case .scrollView(var viewStore): viewStore.modifiers = newValue; self = .scrollView(viewStore: viewStore)
+            case .custom(var viewStore): viewStore.modifiers = newValue; self = .custom(viewStore: viewStore)
             case .viewStoreReference, .empty, .unsupported: break
             }
         }
@@ -223,6 +227,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case "picker": self = .picker(viewStore: try container.decode(PickerViewStore.self, forKey: key))
         case "datePicker": self = .datePicker(viewStore: try container.decode(DatePickerViewStore.self, forKey: key))
         case "scrollView": self = .scrollView(viewStore: try container.decode(ScrollViewStore.self, forKey: key))
+        case "custom": self = .custom(viewStore: try container.decode(CustomViewStore.self, forKey: key))
         case "ref": self = .viewStoreReference(id: try container.decode(String.self, forKey: key))
         case "empty": self = .empty()
         default:
@@ -273,6 +278,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .picker(let viewStore): try container.encode(viewStore, forKey: Key("picker"))
         case .datePicker(let viewStore): try container.encode(viewStore, forKey: Key("datePicker"))
         case .scrollView(let viewStore): try container.encode(viewStore, forKey: Key("scrollView"))
+        case .custom(let viewStore): try container.encode(viewStore, forKey: Key("custom"))
         case .viewStoreReference(let id): try container.encode(id, forKey: Key("ref"))
         case .empty: try container.encode([String: String](), forKey: Key("empty"))
         case let .unsupported(name, content): try container.encode(content, forKey: Key(name))
@@ -291,6 +297,7 @@ extension CapsuleViewStore: InjectedViewStore {}
 extension CircleViewStore: InjectedViewStore {}
 extension ColorViewStore: InjectedViewStore {}
 extension ControlGroupViewStore: InjectedViewStore {}
+extension CustomViewStore: InjectedViewStore {}
 extension DatePickerViewStore: InjectedViewStore {}
 extension DividerViewStore: InjectedViewStore {}
 extension EllipseViewStore: InjectedViewStore {}
