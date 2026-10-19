@@ -10,7 +10,7 @@ import Foundation
 typealias TenLengthTuple<T> = (T, T?, T?, T?, T?, T?, T?, T?, T?, T?)
 public extension Array {
     
-    public func itemAtIndex(index: Int) -> Self.Element? {
+    func itemAtIndex(index: Int) -> Self.Element? {
         if count > index {
             return self[index]
         } else {
@@ -18,7 +18,7 @@ public extension Array {
         }
     }
     
-    public func appending(_ item: Element) -> Array {
+    func appending(_ item: Element) -> Array {
         var copy = self
         copy.append(item)
         return copy
@@ -51,7 +51,7 @@ public extension Array {
     var tenth: Element? {
         itemAtIndex(index: 9)
     }
-    public func toTenLengthTuple() -> (Element, Element?, Element?, Element?, Element?,
+    func toTenLengthTuple() -> (Element, Element?, Element?, Element?, Element?,
                                 Element?, Element?, Element?, Element?, Element?) {
         precondition(self.count >= 1)
         
