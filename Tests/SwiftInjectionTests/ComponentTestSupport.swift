@@ -2,6 +2,7 @@ import XCTest
 import SwiftUI
 import ViewInspector
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 /// Decodes a view payload and renders it as a screen over `state`, collecting reported errors.
 /// `views` are named views that `{"ref": "name"}` can use.

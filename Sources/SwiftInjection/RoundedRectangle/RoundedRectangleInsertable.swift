@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct RoundedRectangleInsertable: View {
     let viewStore: RoundedRectangleViewStore

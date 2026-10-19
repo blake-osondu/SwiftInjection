@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct SectionInsertable: View {
     let viewStore: SectionViewStore

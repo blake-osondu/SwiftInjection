@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct IfInsertable: View {
     let viewStore: IfViewStore

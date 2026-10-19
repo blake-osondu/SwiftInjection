@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct NavigationLinkInsertable: View {
     let viewStore: NavigationLinkViewStore

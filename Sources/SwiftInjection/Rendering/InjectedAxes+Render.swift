@@ -1,13 +1,12 @@
 //
-//  InjectedAxes.swift
+//  InjectedAxes+Render.swift
 //  SwiftInjection
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedAxes: String, Codable {
-    case horizontal, vertical, both
-
+extension InjectedAxes {
     var render: Axis.Set {
         switch self {
         case .horizontal: return .horizontal

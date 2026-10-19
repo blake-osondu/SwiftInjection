@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ForEachInsertable: View {
     let viewStore: ForEachViewStore

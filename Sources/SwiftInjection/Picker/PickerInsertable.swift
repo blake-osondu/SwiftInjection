@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct PickerInsertable: View {
     let viewStore: PickerViewStore

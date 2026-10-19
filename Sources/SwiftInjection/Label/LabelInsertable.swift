@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct LabelInsertable: View {
     let viewStore: LabelViewStore

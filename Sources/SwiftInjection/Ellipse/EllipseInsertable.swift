@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct EllipseInsertable: View {
     let viewStore: EllipseViewStore

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct LazyHGridInsertable: View {
     let viewStore: LazyHGridViewStore

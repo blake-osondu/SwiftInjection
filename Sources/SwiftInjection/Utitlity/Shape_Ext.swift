@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
 extension Shape {
     /// Applies the shape-only `path` modifier, then the general modifiers.

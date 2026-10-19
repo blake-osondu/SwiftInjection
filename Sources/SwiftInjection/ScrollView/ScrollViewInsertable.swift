@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ScrollViewInsertable: View {
     let viewStore: ScrollViewStore

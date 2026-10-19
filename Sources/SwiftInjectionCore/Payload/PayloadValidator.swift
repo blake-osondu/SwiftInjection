@@ -47,7 +47,7 @@ public struct PayloadValidator {
     }
 
     /// A readable decoding error, e.g. `body.vStack.children[2].text: missing key "value"`.
-    static func describe(_ error: Error) -> String {
+    package static func describe(_ error: Error) -> String {
         func path(_ context: DecodingError.Context) -> String {
             context.codingPath.map { $0.intValue.map { "[\($0)]" } ?? ".\($0.stringValue)" }.joined().drop { $0 == "." }.description
         }

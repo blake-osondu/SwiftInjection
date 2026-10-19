@@ -1,17 +1,12 @@
 //
-//  InjectedSystemFont.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/11/23.
+//  InjectedSystemFont+Render.swift
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedSystemFont: String, Codable {
-    case callout, caption, caption2, footnote, headline, largeTitle,
-    subheadline, title, title2, title3
-    
+extension InjectedSystemFont {
     var font: Font {
         switch self {
         case .callout:
@@ -37,4 +32,3 @@ public enum InjectedSystemFont: String, Codable {
         }
     }
 }
-

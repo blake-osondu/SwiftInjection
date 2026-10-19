@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct TableInsertable: View {
     let viewStore: TableViewStore

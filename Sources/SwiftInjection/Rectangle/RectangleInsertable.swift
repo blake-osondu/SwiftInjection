@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct RectangleInsertable: View {
     let viewStore: RectangleViewStore

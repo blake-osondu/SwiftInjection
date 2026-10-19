@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct DividerInsertable: View {
     let viewStore: DividerViewStore

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct CircleInsertable: View {
     let viewStore: CircleViewStore

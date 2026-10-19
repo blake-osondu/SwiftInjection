@@ -1,13 +1,10 @@
 //
-//  InjectedPinnedScrollableViews.swift
+//  InjectedPinnedScrollableViews+Render.swift
 //  SwiftInjection
 //
 
 import SwiftUI
-
-public enum InjectedPinnedScrollableViews: String, Codable {
-    case sectionHeaders, sectionFooters
-}
+import SwiftInjectionCore
 
 extension Array where Element == InjectedPinnedScrollableViews {
     var render: PinnedScrollableViews {

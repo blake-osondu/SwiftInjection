@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct GeometryReaderInsertable: View {
     let viewStore: GeometryReaderViewStore

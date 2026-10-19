@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct HStackInsertable: View {
     let viewStore: HStackViewStore

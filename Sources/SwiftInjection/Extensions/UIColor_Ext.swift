@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import UIKit
+import SwiftInjectionCore
 
 public extension Color {
     static var random: Color {

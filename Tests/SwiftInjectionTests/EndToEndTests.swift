@@ -2,6 +2,7 @@ import XCTest
 import SwiftUI
 import ViewInspector
 @testable import SwiftInjection
+@testable import SwiftInjectionCore
 
 /// The counter / conditional / to-do screen from the #4 design, driven entirely by JSON.
 final class EndToEndTests: XCTestCase {

@@ -1,15 +1,12 @@
 //
-//  InjectedFontWeight.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 9/20/23.
+//  InjectedFontWeight+Render.swift
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
+import SwiftInjectionCore
 
-public enum InjectedFontWeight: String, Codable {
-    case black, bold, heavy, medium, semibold, light, regular, thin, ultraLight
+extension InjectedFontWeight {
     var render: Font.Weight {
         switch self {
         case .black:

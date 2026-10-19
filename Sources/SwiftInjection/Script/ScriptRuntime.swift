@@ -5,6 +5,7 @@
 
 import Foundation
 import JavaScriptCore
+import SwiftInjectionCore
 
 /// Runs payload scripts in JavaScriptCore and exposes them to the store as host functions.
 ///

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct TabInsertable: View {
     let viewStore: TabViewStore

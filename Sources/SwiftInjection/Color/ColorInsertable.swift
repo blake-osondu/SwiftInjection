@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftInjectionCore
 
 struct ColorInsertable: View {
     let viewStore: ColorViewStore
