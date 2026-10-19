@@ -1,19 +1,45 @@
 //
 //  InjectedGridItem.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/8/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
+/// A lazy-grid column or row: `{"size": "fixed", "value": 100}`, `{"size": "flexible", "minimum": 50}`,
+/// `{"size": "adaptive", "minimum": 80, "maximum": 120}`.
 public struct InjectedGridItem: Codable {
-    var size: Double? = nil
-    var spacing: Double? = nil
-    var alignment: InjectedAlignment? = nil
-    
+    public enum Size: String, Codable {
+        case fixed, flexible, adaptive
+    }
+
+    public var size: Size?
+    /// The width (or height) for `fixed` items.
+    public var value: Double?
+    public var minimum: Double?
+    public var maximum: Double?
+    public var spacing: Double?
+    public var alignment: InjectedAlignment?
+
+    public init(size: Size? = nil, value: Double? = nil, minimum: Double? = nil, maximum: Double? = nil,
+                spacing: Double? = nil, alignment: InjectedAlignment? = nil) {
+        self.size = size
+        self.value = value
+        self.minimum = minimum
+        self.maximum = maximum
+        self.spacing = spacing
+        self.alignment = alignment
+    }
+
     var render: GridItem {
-        .init()
+        let gridSize: GridItem.Size
+        switch size ?? .flexible {
+        case .fixed:
+            gridSize = .fixed(CGFloat(value ?? minimum ?? 0))
+        case .flexible:
+            gridSize = .flexible(minimum: CGFloat(minimum ?? 10), maximum: CGFloat(maximum ?? .infinity))
+        case .adaptive:
+            gridSize = .adaptive(minimum: CGFloat(minimum ?? 10), maximum: CGFloat(maximum ?? .infinity))
+        }
+        return GridItem(gridSize, spacing: spacing.map { CGFloat($0) }, alignment: alignment?.render)
     }
 }

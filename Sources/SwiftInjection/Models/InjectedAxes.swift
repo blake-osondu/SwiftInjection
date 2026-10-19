@@ -1,22 +1,18 @@
 //
 //  InjectedAxes.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/25/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public enum InjectedAxes: Codable {
-    case horizontal, vertical
-    
+public enum InjectedAxes: String, Codable {
+    case horizontal, vertical, both
+
     var render: Axis.Set {
         switch self {
-        case .horizontal:
-            return .horizontal
-        case.vertical:
-            return .vertical
+        case .horizontal: return .horizontal
+        case .vertical: return .vertical
+        case .both: return [.horizontal, .vertical]
         }
     }
 }

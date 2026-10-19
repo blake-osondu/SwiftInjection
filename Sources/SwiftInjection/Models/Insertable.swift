@@ -26,23 +26,14 @@ public struct Insertable: View {
         switch viewStore {
             
         case .vStack(let viewStore):
-            
-            VStackInsertable(
-                store: .init(viewStore: viewStore, stateSignal: stateSignal),
-                container: container)
-            
+            VStackInsertable(viewStore: viewStore)
+
         case .hStack(let viewStore):
-            
-            HStackInsertable(
-                store: .init(viewStore: viewStore, stateSignal: stateSignal),
-                container: container)
-            
+            HStackInsertable(viewStore: viewStore)
+
         case .zStack(let viewStore):
-            
-            ZStackInsertable(
-                store: .init(viewStore: viewStore, stateSignal: stateSignal),
-                container: container)
-            
+            ZStackInsertable(viewStore: viewStore)
+
         case .list(let viewStore):
             
             ListInsertable(
@@ -77,17 +68,14 @@ public struct Insertable: View {
             ImageInsertable(viewStore: viewStore)
 
         case .tab(let viewStore):
-            
-            TabInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            TabInsertable(viewStore: viewStore)
+
         case .navigationStack(let viewStore):
-            
-            NavigationStackInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            NavigationStackInsertable(viewStore: viewStore)
+
         case .navigationLink(let viewStore):
-            
-            NavigationLinkInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            NavigationLinkInsertable(viewStore: viewStore)
+
         case .color(let viewStore):
             ColorInsertable(viewStore: viewStore)
 
@@ -126,30 +114,24 @@ public struct Insertable: View {
             
             EmptyView()
             
-        case let .lazyVStack(viewStore):
-            
-            LazyVStackInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case let .lazyHStack(viewStore):
-            
-            LazyHStackInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case let .grid(viewStore):
-            
-            GridInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case let .gridRow(viewStore):
-            
-            GridRowInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case let .lazyHGrid(viewStore):
-            
-            LazyHGridInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-        
-        case .lazyVGrid(viewStore: let viewStore):
-            
-            LazyVGridInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .lazyVStack(let viewStore):
+            VStackInsertable(viewStore: viewStore, lazy: true)
+
+        case .lazyHStack(let viewStore):
+            HStackInsertable(viewStore: viewStore, lazy: true)
+
+        case .grid(let viewStore):
+            GridInsertable(viewStore: viewStore)
+
+        case .gridRow(let viewStore):
+            GridRowInsertable(viewStore: viewStore)
+
+        case .lazyHGrid(let viewStore):
+            LazyHGridInsertable(viewStore: viewStore)
+
+        case .lazyVGrid(let viewStore):
+            LazyVGridInsertable(viewStore: viewStore)
+
         case .progressView(viewStore: let viewStore):
             
             ProgressViewInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -162,22 +144,18 @@ public struct Insertable: View {
             
             CustomTableInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
             
-        case .group(viewStore: let viewStore):
-            
-            GroupInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .controlGroup(viewStore: let viewStore):
-            
-            ControlGroupInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .form(viewStore: let viewStore):
-            
-            FormInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .section(viewStore: let viewStore):
-            
-            SectionInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .group(let viewStore):
+            GroupInsertable(viewStore: viewStore)
+
+        case .controlGroup(let viewStore):
+            ControlGroupInsertable(viewStore: viewStore)
+
+        case .form(let viewStore):
+            FormInsertable(viewStore: viewStore)
+
+        case .section(let viewStore):
+            SectionInsertable(viewStore: viewStore)
+
         case .geometryReader(viewStore: let viewStore):
             
             GeometryReaderInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -190,9 +168,9 @@ public struct Insertable: View {
             
             DatePickerInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
             
-        case .scrollView(viewStore: let viewStore):
-            
-            ScrollViewInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
+        case .scrollView(let viewStore):
+            ScrollViewInsertable(viewStore: viewStore)
+
         }
     }
     

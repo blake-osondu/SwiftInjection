@@ -136,3 +136,18 @@ public struct InjectedScreen: View {
             .environment(\.viewContainer, container)
     }
 }
+
+/// Renders a list of child views in order.
+public struct InjectedChildren: View {
+    let children: [InjectedView]
+
+    public init(_ children: [InjectedView]) {
+        self.children = children
+    }
+
+    public var body: some View {
+        ForEach(Array(children.enumerated()), id: \.offset) { _, child in
+            InjectedContent(child)
+        }
+    }
+}

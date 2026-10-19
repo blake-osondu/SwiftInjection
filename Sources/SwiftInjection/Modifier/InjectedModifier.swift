@@ -106,6 +106,8 @@ extension InjectedKeyboardType: RuntimeConvertible {}
 extension InjectedPickerStyle: RuntimeConvertible {}
 extension InjectedPopoverAttachmentAnchor: RuntimeConvertible {}
 extension InjectedRoundedCornerStyle: RuntimeConvertible {}
+extension InjectedHorizontalAlignment: RuntimeConvertible {}
+extension InjectedVerticalAlignment: RuntimeConvertible {}
 extension InjectedResizingMode: RuntimeConvertible {}
 extension InjectedSymbolRenderingMode: RuntimeConvertible {}
 extension InjectedSystemFont: RuntimeConvertible {}

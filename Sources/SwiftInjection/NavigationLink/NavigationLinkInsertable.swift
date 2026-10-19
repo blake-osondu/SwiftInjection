@@ -1,21 +1,21 @@
 //
 //  NavigationLinkInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 9/27/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct NavigationLinkInsertable: View {
-    @ObservedObject var store: NavigationLinkStore
-    var container: ViewStoresContainer
+    let viewStore: NavigationLinkViewStore
+
     var body: some View {
-        NavigationLink {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.destination)
-        } label: {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.label)
-        }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+        ScopeReader { scope in
+            NavigationLink {
+                InjectedContent(viewStore.destination)
+            } label: {
+                InjectedContent(viewStore.label)
+            }
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

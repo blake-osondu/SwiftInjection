@@ -1,14 +1,18 @@
 //
 //  FormViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/9/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct FormViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var content: StackContent = StackContent()
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    @OrEmpty public var children: [InjectedView]
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], children: [InjectedView] = []) {
+        self.id = id
+        self.modifiers = modifiers
+        self.children = children
+    }
 }

@@ -1,51 +1,30 @@
 //
 //  HStackInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/17/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public struct HStackInsertable: View {
-    
-    @ObservedObject var store: HStackStore
-    var container: ViewStoresContainer
-    
-    public var body: some View {
-        HStack(alignment: store.alignment, spacing: store.spacing) {
-            
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content1).eraseToAnyView()
-            
-            if let content = store.viewStore.content2 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
+struct HStackInsertable: View {
+    let viewStore: HStackViewStore
+    var lazy = false
+
+    var body: some View {
+        ScopeReader { scope in
+            Group {
+                let alignment = scope.resolve(viewStore.alignment, as: InjectedVerticalAlignment.self)?.render ?? .center
+                let spacing = scope.resolve(viewStore.spacing, as: CGFloat.self)
+                if lazy {
+                    LazyHStack(alignment: alignment, spacing: spacing, pinnedViews: viewStore.pinnedViews.render) {
+                        InjectedChildren(viewStore.children)
+                    }
+                } else {
+                    HStack(alignment: alignment, spacing: spacing) {
+                        InjectedChildren(viewStore.children)
+                    }
+                }
             }
-            if let content = store.viewStore.content3 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content4 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content5 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content6 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content7 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content8 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content9 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content10 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-        }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }
-

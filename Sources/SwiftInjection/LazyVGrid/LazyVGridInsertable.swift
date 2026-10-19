@@ -1,66 +1,22 @@
 //
 //  LazyVGridInsertable.swift
-//
-//
-//  Created by Blake Osonduagwueki on 10/6/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct LazyVGridInsertable: View {
-    @ObservedObject var store: LazyVGridStore
-    var container: ViewStoresContainer
-    var gridContent: some View {
-        Group {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content1).eraseToAnyView()
-            
-            if let content = store.viewStore.content2 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content3 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content4 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content5 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content6 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content7 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content8 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content9 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-            if let content = store.viewStore.content10 {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: content).eraseToAnyView()
-            }
-        }
-    }
+    let viewStore: LazyVGridViewStore
+
     var body: some View {
-        switch store.gridComposition {
-        case let .columns_alignment_pinnedViews(columns, alignment, pinnedViews):
-            LazyVGrid(columns: columns.map { $0.render },
-                      alignment: alignment.render,
-                      pinnedViews: pinnedViews.render) {
-                gridContent
+        ScopeReader { scope in
+            LazyVGrid(columns: viewStore.columns.map(\.render),
+                      alignment: scope.resolve(viewStore.alignment, as: InjectedHorizontalAlignment.self)?.render ?? .center,
+                      spacing: scope.resolve(viewStore.spacing, as: CGFloat.self),
+                      pinnedViews: viewStore.pinnedViews.render) {
+                InjectedChildren(viewStore.children)
             }
-        case let .columns_alignment_spacing_pinnedViews(columns, alignment, spacing, pinnedViews):
-            LazyVGrid(columns: columns.map { $0.render},
-                      alignment: alignment.render,
-                      spacing: CGFloat(spacing),
-                      pinnedViews: pinnedViews.render) {
-                gridContent
-            }
+                .injectedModifiers(viewStore.modifiers, scope: scope)
         }
-        
-        
     }
 }
