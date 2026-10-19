@@ -1,16 +1,16 @@
 //
 //  CircleViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/5/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct CircleViewStore: Codable {
-    public static func ==(lhs: CircleViewStore, rhs: CircleViewStore) -> Bool {
-        lhs.id == rhs.id
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+
+    public init(id: String = "", modifiers: [InjectedModifier] = []) {
+        self.id = id
+        self.modifiers = modifiers
     }
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
 }

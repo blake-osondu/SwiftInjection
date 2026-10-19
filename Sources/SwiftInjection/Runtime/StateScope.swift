@@ -146,22 +146,3 @@ public struct StateScope: ExpressionScope {
             set: { binding.wrappedValue = .bool($0) })
     }
 }
-
-// MARK: - Environment
-
-private struct StateScopeKey: EnvironmentKey {
-    static let defaultValue = StateScope(store: StateStore())
-}
-
-extension EnvironmentValues {
-    public var stateScope: StateScope {
-        get { self[StateScopeKey.self] }
-        set { self[StateScopeKey.self] = newValue }
-    }
-}
-
-extension View {
-    public func stateScope(_ scope: StateScope) -> some View {
-        environment(\.stateScope, scope)
-    }
-}

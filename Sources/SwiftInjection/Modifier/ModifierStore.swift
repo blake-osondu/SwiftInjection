@@ -168,12 +168,15 @@ struct ModifierStore: ViewModifier {
                 attachmentAnchor: scope.resolve(anchor, as: InjectedPopoverAttachmentAnchor.self)?.render ?? .rect(.bounds),
                 arrowEdge: scope.resolve(edge, as: InjectedEdge.self)?.render ?? .top) { nested(view) })
         case let .alert(isPresented, alert):
-            return AnyView(content.alert(isPresented: scope.boolBinding(isPresented)) {
-                switch alert {
-                case let .dismissAlert(store):
-                    return DismissAlertView(viewStore: store, state: state, container: container).render
-                case let .primarySecondaryAlert(store):
-                    return PrimarySecondaryAlertView(viewStore: store, state: state, container: container).render
+            return AnyView(content.alert(scope.string(alert.title), isPresented: scope.boolBinding(isPresented)) {
+                ForEach(Array(alert.buttons.enumerated()), id: \.offset) { _, button in
+                    Button(scope.string(button.label), role: button.role?.render) {
+                        scope.perform(button.action)
+                    }
+                }
+            } message: {
+                if let message = alert.message {
+                    Text(scope.string(message))
                 }
             })
         case let .confirmationDialog(isPresented, title, visibility, actions):

@@ -1,17 +1,17 @@
 //
 //  RectangleInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/3/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct RectangleInsertable: View {
-    @ObservedObject var store: RectangleStore
-    var container: ViewStoresContainer
+    let viewStore: RectangleViewStore
+
     var body: some View {
-        Rectangle().addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
+        ScopeReader { scope in
+            Rectangle()
+                .applyShapeModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

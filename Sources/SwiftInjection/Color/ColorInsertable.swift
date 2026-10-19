@@ -1,20 +1,17 @@
 //
 //  ColorInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/30/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public struct ColorInsertable: View {
-    @ObservedObject var store: ColorStore
-    var container: ViewStoresContainer
+struct ColorInsertable: View {
+    let viewStore: ColorViewStore
 
-    public var body: some View {
-        store.color
-        .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-
+    var body: some View {
+        ScopeReader { scope in
+            Color(uiColor: UIColor.hex(scope.string(viewStore.color, default: "#00000000")))
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

@@ -1,21 +1,17 @@
 //
 //  EllipseInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/5/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct EllipseInsertable: View {
-    var store: EllipseStore
-    var container: ViewStoresContainer
+    let viewStore: EllipseViewStore
+
     var body: some View {
-        
-        Ellipse().addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
+        ScopeReader { scope in
+            Ellipse()
+                .applyShapeModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }
-
-
-

@@ -25,8 +25,13 @@ public extension View {
     }
 
     func addModifiers(mods: [InjectedModifier], stateSignal: StateSignal, container: ViewStoresContainer) -> some View {
-        let scope = stateSignal.snapshotScope
-        return mods.reduce(AnyView(self)) { view, modifier in
+        addModifiers(mods: mods, scope: stateSignal.snapshotScope, stateSignal: stateSignal, container: container)
+    }
+}
+
+extension View {
+    func addModifiers(mods: [InjectedModifier], scope: StateScope, stateSignal: StateSignal, container: ViewStoresContainer) -> AnyView {
+        mods.reduce(AnyView(self)) { view, modifier in
             AnyView(view.modifier(ModifierStore(modifier: modifier, scope: scope, state: stateSignal, container: container)))
         }
     }

@@ -105,6 +105,7 @@ extension InjectedImageScale: RuntimeConvertible {}
 extension InjectedKeyboardType: RuntimeConvertible {}
 extension InjectedPickerStyle: RuntimeConvertible {}
 extension InjectedPopoverAttachmentAnchor: RuntimeConvertible {}
+extension InjectedRoundedCornerStyle: RuntimeConvertible {}
 extension InjectedResizingMode: RuntimeConvertible {}
 extension InjectedSymbolRenderingMode: RuntimeConvertible {}
 extension InjectedSystemFont: RuntimeConvertible {}

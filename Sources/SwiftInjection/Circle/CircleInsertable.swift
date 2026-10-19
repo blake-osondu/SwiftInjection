@@ -1,18 +1,17 @@
 //
 //  CircleInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/4/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct CircleInsertable: View {
-    @ObservedObject var store: CircleStore
-    var container: ViewStoresContainer
+    let viewStore: CircleViewStore
+
     var body: some View {
-        Circle().addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
+        ScopeReader { scope in
+            Circle()
+                .applyShapeModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }
-

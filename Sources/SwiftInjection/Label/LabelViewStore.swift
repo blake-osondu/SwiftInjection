@@ -1,33 +1,29 @@
 //
-// LabelViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/2/23.
+//  LabelViewStore.swift
+//  SwiftInjection
 //
 
 import Foundation
 
+/// Either `title` with `systemImage`/`image`, or custom `titleView` and `iconView`.
 public struct LabelViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier] = []
-    var titleKey: String
-    var imageKey: String
-    var systemImageKey: String
-    var title: String?
-    var image: String?
-    var systemImage: String?
-    var titleView: InjectedView?
-    var iconView: InjectedView?
-    
-    init(id: String = "", modifiers: [InjectedModifier] = [], titleKey: String = "", imageKey: String = "", systemImageKey: String = "", title: String? = nil, image: String? = nil, systemImage: String? = nil, iconView: InjectedView?, titleView: InjectedView?) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var title: InjectedExpression?
+    public var systemImage: InjectedExpression?
+    public var image: InjectedExpression?
+    public var titleView: InjectedView?
+    public var iconView: InjectedView?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], title: InjectedExpression? = nil,
+                systemImage: InjectedExpression? = nil, image: InjectedExpression? = nil,
+                titleView: InjectedView? = nil, iconView: InjectedView? = nil) {
         self.id = id
-        self.titleKey = titleKey
-        self.imageKey = imageKey
-        self.systemImageKey = systemImageKey
-        self.iconView = iconView
-        self.titleView = titleView
+        self.modifiers = modifiers
         self.title = title
-        self.image = image
         self.systemImage = systemImage
+        self.image = image
+        self.titleView = titleView
+        self.iconView = iconView
     }
 }

@@ -1,20 +1,26 @@
 //
 //  RoundedRectangleViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
 public struct RoundedRectangleViewStore: Codable {
-    public var id: String = ""
-    public var modifiers: [InjectedModifier] = []
-    var cornerRadiusKey: String = ""
-    var widthKey: String = ""
-    var heightKey: String = ""
-    var cornerRadius: Double? = nil
-    var width: Double? = nil
-    var height: Double? = nil
-    var style: InjectedRoundedCornerStyle? = nil
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    /// Uniform radius; or give `cornerWidth`/`cornerHeight` for elliptical corners.
+    public var cornerRadius: InjectedExpression?
+    public var cornerWidth: InjectedExpression?
+    public var cornerHeight: InjectedExpression?
+    /// "circular" or "continuous"
+    public var style: InjectedExpression?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], cornerRadius: InjectedExpression? = nil, cornerWidth: InjectedExpression? = nil, cornerHeight: InjectedExpression? = nil, style: InjectedExpression? = nil) {
+        self.id = id
+        self.modifiers = modifiers
+        self.cornerRadius = cornerRadius
+        self.cornerWidth = cornerWidth
+        self.cornerHeight = cornerHeight
+        self.style = style
+    }
 }

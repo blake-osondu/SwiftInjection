@@ -60,9 +60,8 @@ public struct Insertable: View {
             ButtonInsertable(container: container, store: .init(viewStore: viewStore, stateSignal: stateSignal))
             
         case .text(let viewStore):
-            
-            TextInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            TextInsertable(viewStore: viewStore)
+
         case .field(let viewStore):
             
             TextFieldInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -72,13 +71,11 @@ public struct Insertable: View {
             SecureFieldInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
             
         case .label(let viewStore):
-            
-            LabelInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .namedImage(let viewStore), .systemImage(let viewStore), .asyncImage(let viewStore):
-            
-            ImageInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            LabelInsertable(viewStore: viewStore)
+
+        case .image(let viewStore):
+            ImageInsertable(viewStore: viewStore)
+
         case .tab(let viewStore):
             
             TabInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -92,37 +89,29 @@ public struct Insertable: View {
             NavigationLinkInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
             
         case .color(let viewStore):
-            
-            ColorInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            ColorInsertable(viewStore: viewStore)
+
         case .rectangle(let viewStore):
-            
-            RectangleInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            RectangleInsertable(viewStore: viewStore)
+
         case .roundedRectangle(let viewStore):
-            
-            RoundedRectangleInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            RoundedRectangleInsertable(viewStore: viewStore)
+
         case .circle(let viewStore):
-            
-            CircleInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            CircleInsertable(viewStore: viewStore)
+
         case .ellipse(let viewStore):
-            
-            EllipseInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            EllipseInsertable(viewStore: viewStore)
+
         case .capsule(let viewStore):
-            
-            CapsuleInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            CapsuleInsertable(viewStore: viewStore)
+
         case .spacer(let viewStore):
-            
-            SpacerInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            SpacerInsertable(viewStore: viewStore)
+
         case .divider(let viewStore):
-            
-            DividerInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            DividerInsertable(viewStore: viewStore)
+
         case .if(let viewStore):
             
             IfInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -209,5 +198,7 @@ public struct Insertable: View {
     
     public var body: some View {
         render
+            .environment(\.viewContainer, container)
+            .environment(\.legacyStateSignal, stateSignal)
     }
 }

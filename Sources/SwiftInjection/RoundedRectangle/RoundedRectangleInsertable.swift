@@ -1,39 +1,21 @@
 //
 //  RoundedRectangleInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/4/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct RoundedRectangleInsertable: View {
-    @ObservedObject var store: RoundedRectangleStore
-    var container: ViewStoresContainer
+    let viewStore: RoundedRectangleViewStore
+
     var body: some View {
-        switch  store.roundedRectangleResult {
-        case let .cornerRadius(radius):
-            
-            RoundedRectangle(cornerRadius: CGFloat(radius))
-                .addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
-            
-        case let .cornerRadius_Style(radius, style):
-            
-            RoundedRectangle(cornerRadius: CGFloat(radius), style: style.render)
-                .addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
-
-        case let .sizeWidth_Height(width, height):
-       
-            RoundedRectangle(cornerSize: .init(width: CGFloat(width), height: CGFloat(height)))
-                .addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
-            
-        case let .sizeWidth_Height_Style(width, height, style):
-            
-            RoundedRectangle(cornerSize: .init(width: CGFloat(width), height: CGFloat(height)), style: style.render)
-                .addShapeModifiers(modifiers: store.viewStore.modifiers, state: store.stateSignal, container: container).eraseToAnyView()
-
+        ScopeReader { scope in
+            RoundedRectangle(
+                cornerSize: CGSize(
+                    width: scope.resolve(viewStore.cornerWidth ?? viewStore.cornerRadius, as: CGFloat.self) ?? 0,
+                    height: scope.resolve(viewStore.cornerHeight ?? viewStore.cornerRadius, as: CGFloat.self) ?? 0),
+                style: scope.resolve(viewStore.style, as: InjectedRoundedCornerStyle.self)?.render ?? .continuous)
+                .applyShapeModifiers(viewStore.modifiers, scope: scope)
         }
     }
 }
-
