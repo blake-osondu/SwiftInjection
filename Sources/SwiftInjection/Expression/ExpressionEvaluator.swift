@@ -20,6 +20,8 @@ public enum EvaluationError: Error, Equatable, CustomStringConvertible {
     case indexOutOfRange(Int)
     case tooDeep(limit: Int)
     case script(String)
+    case readOnly(String)
+    case unknownFunction(String)
 
     public var description: String {
         switch self {
@@ -30,6 +32,8 @@ public enum EvaluationError: Error, Equatable, CustomStringConvertible {
         case .indexOutOfRange(let index): return "Index \(index) is out of range"
         case .tooDeep(let limit): return "Expression nesting exceeds \(limit) levels"
         case .script(let message): return "Script error: \(message)"
+        case .readOnly(let path): return "'\(path)' is read-only"
+        case .unknownFunction(let name): return "Unknown function '\(name)'"
         }
     }
 }
