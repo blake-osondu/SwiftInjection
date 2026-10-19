@@ -1,19 +1,20 @@
 //
 //  TextFieldInsertable.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 8/17/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public struct TextFieldInsertable: View {
-    @ObservedObject var store: TextFieldStore
-    var container: ViewStoresContainer
+struct TextFieldInsertable: View {
+    let viewStore: FieldViewStore
 
-    public var body: some View {
-        TextField("Email",text: store.textBinding)
-            .addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    var body: some View {
+        ScopeReader { scope in
+            TextField(scope.string(viewStore.title),
+                      text: scope.stringBinding(viewStore.text),
+                      prompt: viewStore.prompt.map { Text(scope.string($0)) })
+                .onSubmit { scope.perform(viewStore.onSubmit) }
+                .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }

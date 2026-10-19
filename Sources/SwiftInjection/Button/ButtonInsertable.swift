@@ -1,23 +1,25 @@
 //
 //  ButtonInsertable.swift
-//
-//  Created by Blake Osonduagwueki on 8/17/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
-import Combine
 
-public struct ButtonInsertable: View {
-    var container: ViewStoresContainer
-    @ObservedObject var store: ButtonStore
+struct ButtonInsertable: View {
+    let viewStore: ButtonViewStore
 
-    public var body: some View {
-        Button(action: {
-            store.didCommitAction()
-        }, label: {
-            Insertable(stateSignal: store.stateSignal, container: container, viewStore: store.viewStore.content)
-        }).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    var body: some View {
+        ScopeReader { scope in
+            Button(role: viewStore.role?.render) {
+                scope.perform(viewStore.action)
+            } label: {
+                if let label = viewStore.label {
+                    InjectedContent(label)
+                } else {
+                    Text(scope.string(viewStore.title))
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
     }
 }
-

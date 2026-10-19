@@ -47,20 +47,17 @@ public struct Insertable: View {
                 container: container)
             
         case .button(let viewStore):
-            
-            ButtonInsertable(container: container, store: .init(viewStore: viewStore, stateSignal: stateSignal))
-            
+            ButtonInsertable(viewStore: viewStore)
+
         case .text(let viewStore):
             TextInsertable(viewStore: viewStore)
 
         case .field(let viewStore):
-            
-            TextFieldInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            TextFieldInsertable(viewStore: viewStore)
+
         case .secureField(let viewStore):
-            
-            SecureFieldInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+            SecureFieldInsertable(viewStore: viewStore)
+
         case .label(let viewStore):
             LabelInsertable(viewStore: viewStore)
 
@@ -132,10 +129,9 @@ public struct Insertable: View {
         case .lazyVGrid(let viewStore):
             LazyVGridInsertable(viewStore: viewStore)
 
-        case .progressView(viewStore: let viewStore):
-            
-            ProgressViewInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .progressView(let viewStore):
+            ProgressViewInsertable(viewStore: viewStore)
+
         case .standardTable(viewStore: let viewStore):
             
             StandardTableInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
@@ -160,14 +156,12 @@ public struct Insertable: View {
             
             GeometryReaderInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
             
-        case .picker(viewStore: let viewStore):
-            
-            PickerInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
-        case .datePicker(viewStore: let viewStore):
-            
-            DatePickerInsertable(store: .init(viewStore: viewStore, stateSignal: stateSignal), container: container)
-            
+        case .picker(let viewStore):
+            PickerInsertable(viewStore: viewStore)
+
+        case .datePicker(let viewStore):
+            DatePickerInsertable(viewStore: viewStore)
+
         case .scrollView(let viewStore):
             ScrollViewInsertable(viewStore: viewStore)
 

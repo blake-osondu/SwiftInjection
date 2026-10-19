@@ -185,6 +185,18 @@ struct ModifierStore: ViewModifier {
                 isPresented: scope.boolBinding(isPresented),
                 titleVisibility: scope.resolve(visibility, as: InjectedVisbility.self)?.render ?? .automatic) { nested(actions) })
 
+        // MARK: Events
+        case let .onAppear(actions):
+            return AnyView(content.onAppear { scope.perform(actions) })
+        case let .onDisappear(actions):
+            return AnyView(content.onDisappear { scope.perform(actions) })
+        case let .onTapGesture(count, actions):
+            return AnyView(content.onTapGesture(count: scope.resolve(count, as: Int.self) ?? 1) { scope.perform(actions) })
+        case let .onChange(value, actions):
+            return AnyView(content.onChange(of: scope.evaluate(value) ?? .null) { _ in scope.perform(actions) })
+        case let .onSubmit(actions):
+            return AnyView(content.onSubmit { scope.perform(actions) })
+
         // MARK: Controls & input
         case let .disabled(isDisabled):
             return when(scope.resolve(isDisabled, as: Bool.self)) { AnyView(content.disabled($0)) }

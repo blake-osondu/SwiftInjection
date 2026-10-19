@@ -1,23 +1,21 @@
 //
 //  InjectedDatePickerComponents.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/25/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
-public enum InjectedDatePickerComponents: Codable {
-    case hourAndMinute
-    case date
-    
+public enum InjectedDatePickerComponents: String, Codable {
+    case date, hourAndMinute
+}
+
+extension Array where Element == InjectedDatePickerComponents {
     var render: DatePickerComponents {
-        switch self {
-        case .hourAndMinute:
-            return .hourAndMinute
-        case .date:
-            return .date
+        reduce(into: []) { components, component in
+            switch component {
+            case .date: components.insert(.date)
+            case .hourAndMinute: components.insert(.hourAndMinute)
+            }
         }
     }
 }

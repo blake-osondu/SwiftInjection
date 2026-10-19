@@ -1,28 +1,33 @@
 //
 //  DatePickerViewStore.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/25/23.
+//  SwiftInjection
 //
 
 import Foundation
 
+/// The date at `selection` is stored as an ISO 8601 string. `minimum`/`maximum` bound the range.
+/// `{"datePicker": {"title": "Due", "selection": "task.due", "components": ["date"], "minimum": {"var": "today"}}}`
 public struct DatePickerViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    var composition: DatePickerComposition
-    init(id: String = "", modifiers: [InjectedModifier] = [], composition: DatePickerComposition) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    public var selection: String
+    public var title: InjectedExpression?
+    public var label: InjectedView?
+    /// Default: date and time.
+    public var components: [InjectedDatePickerComponents]?
+    public var minimum: InjectedExpression?
+    public var maximum: InjectedExpression?
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], selection: String, title: InjectedExpression? = nil,
+                label: InjectedView? = nil, components: [InjectedDatePickerComponents]? = nil,
+                minimum: InjectedExpression? = nil, maximum: InjectedExpression? = nil) {
         self.id = id
         self.modifiers = modifiers
-        self.composition = composition
-    }
-}
-
-
-extension DatePickerViewStore {
-    public enum DatePickerComposition: Codable {
-        case title_selection_components(titleKey: String = "", title: String? = nil, selectionKey: String, components: InjectedDatePickerComponents = .date)
-        case selection_components_label(selectionKey: String, components: InjectedDatePickerComponents = .date, label: InjectedView)
-        case selection_lowerRange_upperRange_components_label(selectionKey: String, lowerDate: Date, upperDate: Date, components: InjectedDatePickerComponents = .date, label: InjectedView)
+        self.selection = selection
+        self.title = title
+        self.label = label
+        self.components = components
+        self.minimum = minimum
+        self.maximum = maximum
     }
 }

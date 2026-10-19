@@ -1,76 +1,50 @@
 //
 //  ProgressViewInsertable.swift
-//  
-//
-//  Created by Blake Osonduagwueki on 10/8/23.
+//  SwiftInjection
 //
 
-import Foundation
 import SwiftUI
 
 struct ProgressViewInsertable: View {
-    @ObservedObject var store: ProgressStore
-    var container: ViewStoresContainer
-    
-    var body: some View {
-        switch store.composition {
-        case .standard:
-            ProgressView().addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-        case .title(let title):
-            
-            ProgressView(title).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case .title_value(let title, let value, let total):
-            
-            ProgressView(title, value: Float(value), total: Float(total)).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case .label(let label):
-            
-            ProgressView {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case .timerInterval(let lowerDate, let upperDate):
-            
-            ProgressView(timerInterval: ClosedRange(uncheckedBounds: (lowerDate,upperDate))).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case .timerInterval_label(let lowerDate, let upperDate, let label):
-            
-            ProgressView(timerInterval: ClosedRange(uncheckedBounds: (lowerDate, upperDate))) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .timerInterval_countsdown_label_currentValueLabel(lowerDate,
-                                                              upperDate,
-                                                              countsdown,
-                                                              label,
-                                                                   currentValueLabel):
-            
-            ProgressView(timerInterval: ClosedRange(uncheckedBounds: (lowerDate,upperDate)), countsDown: countsdown) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            } currentValueLabel: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: currentValueLabel)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .value_total(value, total):
-            
-            ProgressView.init(value: Float(value), total: Float(total)).addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .value_total_label(value, total, label):
-            
-            ProgressView.init(value: Float(value), total: Float(total)) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
-            
-        case let .value_total_label_currentValueLabel(value, total, label, currentValueLabel):
-            
-            ProgressView.init(value: Float(value), total: Float(total)) {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: label)
-            } currentValueLabel: {
-                Insertable(stateSignal: store.stateSignal, container: container, viewStore: currentValueLabel)
-            }.addModifiers(mods: store.viewStore.modifiers, stateSignal: store.stateSignal, container: container)
+    let viewStore: ProgressViewStore
 
-            
+    var body: some View {
+        ScopeReader { scope in
+            Group {
+                if let start = scope.resolve(viewStore.timerStart, as: Date.self),
+                   let end = scope.resolve(viewStore.timerEnd, as: Date.self), start <= end {
+                    ProgressView(timerInterval: start...end, countsDown: scope.resolve(viewStore.countsDown, as: Bool.self) ?? true) {
+                        label(scope)
+                    } currentValueLabel: {
+                        currentValueLabel
+                    }
+                } else if let value = scope.resolve(viewStore.value, as: Double.self) {
+                    ProgressView(value: value, total: scope.resolve(viewStore.total, as: Double.self) ?? 1) {
+                        label(scope)
+                    } currentValueLabel: {
+                        currentValueLabel
+                    }
+                } else {
+                    ProgressView {
+                        label(scope)
+                    }
+                }
+            }
+            .injectedModifiers(viewStore.modifiers, scope: scope)
+        }
+    }
+
+    @ViewBuilder private func label(_ scope: StateScope) -> some View {
+        if let label = viewStore.label {
+            InjectedContent(label)
+        } else if let title = viewStore.title {
+            Text(scope.string(title))
+        }
+    }
+
+    @ViewBuilder private var currentValueLabel: some View {
+        if let currentValueLabel = viewStore.currentValueLabel {
+            InjectedContent(currentValueLabel)
         }
     }
 }

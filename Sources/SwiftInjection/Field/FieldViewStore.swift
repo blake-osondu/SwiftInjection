@@ -1,23 +1,28 @@
 //
 //  FieldViewStore.swift
-//  Insertable
-//
-//  Created by Blake Osonduagwueki on 9/4/23.
+//  SwiftInjection
 //
 
 import Foundation
 
-
+/// `{"field": {"text": "form.email", "title": "Email", "onSubmit": [{"call": "signIn"}]}}`
 public struct FieldViewStore: Codable {
-    public var id: String
-    public var modifiers: [InjectedModifier]
-    var textKey: String
-    var content: InjectedView
-    
-    init(id: String = "", modifiers: [InjectedModifier] = [], textKey: String = "", content: InjectedView) {
+    @OrEmpty public var id: String
+    @OrEmpty public var modifiers: [InjectedModifier]
+    /// The state path the text is read from and written to.
+    public var text: String
+    /// Placeholder / accessibility title.
+    public var title: InjectedExpression?
+    public var prompt: InjectedExpression?
+    @OrEmpty public var onSubmit: [InjectedAction]
+
+    public init(id: String = "", modifiers: [InjectedModifier] = [], text: String, title: InjectedExpression? = nil,
+                prompt: InjectedExpression? = nil, onSubmit: [InjectedAction] = []) {
         self.id = id
         self.modifiers = modifiers
-        self.textKey = textKey
-        self.content = content
+        self.text = text
+        self.title = title
+        self.prompt = prompt
+        self.onSubmit = onSubmit
     }
 }

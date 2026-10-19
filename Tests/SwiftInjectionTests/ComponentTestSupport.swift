@@ -31,3 +31,15 @@ struct RenderedScreen {
 
     final class ErrorLog { var values: [String] = [] }
 }
+
+extension RenderedScreen {
+    /// Modifiers are applied to ModifierStore's AnyView wrappers rather than the component's own view,
+    /// so run `call` on the first wrapper that carries the modifier.
+    func callModifier(_ call: (InspectableView<ViewType.AnyView>) throws -> Void,
+                      file: StaticString = #filePath, line: UInt = #line) throws {
+        for candidate in try inspect().findAll(ViewType.AnyView.self) {
+            if (try? call(candidate)) != nil { return }
+        }
+        XCTFail("No view carries the modifier", file: file, line: line)
+    }
+}
