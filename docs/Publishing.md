@@ -7,7 +7,7 @@ https://cdn.example.com/screens/home.json       ← the payload
 https://cdn.example.com/screens/home.json.sig   ← its signature
 ```
 
-The `swift-injection` command-line tool creates the signing key, signs payloads and validates them.
+The `swift-injection` command-line tool compiles SwiftUI screens to payloads ([Compiler](Compiler.md)), creates the signing key, signs payloads and validates them.
 
 ## Install the tool
 
