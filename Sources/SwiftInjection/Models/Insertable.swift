@@ -94,6 +94,8 @@ struct Insertable: View {
             DatePickerInsertable(viewStore: viewStore)
         case .scrollView(let viewStore):
             ScrollViewInsertable(viewStore: viewStore)
+        case .custom(let viewStore):
+            CustomInsertable(viewStore: viewStore)
         case .viewStoreReference(let id):
             if let view = views[id] {
                 InjectedContent(view)
