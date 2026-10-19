@@ -4,7 +4,7 @@ import SwiftUI
 
 final class ModifierTests: XCTestCase {
 
-    /// One of every modifier except `alert` (whose payload needs full alert view stores).
+    /// One of every modifier.
     static let allModifiersJSON = #"""
     [
       {"systemFont": {"font": "title"}},
@@ -48,6 +48,7 @@ final class ModifierTests: XCTestCase {
       {"sheet": {"isPresented": "showSheet", "content": {"empty": {"id": ""}}}},
       {"fullScreenCover": {"isPresented": "showCover", "content": {"empty": {"id": ""}}}},
       {"popover": {"isPresented": "showPopover", "arrowEdge": "bottom", "content": {"empty": {"id": ""}}}},
+      {"alert": {"isPresented": "showAlert", "alert": {"title": "Hi", "message": {"var": "count"}, "buttons": [{"label": "OK", "action": [{"set": "count", "to": 0}]}]}}},
       {"confirmationDialog": {"isPresented": "showDialog", "title": "Sure?", "actions": {"empty": {"id": ""}}}},
       {"disabled": {"isDisabled": {"gt": [{"var": "count"}, 3]}}},
       {"buttonStyle": {"style": "borderedProminent"}},
@@ -60,6 +61,11 @@ final class ModifierTests: XCTestCase {
       {"autocorrectionDisabled": {}},
       {"textInputAutocapitalization": {"mode": "never"}},
       {"textContentType": {"type": "emailAddress"}},
+      {"onAppear": {"do": [{"set": "appeared", "to": true}]}},
+      {"onDisappear": {"do": []}},
+      {"onTapGesture": {"count": 2, "do": []}},
+      {"onChange": {"of": {"var": "count"}, "do": []}},
+      {"onSubmit": {"do": []}},
       {"antialiased": {"isActive": true}},
       {"resizable": {"resizingMode": "tile"}},
       {"renderingMode": {"mode": "template"}},
@@ -69,9 +75,9 @@ final class ModifierTests: XCTestCase {
 
     func testEveryModifierDecodesAndRoundTrips() throws {
         let modifiers = try JSONDecoder().decode([InjectedModifier].self, from: Data(Self.allModifiersJSON.utf8))
-        XCTAssertEqual(modifiers.count, 57)
+        XCTAssertEqual(modifiers.count, 63)
         let reencoded = try JSONEncoder().encode(modifiers)
-        XCTAssertEqual(try JSONDecoder().decode([InjectedModifier].self, from: reencoded).count, 57)
+        XCTAssertEqual(try JSONDecoder().decode([InjectedModifier].self, from: reencoded).count, 63)
     }
 
     func testPaddingDecodesToExpressions() throws {
@@ -114,24 +120,18 @@ final class ModifierTests: XCTestCase {
         ])
     }
 
-    func testSnapshotScopeReadsParameterSlotState() {
-        let signal = StateSignal(InjectedState(id: "screen", parameter1: .double(stateId: "screen", id: "spacing", value: 12)))
-        XCTAssertEqual(signal.snapshotScope.resolve(.var("spacing"), as: CGFloat.self), 12)
-    }
-
     // MARK: rendering
 
-    /// Renders `modifiers` on a Text in a hosting controller and returns every error reported while rendering.
-    private func render(_ modifiers: [InjectedModifier], state: InjectedState) -> [String] {
+    /// Renders `modifiers` on a Text in a real window and returns every error reported while rendering.
+    private func render(_ modifiers: [InjectedModifier], state: RuntimeValue) -> [String] {
         var errors: [String] = []
-        let previous = StateStore.defaultOnError
-        StateStore.defaultOnError = { errors.append("\($0)") }
-        defer { StateStore.defaultOnError = previous }
+        let store = StateStore(state)
+        store.onError = { errors.append("\($0)") }
+        var text = TextViewStore(value: "Hello")
+        text.modifiers = modifiers
 
-        let view = Text("Hello")
-            .addModifiers(mods: modifiers, stateSignal: StateSignal(state), container: ViewStoresContainer(viewStores: []))
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
-        window.rootViewController = UIHostingController(rootView: view)
+        window.rootViewController = UIHostingController(rootView: InjectedScreen(store: store, body: .text(viewStore: text)))
         window.makeKeyAndVisible()
         window.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
@@ -141,18 +141,14 @@ final class ModifierTests: XCTestCase {
 
     func testRenderReportsInvalidOptionValues() throws {
         let modifiers = try JSONDecoder().decode([InjectedModifier].self, from: Data(#"[{"blendMode": {"mode": "sparkly"}}]"#.utf8))
-        XCTAssertEqual(render(modifiers, state: InjectedState(id: "screen")),
+        XCTAssertEqual(render(modifiers, state: [:]),
                        [EvaluationError.typeMismatch(op: "resolve", expected: "InjectedBlendMode", got: "sparkly").description])
     }
 
     func testRendersEveryModifierWithoutErrors() throws {
         let modifiers = try JSONDecoder().decode([InjectedModifier].self, from: Data(Self.allModifiersJSON.utf8))
-        let state = InjectedState(
-            id: "screen",
-            parameter1: .double(stateId: "screen", id: "spacing", value: 12),
-            parameter2: .string(stateId: "screen", id: "tint", value: "#3366FF"),
-            parameter3: .boolean(stateId: "screen", id: "isEmphasized", value: true),
-            parameter4: .integer(stateId: "screen", id: "count", value: 5))
+        let state: RuntimeValue = ["spacing": 12, "tint": "#3366FF", "isEmphasized": true, "count": 5,
+                                   "showSheet": false, "showCover": false, "showPopover": false, "showDialog": false, "showAlert": false]
         XCTAssertEqual(render(modifiers, state: state), [])
     }
 }

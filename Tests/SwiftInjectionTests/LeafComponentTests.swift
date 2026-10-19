@@ -91,9 +91,15 @@ final class LeafComponentTests: XCTestCase {
         }
     }
 
-    func testViewReferenceRendersContainerView() throws {
+    func testUnknownViewReferenceIsReported() throws {
+        let screen = try RenderedScreen(#"{"ref": "missing"}"#)
+        XCTAssertEqual(try screen.texts(), [])
+        XCTAssertEqual(Set(screen.reportedErrors), [EvaluationError.unknownVariable("view 'missing'").description])
+    }
+
+    func testViewReferenceRendersNamedView() throws {
         let screen = try RenderedScreen(#"{"ref": "greeting"}"#, state: ["name": "Ada"],
-                                        views: [#"{"text": {"id": "greeting", "value": {"var": "name"}}}"#])
+                                        views: ["greeting": #"{"text": {"value": {"var": "name"}}}"#])
         XCTAssertEqual(try screen.texts(), ["Ada"])
     }
 

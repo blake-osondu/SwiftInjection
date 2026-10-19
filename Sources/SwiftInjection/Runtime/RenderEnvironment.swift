@@ -15,13 +15,8 @@ private struct ScopeLocalsKey: EnvironmentKey {
     static let defaultValue = ScopeLocals()
 }
 
-private struct ViewContainerKey: EnvironmentKey {
-    static let defaultValue = ViewStoresContainer(viewStores: [])
-}
-
-/// The parameter-slot state, for components that haven't moved to StateStore yet.
-private struct LegacyStateSignalKey: EnvironmentKey {
-    static let defaultValue = StateSignal(InjectedState.empty)
+private struct InjectedViewsKey: EnvironmentKey {
+    static let defaultValue: [String: InjectedView] = [:]
 }
 
 extension EnvironmentValues {
@@ -35,14 +30,10 @@ extension EnvironmentValues {
         set { self[ScopeLocalsKey.self] = newValue }
     }
 
-    var viewContainer: ViewStoresContainer {
-        get { self[ViewContainerKey.self] }
-        set { self[ViewContainerKey.self] = newValue }
-    }
-
-    var legacyStateSignal: StateSignal {
-        get { self[LegacyStateSignalKey.self] }
-        set { self[LegacyStateSignalKey.self] = newValue }
+    /// Views that `{"ref": "name"}` can refer to.
+    var injectedViews: [String: InjectedView] {
+        get { self[InjectedViewsKey.self] }
+        set { self[InjectedViewsKey.self] = newValue }
     }
 }
 
@@ -85,26 +76,22 @@ extension View {
 /// Renders a child view from the payload.
 public struct InjectedContent: View {
     let view: InjectedView
-    @Environment(\.legacyStateSignal) private var signal
-    @Environment(\.viewContainer) private var container
 
     public init(_ view: InjectedView) {
         self.view = view
     }
 
     public var body: some View {
-        Insertable(stateSignal: signal, container: container, viewStore: view)
+        Insertable(viewStore: view)
     }
 }
 
 private struct InjectedModifiers: ViewModifier {
     let modifiers: [InjectedModifier]
     let scope: StateScope
-    @Environment(\.legacyStateSignal) private var signal
-    @Environment(\.viewContainer) private var container
 
     func body(content: Content) -> some View {
-        content.addModifiers(mods: modifiers, scope: scope, stateSignal: signal, container: container)
+        content.addModifiers(mods: modifiers, scope: scope)
     }
 }
 
@@ -117,23 +104,42 @@ extension View {
 
 // MARK: - Root
 
-/// The entry point: renders `root` (or `container`'s view with id "entry") against `store`.
-/// `container` holds views that `{"ref": "id"}` can refer to.
+/// A screen's payload: initial state, the root view, and named views for `{"ref": ...}`.
+/// `{"state": {"count": 0}, "body": {"vStack": {...}}, "views": {"header": {...}}}`
+public struct InjectedPayload: Codable {
+    @OrEmpty public var state: RuntimeValue
+    public var body: InjectedView
+    @OrEmpty public var views: [String: InjectedView]
+
+    public init(state: RuntimeValue = [:], body: InjectedView, views: [String: InjectedView] = [:]) {
+        self.state = state
+        self.body = body
+        self.views = views
+    }
+}
+
+/// Renders a payload against `store`. Create the store from `payload.state` and keep it alive
+/// (e.g. `@StateObject var store = StateStore(payload.state)`) so state survives re-renders;
+/// register host functions on it before showing the screen.
 public struct InjectedScreen: View {
     @ObservedObject var store: StateStore
-    let root: InjectedView?
-    let container: ViewStoresContainer
+    let root: InjectedView
+    let views: [String: InjectedView]
 
-    public init(store: StateStore, root: InjectedView? = nil, container: ViewStoresContainer = .init(viewStores: [])) {
+    public init(store: StateStore, payload: InjectedPayload) {
+        self.init(store: store, body: payload.body, views: payload.views)
+    }
+
+    public init(store: StateStore, body: InjectedView, views: [String: InjectedView] = [:]) {
         self.store = store
-        self.root = root
-        self.container = container
+        self.root = body
+        self.views = views
     }
 
     public var body: some View {
-        InjectedContent(root ?? container.entry ?? .empty())
+        InjectedContent(root)
             .environment(\.stateStore, store)
-            .environment(\.viewContainer, container)
+            .environment(\.injectedViews, views)
     }
 }
 

@@ -18,6 +18,10 @@ extension String: EmptyDefaultable {
     public static var emptyValue: String { "" }
 }
 
+extension RuntimeValue: EmptyDefaultable {
+    public static var emptyValue: RuntimeValue { [:] }
+}
+
 extension Dictionary: EmptyDefaultable {
     public static var emptyValue: Dictionary { [:] }
 }

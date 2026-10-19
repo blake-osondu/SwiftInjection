@@ -4,18 +4,17 @@ import ViewInspector
 @testable import SwiftInjection
 
 /// Decodes a view payload and renders it as a screen over `state`, collecting reported errors.
-/// `views` are extra container views (each with its own "id") that `{"ref": ...}` can use.
+/// `views` are named views that `{"ref": "name"}` can use.
 struct RenderedScreen {
     let store: StateStore
     let screen: InjectedScreen
     private let errors = ErrorLog()
 
-    init(_ viewJSON: String, state: RuntimeValue = [:], views: [String] = []) throws {
+    init(_ viewJSON: String, state: RuntimeValue = [:], views: [String: String] = [:]) throws {
         let decode = { (json: String) in try JSONDecoder().decode(InjectedView.self, from: Data(json.utf8)) }
         store = StateStore(state)
         store.onError = { [errors] in errors.values.append("\($0)") }
-        screen = InjectedScreen(store: store, root: try decode(viewJSON),
-                                container: ViewStoresContainer(viewStores: try views.map(decode)))
+        screen = InjectedScreen(store: store, body: try decode(viewJSON), views: try views.mapValues(decode))
     }
 
     var reportedErrors: [String] { errors.values }

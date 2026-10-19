@@ -124,19 +124,4 @@ final class ExpressionTests: XCTestCase {
         let decodedLiteral = try JSONDecoder().decode(InjectedExpression.self, from: JSONEncoder().encode(objectLiteral))
         XCTAssertEqual(try ExpressionEvaluator().evaluate(decodedLiteral, in: scope), ["a": 1])
     }
-
-    // MARK: integration with existing state
-
-    func testEvaluatesAgainstInjectedState() throws {
-        let state = InjectedState(
-            id: "screen",
-            parameter1: .integer(stateId: "screen", id: "count", value: 11),
-            parameter2: .state(stateId: "screen", id: "user", value: InjectedState(
-                id: "user", parameter1: .string(stateId: "user", id: "name", value: "Ada"))))
-        let expression: InjectedExpression = .operation(.and, [
-            .operation(.gt, [.var("count"), 10]),
-            .operation(.eq, [.var("user.name"), "Ada"]),
-        ])
-        XCTAssertTrue(try ExpressionEvaluator().condition(expression, in: state))
-    }
 }

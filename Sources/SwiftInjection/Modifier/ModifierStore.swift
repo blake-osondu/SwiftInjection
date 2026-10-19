@@ -11,17 +11,13 @@ import SwiftUI
 struct ModifierStore: ViewModifier {
     var modifier: InjectedModifier
     var scope: StateScope
-    /// Nested content (backgrounds, sheets, …) still renders through the StateSignal-based Insertable
-    /// until components move to StateScope.
-    var state: StateSignal
-    var container: ViewStoresContainer
 
     func body(content: Content) -> some View {
         render(content)
     }
 
     private func nested(_ view: InjectedView) -> some View {
-        Insertable(stateSignal: state, container: container, viewStore: view)
+        InjectedContent(view)
     }
 
     private func color(_ expression: InjectedExpression?) -> Color? {
