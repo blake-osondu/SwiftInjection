@@ -26,22 +26,44 @@ public final class PayloadLoader {
         /// A payload shipped in the app, used when the network and cache both fail. It's trusted without a
         /// signature because it's covered by the app's code signature.
         public var bundled: URL?
-        /// When set, remote and cached payloads must carry a valid signature.
+        /// Remote and cached payloads must carry a valid signature for one of its keys. Required unless
+        /// `allowUnsigned` is set.
         public var verifier: PayloadVerifier?
+        /// Accept remote and cached payloads without a signature. For local development only: anyone who can
+        /// change what your server returns can then change what your app runs.
+        public var allowUnsigned: Bool
+        /// Accept `http://` URLs. For local development only (e.g. a server on your Mac).
+        public var allowInsecureHTTP: Bool
+        public var limits: PayloadLimits
         public var cacheDirectory: URL
         public var session: URLSession
         public var runtimeVersion: SchemaVersion
 
         public init(url: URL, signatureURL: URL? = nil, bundled: URL? = nil, verifier: PayloadVerifier? = nil,
+                    allowUnsigned: Bool = false, allowInsecureHTTP: Bool = false, limits: PayloadLimits = .default,
                     cacheDirectory: URL? = nil, session: URLSession = .shared, runtimeVersion: SchemaVersion = .current) {
             self.url = url
             self.signatureURL = signatureURL
             self.bundled = bundled
             self.verifier = verifier
+            self.allowUnsigned = allowUnsigned
+            self.allowInsecureHTTP = allowInsecureHTTP
+            self.limits = limits
             self.cacheDirectory = cacheDirectory
                 ?? FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("SwiftInjection", isDirectory: true)
             self.session = session
             self.runtimeVersion = runtimeVersion
+        }
+
+        /// Why remote and cached payloads can't be trusted with this configuration, if they can't.
+        var insecurity: PayloadError? {
+            for target in [url, resolvedSignatureURL] where target.scheme?.lowercased() != "https" && !allowInsecureHTTP {
+                return .insecureConfiguration("\(target.absoluteString) isn't HTTPS (set allowInsecureHTTP for local development)")
+            }
+            if verifier == nil && !allowUnsigned {
+                return .insecureConfiguration("no signature verifier (set allowUnsigned for local development)")
+            }
+            return nil
         }
 
         var resolvedSignatureURL: URL {
@@ -65,9 +87,19 @@ public final class PayloadLoader {
     public let configuration: Configuration
     private let validator: PayloadValidator
 
+    /// Receives a warning when the configuration relaxes the secure defaults.
+    public static var log: (String) -> Void = { print("SwiftInjection: \($0)") }
+
     public init(configuration: Configuration) {
         self.configuration = configuration
-        self.validator = PayloadValidator(verifier: configuration.verifier, runtimeVersion: configuration.runtimeVersion)
+        self.validator = PayloadValidator(verifier: configuration.verifier, runtimeVersion: configuration.runtimeVersion,
+                                          limits: configuration.limits)
+        if configuration.allowUnsigned && configuration.verifier == nil {
+            Self.log("warning: loading unsigned payloads from \(configuration.url.absoluteString). Use a PayloadVerifier in production.")
+        }
+        if configuration.allowInsecureHTTP && configuration.url.scheme?.lowercased() == "http" {
+            Self.log("warning: loading payloads over plain HTTP from \(configuration.url.absoluteString). Use HTTPS in production.")
+        }
     }
 
     /// Tries the network, then the cache, then the bundled payload.
@@ -89,6 +121,7 @@ public final class PayloadLoader {
 
     /// Fetches and validates the remote payload, and caches it on success.
     public func loadRemote() async throws -> Loaded {
+        if let insecurity = configuration.insecurity { throw insecurity }
         let data = try await fetch(configuration.url)
         let signature = configuration.verifier == nil ? nil : try await fetch(configuration.resolvedSignatureURL)
         let validated = try validator.validate(data, signature: signature)
@@ -101,6 +134,7 @@ public final class PayloadLoader {
     private func loadLocal(skipped: [PayloadError]) throws -> Loaded {
         var skipped = skipped
         do {
+            if let insecurity = configuration.insecurity { throw insecurity }
             let (data, signature) = try readCache()
             let validated = try validator.validate(data, signature: signature)
             return Loaded(payload: validated.payload, source: .cache, warnings: validated.warnings, skipped: skipped)
@@ -110,6 +144,7 @@ public final class PayloadLoader {
 
         if let bundled = configuration.bundled {
             do {
+                // Bundled payloads are covered by the app's code signature, so they're trusted without one.
                 let validated = try validator.validate(try Data(contentsOf: bundled), signature: nil, requireSignature: false)
                 return Loaded(payload: validated.payload, source: .bundle, warnings: validated.warnings, skipped: skipped)
             } catch {

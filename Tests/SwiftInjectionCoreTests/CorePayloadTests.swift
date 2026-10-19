@@ -23,7 +23,8 @@ final class CorePayloadTests: XCTestCase {
     """#.utf8)
 
     func testValidatesAndRoundTripsTheEndToEndPayload() throws {
-        let validated = try PayloadValidator().validate(Self.payload, signature: nil)
+        // Default limits comfortably accept a real screen.
+        let validated = try PayloadValidator(limits: .default).validate(Self.payload, signature: nil)
         XCTAssertEqual(validated.warnings, [])
         XCTAssertEqual(validated.payload.schemaVersion, .current)
         XCTAssertEqual(validated.payload.views.keys.sorted(), ["footer"])
