@@ -101,6 +101,8 @@ struct Insertable: View {
             }
         case .empty:
             EmptyView()
+        case .unsupported(let name, _):
+            let _ = store.report(PayloadError.invalid("Component '\(name)' isn't supported by this version"))
         }
     }
 }

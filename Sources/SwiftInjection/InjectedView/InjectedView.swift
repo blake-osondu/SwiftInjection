@@ -61,6 +61,8 @@ indirect public enum InjectedView: Codable, Hashable {
     /// A view defined once in the container and referenced by id.
     case viewStoreReference(id: String)
     case empty(id: String = "")
+    /// A component this runtime doesn't know (from a newer payload). Renders nothing; its JSON is kept.
+    case unsupported(name: String, content: RuntimeValue)
 
     /// The component's model, or nil for references and `empty`.
     public var viewStore: InjectedViewStore? {
@@ -104,13 +106,14 @@ indirect public enum InjectedView: Codable, Hashable {
         case .picker(let viewStore): return viewStore
         case .datePicker(let viewStore): return viewStore
         case .scrollView(let viewStore): return viewStore
-        case .viewStoreReference, .empty: return nil
+        case .viewStoreReference, .empty, .unsupported: return nil
         }
     }
 
     public var id: String {
         switch self {
         case .viewStoreReference(let id), .empty(let id): return id
+        case .unsupported: return ""
         default: return viewStore?.id ?? ""
         }
     }
@@ -158,7 +161,7 @@ indirect public enum InjectedView: Codable, Hashable {
             case .picker(var viewStore): viewStore.modifiers = newValue; self = .picker(viewStore: viewStore)
             case .datePicker(var viewStore): viewStore.modifiers = newValue; self = .datePicker(viewStore: viewStore)
             case .scrollView(var viewStore): viewStore.modifiers = newValue; self = .scrollView(viewStore: viewStore)
-            case .viewStoreReference, .empty: break
+            case .viewStoreReference, .empty, .unsupported: break
             }
         }
     }
@@ -223,7 +226,8 @@ indirect public enum InjectedView: Codable, Hashable {
         case "ref": self = .viewStoreReference(id: try container.decode(String.self, forKey: key))
         case "empty": self = .empty()
         default:
-            throw DecodingError.dataCorruptedError(forKey: key, in: container, debugDescription: "Unknown component '\(key.stringValue)'")
+            decoder.reportPayloadWarning("Skipped unknown component '\(key.stringValue)' at \(decoder.codingPathDescription)")
+            self = .unsupported(name: key.stringValue, content: try container.decode(RuntimeValue.self, forKey: key))
         }
     }
 
@@ -271,6 +275,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .scrollView(let viewStore): try container.encode(viewStore, forKey: Key("scrollView"))
         case .viewStoreReference(let id): try container.encode(id, forKey: Key("ref"))
         case .empty: try container.encode([String: String](), forKey: Key("empty"))
+        case let .unsupported(name, content): try container.encode(content, forKey: Key(name))
         }
     }
 }

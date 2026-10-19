@@ -18,8 +18,11 @@ final class LeafComponentTests: XCTestCase {
         XCTAssertTrue(reencoded.hasPrefix(#"{"text":{"#), reencoded)
     }
 
-    func testViewDecodingRejectsUnknownAndAmbiguousComponents() {
-        XCTAssertThrowsError(try JSONDecoder().decode(InjectedView.self, from: Data(#"{"marquee": {}}"#.utf8)))
+    func testViewDecodingRejectsAmbiguousAndMalformedComponents() throws {
+        // Unknown components decode as `.unsupported` (see PayloadLoadingTests) so newer payloads degrade gracefully.
+        guard case .unsupported(name: "marquee", _) = try JSONDecoder().decode(InjectedView.self, from: Data(#"{"marquee": {}}"#.utf8)) else {
+            return XCTFail()
+        }
         XCTAssertThrowsError(try JSONDecoder().decode(InjectedView.self, from: Data(#"{"text": {"value": "a"}, "spacer": {}}"#.utf8)))
         XCTAssertThrowsError(try JSONDecoder().decode(InjectedView.self, from: Data(#"{"text": {}}"#.utf8)))  // value is required
     }
