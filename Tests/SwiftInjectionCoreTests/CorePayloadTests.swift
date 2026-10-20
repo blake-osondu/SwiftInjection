@@ -26,7 +26,7 @@ final class CorePayloadTests: XCTestCase {
         // Default limits comfortably accept a real screen.
         let validated = try PayloadValidator(limits: .default).validate(Self.payload, signature: nil)
         XCTAssertEqual(validated.warnings, [])
-        XCTAssertEqual(validated.payload.schemaVersion, .current)
+        XCTAssertEqual(validated.payload.schemaVersion, SchemaVersion(major: 1, minor: 0))
         XCTAssertEqual(validated.payload.views.keys.sorted(), ["footer"])
         XCTAssertEqual(validated.payload.scripts.keys.sorted(), ["double"])
 
@@ -59,5 +59,17 @@ final class CorePayloadTests: XCTestCase {
         guard case let .button(button) = stack.children[1], case let .set(path, to)? = button.action.first else { return XCTFail() }
         XCTAssertEqual(path, "count")
         XCTAssertEqual(try ExpressionEvaluator().evaluate(to, in: payload.state), 1)
+    }
+
+    func testMinimumSchemaVersionIsOnlyRaisedByNewerFeatures() throws {
+        let payload = try PayloadValidator().validate(Self.payload, signature: nil).payload
+        XCTAssertEqual(SchemaVersion.minimum(for: payload), SchemaVersion(major: 1, minor: 0))
+
+        let paged = try JSONDecoder().decode(InjectedPayload.self, from: Data(#"""
+        {"body": {"text": {"value": "x"}}, "views": {"pager": {"tab": {"children": [], "modifiers": [{"tabViewStyle": {"style": "page"}}]}}}}
+        """#.utf8))
+        XCTAssertEqual(SchemaVersion.minimum(for: paged), SchemaVersion(major: 1, minor: 1))
+        XCTAssertTrue(SchemaVersion.minimum(for: paged).isSupported(by: .current))
+        XCTAssertFalse(SchemaVersion.minimum(for: paged).isSupported(by: SchemaVersion(major: 1, minor: 0)))
     }
 }

@@ -113,5 +113,6 @@ final class PayloadReferenceTests: XCTestCase {
         check(InjectedSymbolRenderingMode.self); check(InjectedImageScale.self); check(InjectedButtonStyle.self)
         check(InjectedPickerStyle.self); check(InjectdDatePickerStyle.self); check(InjectedTextInputAutoCapitalization.self)
         check(InjectedVisbility.self); check(InjectedResizingMode.self); check(InjectedImageRenderingMode.self)
+        check(InjectedTabViewStyle.self); check(InjectedIndexDisplayMode.self); check(InjectedContentMode.self)
     }
 }

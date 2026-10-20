@@ -57,6 +57,8 @@ Broken.swift:10:10: error: Modifier '.toolbar' isn't supported
 
 Then validate, sign and upload as described in [Publishing](Publishing.md).
 
+The output's `schemaVersion` is the **lowest version the screen needs**: `1.0` unless it uses something newer, such as page-style tab views (schema 1.1). So screens that don't need newer features keep loading in apps built with older versions of SwiftInjection.
+
 ## Files
 
 - **The screen** is the `View` named after the file (`TodoScreen.swift` → `TodoScreen`), else the one with `@State`, else the first. Its properties must be `@State`.
@@ -64,7 +66,7 @@ Then validate, sign and upload as described in [Publishing](Publishing.md).
 - **Helper views** (other `View` structs):
   - with no properties, they compile once to a named view shared by reference (`{"ref": "Footer"}`);
   - with properties, they're **inlined** at each use with the arguments substituted;
-  - `@Binding` properties take `$bindings`, and defaults (`var punctuation = "!"`) are used when an argument is omitted;
+  - `@Binding` properties take `$bindings`, `Color` properties take colors (`tint: .purple`), and defaults (`var punctuation = "!"`) are used when an argument is omitted;
   - helpers can't have `@State`: keep state in the screen and pass it down.
 
 ## State
@@ -82,6 +84,7 @@ Then validate, sign and upload as described in [Publishing](Publishing.md).
 | `Rectangle`, `Circle`, `Ellipse`, `Capsule(style:)`, `RoundedRectangle(cornerRadius:style:)`, `Spacer(minLength:)`, `Divider()`, `EmptyView()` | |
 | `VStack`, `HStack`, `ZStack`, `LazyVStack`, `LazyHStack`, `Group`, `Form`, `Section`, `ScrollView` | `alignment:`, `spacing:`, `Section("Title")` or `header:`/`footer:` |
 | `NavigationStack`, `NavigationLink("Title") { … }`, `NavigationLink { … } label: { … }` | |
+| `TabView`, `TabView(selection: $page)` | Pages are identified by position (`.tag(n)` must match, or leave it off); list pages explicitly rather than with `ForEach` |
 | `ForEach(items) { item in … }`, `ForEach($items) { $item in … }`, `ForEach(names, id: \.self) { … }` | Writes through `$item.field` and `item.field = …` reach the real state. Identifiable models are keyed by `id` |
 | `List(items) { item in … }`, `List($items) { $item in … }`, `List { … }` | Static rows and `ForEach` can be mixed |
 | `TextField(_:text:prompt:)`, `SecureField(_:text:)`, `Toggle(_:isOn:)` | Bound to state with `$name` / `$item.field` |
@@ -91,11 +94,11 @@ Then validate, sign and upload as described in [Publishing](Publishing.md).
 
 ## Modifiers
 
-- **Text:** `font` (text styles like `.title`, or `.custom(_:size:)`), `fontWeight`, `bold`, `italic`, `monospaced`, `monospacedDigit`, `underline`, `strikethrough`, `lineLimit`, `multilineTextAlignment`, `kerning`, `tracking`, `minimumScaleFactor`
-- **Layout:** `padding`, `frame` (including `.infinity`), `position`, `layoutPriority`, `fixedSize`, `ignoresSafeArea`
-- **Appearance:** `foregroundColor` / `foregroundStyle` / `tint`, `background`, `cornerRadius`, `opacity`, `blur`, `brightness`, `shadow`, `border`, `imageScale`, `resizable`, `renderingMode`
+- **Text:** `font` (text styles like `.title`, `.system(size:weight:design:)`, or `.custom(_:size:)`), `fontWeight`, `bold`, `italic`, `monospaced`, `monospacedDigit`, `underline`, `strikethrough`, `lineLimit`, `multilineTextAlignment`, `kerning`, `tracking`, `minimumScaleFactor`
+- **Layout:** `padding`, `frame` (including `.infinity`), `aspectRatio`, `scaledToFit`, `scaledToFill`, `position`, `layoutPriority`, `fixedSize`, `ignoresSafeArea`
+- **Appearance:** `foregroundColor` / `foregroundStyle` / `tint`, `background`, `cornerRadius`, `opacity`, `blur`, `brightness`, `shadow`, `border`, `imageScale`, `resizable`, `renderingMode`, `animation(_:value:)` (presets such as `.easeInOut` or `.spring()`)
 - **Controls:** `disabled`, `buttonStyle`, `tag`
-- **Navigation and presentation:** `navigationTitle`, `sheet(isPresented:)`, `fullScreenCover(isPresented:)`, `alert(_:isPresented:actions:message:)`, `confirmationDialog(_:isPresented:titleVisibility:actions:)`
+- **Navigation and presentation:** `navigationTitle`, `tabItem`, `tabViewStyle(.page(indexDisplayMode:))`, `indexViewStyle(.page(backgroundDisplayMode:))`, `sheet(isPresented:)`, `fullScreenCover(isPresented:)`, `alert(_:isPresented:actions:message:)`, `confirmationDialog(_:isPresented:titleVisibility:actions:)`
 - **Events:** `onAppear`, `onDisappear`, `onTapGesture`, `onChange(of:)`, `onSubmit`
 
 Arguments can be literals or expressions over state: `.opacity(isBusy ? 0.5 : 1)`, `.disabled(name.isEmpty)`.

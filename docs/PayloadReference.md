@@ -27,7 +27,7 @@ Most screens are written in SwiftUI and compiled ([Compiler](Compiler.md)). This
 
 | Key | | |
 |---|---|---|
-| `schemaVersion` | required for loaded payloads | `"major.minor"`. A runtime accepts the same major version with a minor version at or below its own (this runtime: `1.0`). |
+| `schemaVersion` | required for loaded payloads | `"major.minor"`. A runtime accepts the same major version with a minor version at or below its own (this runtime: `1.1`). `swift-injection compile` writes the lowest version the payload needs, so payloads that don't use newer features still load in older apps. Additions are marked *schema 1.1* below. |
 | `version` | optional | Your identifier for this content (a build number or date). Used to tell whether a remote payload is new. |
 | `state` | optional | The screen's initial state: any JSON object. |
 | `body` | required | The root view. |
@@ -604,6 +604,7 @@ Every argument is an expression unless noted; state paths are plain strings. Omi
 |---|---|
 | `systemFont` | `font`: a text style (see [Options](#options)) |
 | `font` | `name`, `size`: a custom font |
+| `systemFontSize` | `size` (**required**), `weight`, `design`: the system font at a size (*schema 1.1*) |
 | `fontWeight` | `weight` |
 | `fontDesign` | `design`: `default`, `serif`, `rounded`, `monospaced` |
 | `fontWidth` | `width`: `compressed`, `condensed`, `standard`, `expanded` |
@@ -617,7 +618,7 @@ Every argument is an expression unless noted; state paths are plain strings. Omi
 | `minimumScaleFactor` | `factor` |
 
 ```json
-[{ "systemFont": { "font": "headline" } }, { "fontWeight": { "weight": "semibold" } }, { "underline": { "pattern": "dash", "color": "#FFFF3B30" } }, { "lineLimit": { "limit": 2 } }]
+[{ "systemFont": { "font": "headline" } }, { "systemFontSize": { "size": 64, "weight": "bold", "design": "rounded" } }, { "fontWeight": { "weight": "semibold" } }, { "underline": { "pattern": "dash", "color": "#FFFF3B30" } }, { "lineLimit": { "limit": 2 } }]
 ```
 
 ### Layout
@@ -630,9 +631,10 @@ Every argument is an expression unless noted; state paths are plain strings. Omi
 | `layoutPriority` | `priority` |
 | `fixedSize` | `horizontal`, `vertical` (both omitted means both) |
 | `ignoresSafeArea` | `edges` |
+| `aspectRatio` | `contentMode` (**required**): `fit`, `fill`; `ratio` (width ÷ height, default: the content's own) (*schema 1.1*) |
 
 ```json
-[{ "padding": { "edges": "horizontal", "length": 16 } }, { "frame": { "maxWidth": "infinity", "alignment": "leading" } }]
+[{ "padding": { "edges": "horizontal", "length": 16 } }, { "frame": { "maxWidth": "infinity", "alignment": "leading" } }, { "aspectRatio": { "contentMode": "fit" } }]
 ```
 
 ### Appearance
@@ -669,9 +671,12 @@ Every argument is an expression unless noted; state paths are plain strings. Omi
 | `alert` | `isPresented`, `alert`: `{"title", "message", "buttons": [{"label", "role", "action"}]}` |
 | `confirmationDialog` | `isPresented`, `title`, `titleVisibility` (`automatic`, `visible`, `hidden`), `actions` (view) |
 | `navigationTitle` | `title` |
+| `tabViewStyle` | `style`: `automatic`, `page` (swipe between a `tab`'s children); `indexDisplayMode`: `automatic`, `always`, `never` (page dots) (*schema 1.1*) |
+| `indexViewStyle` | `backgroundDisplayMode`: `automatic`, `always`, `never` (a backdrop behind the page dots) (*schema 1.1*) |
 
 ```json
 [{ "navigationTitle": { "title": "Inbox" } },
+ { "tabViewStyle": { "style": "page", "indexDisplayMode": "always" } }, { "indexViewStyle": { "backgroundDisplayMode": "always" } },
  { "alert": { "isPresented": "confirmingDelete", "alert": { "title": "Delete?", "message": "This can't be undone.",
    "buttons": [{ "label": "Delete", "role": "destructive", "action": [{ "call": "deleteSelected" }] }, { "label": "Cancel", "role": "cancel" }] } } }]
 ```

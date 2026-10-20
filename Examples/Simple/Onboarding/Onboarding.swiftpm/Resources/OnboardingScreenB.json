@@ -1,0 +1,399 @@
+{
+  "body" : {
+    "vStack" : {
+      "children" : [
+        {
+          "hStack" : {
+            "children" : [
+              {
+                "spacer" : {
+
+                }
+              },
+              {
+                "button" : {
+                  "action" : [
+                    {
+                      "args" : [
+                        "skipped"
+                      ],
+                      "call" : "finishOnboarding"
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+
+                      }
+                    }
+                  ],
+                  "title" : "Skip"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "tab" : {
+            "children" : [
+              {
+                "vStack" : {
+                  "children" : [
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "systemFontSize" : {
+                              "size" : 72,
+                              "weight" : "semibold"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF34C759"
+                            }
+                          }
+                        ],
+                        "systemName" : "lock.shield"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "Yours alone"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "callout"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "Lumen keeps everything on your device."
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+                        "length" : 32
+                      }
+                    }
+                  ],
+                  "spacing" : 16
+                }
+              },
+              {
+                "vStack" : {
+                  "children" : [
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "systemFontSize" : {
+                              "size" : 72,
+                              "weight" : "semibold"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FFFF9500"
+                            }
+                          }
+                        ],
+                        "systemName" : "bell.badge"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "Only what matters"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "callout"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "Smart reminders arrive when you can act on them, not before."
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+                        "length" : 32
+                      }
+                    }
+                  ],
+                  "spacing" : 16
+                }
+              },
+              {
+                "vStack" : {
+                  "children" : [
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "systemFontSize" : {
+                              "size" : 72,
+                              "weight" : "semibold"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FFAF52DE"
+                            }
+                          }
+                        ],
+                        "systemName" : "sparkles"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "One calm timeline"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "callout"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          },
+                          {
+                            "multilineTextAlignment" : {
+                              "alignment" : "center"
+                            }
+                          }
+                        ],
+                        "value" : "Plans, notes and reminders, together."
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+                        "length" : 32
+                      }
+                    }
+                  ],
+                  "spacing" : 16
+                }
+              }
+            ],
+            "modifiers" : [
+              {
+                "tabViewStyle" : {
+                  "indexDisplayMode" : "always",
+                  "style" : "page"
+                }
+              },
+              {
+                "indexViewStyle" : {
+                  "backgroundDisplayMode" : "always"
+                }
+              },
+              {
+                "animation" : {
+                  "animation" : "easeInOut",
+                  "value" : {
+                    "var" : "page"
+                  }
+                }
+              }
+            ],
+            "selection" : "page"
+          }
+        },
+        {
+          "progressView" : {
+            "modifiers" : [
+              {
+                "padding" : {
+                  "edges" : "horizontal",
+                  "length" : 32
+                }
+              }
+            ],
+            "total" : 3,
+            "value" : {
+              "add" : [
+                {
+                  "var" : "page"
+                },
+                1
+              ]
+            }
+          }
+        },
+        {
+          "button" : {
+            "action" : [
+              {
+                "else" : [
+                  {
+                    "args" : [
+                      "completed"
+                    ],
+                    "call" : "finishOnboarding"
+                  }
+                ],
+                "if" : {
+                  "lt" : [
+                    {
+                      "var" : "page"
+                    },
+                    2
+                  ]
+                },
+                "then" : [
+                  {
+                    "set" : "page",
+                    "to" : {
+                      "add" : [
+                        {
+                          "var" : "page"
+                        },
+                        1
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "modifiers" : [
+              {
+                "buttonStyle" : {
+                  "style" : "borderedProminent"
+                }
+              },
+              {
+                "padding" : {
+
+                }
+              }
+            ],
+            "title" : {
+              "if" : [
+                {
+                  "lt" : [
+                    {
+                      "var" : "page"
+                    },
+                    2
+                  ]
+                },
+                "Next",
+                "Let's go"
+              ]
+            }
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "onAppear" : {
+            "do" : [
+              {
+                "args" : [
+                  "onboarding_shown"
+                ],
+                "call" : "track"
+              }
+            ]
+          }
+        }
+      ],
+      "spacing" : 0
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "page" : 0
+  },
+  "version" : "c5a6cba9a9b8"
+}

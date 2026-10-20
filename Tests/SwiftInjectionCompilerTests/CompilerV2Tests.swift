@@ -342,4 +342,55 @@ final class CompilerV2Tests: XCTestCase {
           "then": {"button": {"title": "Open", "action": [{"call": "navigate", "args": [{"concat": ["offers/", {"var": "id"}]}]}]}}}}]}}
         """#)
     }
+
+    func testTabViewsPagingAndNewModifiers() throws {
+        let payload = try compile(screen(state: "@State var page = 0", """
+        TabView(selection: $page) {
+                    Page(symbol: "star", tint: .purple).tag(0)
+                    Page(symbol: "bolt", tint: .orange.opacity(0.5)).tag(1)
+                    Text("Home").tabItem { Label("Home", systemImage: "house") }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .always))
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .animation(.easeInOut, value: page)
+        """, extra: """
+        struct Page: View {
+            let symbol: String
+            var tint: Color = .blue
+            var body: some View {
+                Image(systemName: symbol)
+                    .resizable()
+                    .scaledToFit()
+                    .font(.system(size: 64, weight: .bold, design: .rounded))
+                    .foregroundColor(tint)
+            }
+        }
+        """))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 1), "uses schema 1.1 modifiers")
+        try assertBody(payload, equals: #"""
+        {"tab": {"selection": "page", "children": [
+          {"image": {"systemName": "star", "modifiers": [{"resizable": {}}, {"aspectRatio": {"contentMode": "fit"}},
+            {"systemFontSize": {"size": 64, "weight": "bold", "design": "rounded"}}, {"foregroundColor": {"color": "#FFAF52DE"}}]}},
+          {"image": {"systemName": "bolt", "modifiers": [{"resizable": {}}, {"aspectRatio": {"contentMode": "fit"}},
+            {"systemFontSize": {"size": 64, "weight": "bold", "design": "rounded"}}, {"foregroundColor": {"color": "#80FF9500"}}]}},
+          {"text": {"value": "Home", "modifiers": [{"tabItem": {"content": {"label": {"title": "Home", "systemImage": "house"}}}}]}}
+        ], "modifiers": [
+          {"tabViewStyle": {"style": "page", "indexDisplayMode": "always"}},
+          {"indexViewStyle": {"backgroundDisplayMode": "always"}},
+          {"animation": {"animation": "easeInOut", "value": {"var": "page"}}}
+        ]}}
+        """#)
+    }
+
+    func testPayloadsWithoutNewFeaturesStayOnSchema10() throws {
+        let payload = try compile(screen("Text(\"Hi\").font(.title)"))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 0))
+    }
+
+    func testTabViewDiagnostics() {
+        XCTAssertEqual(diagnostics(screen(state: "@State var p = 0", "TabView(selection: $p) { Text(\"a\").tag(3) }")).first,
+                       "Screen.swift:7:9: error: TabView pages are identified by position: page 0 must have `.tag(0)` or no tag")
+        XCTAssertEqual(diagnostics(screen(state: "@State var p = 0", "Text(\"a\").animation(.easeInOut(duration: 1), value: p)")).first,
+                       "Screen.swift:7:40: error: Animation parameters aren't supported; use a preset like .easeInOut or .spring()")
+    }
 }

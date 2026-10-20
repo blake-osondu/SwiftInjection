@@ -210,6 +210,31 @@ extension CompilerContext {
             let header = args.closure("header").flatMap { self.children($0) }.map(single) ?? args.labeled["header"].flatMap(view)
             let footer = args.closure("footer").flatMap { self.children($0) }.map(single) ?? args.labeled["footer"].flatMap(view)
             return .section(viewStore: SectionViewStore(title: title, header: header, footer: footer, children: children))
+        case "TabView":
+            guard var pages = children(args.trailing ?? args.closure("content")) else { return nil }
+            var selection: String?
+            if let argument = args.labeled["selection"] {
+                guard let path = bindingPath(argument) else { return nil }
+                selection = path.path
+            }
+            // Tabs are identified by position, so `.tag(n)` on a page must be its index; it's dropped.
+            for index in pages.indices {
+                var failed = false
+                pages[index].modifiers.removeAll { modifier in
+                    guard case .tag(let value) = modifier else { return false }
+                    if value != .literal(.number(Double(index))) { failed = true }
+                    return true
+                }
+                if failed {
+                    error("TabView pages are identified by position: page \(index) must have `.tag(\(index))` or no tag", at: call)
+                    return nil
+                }
+                if case .forEach = pages[index] {
+                    error("ForEach inside TabView isn't supported; list the pages (helper views keep this short)", at: call)
+                    return nil
+                }
+            }
+            return .tab(viewStore: TabViewStore(selection: selection, children: pages))
         case "NavigationLink":
             // NavigationLink("Title") { destination } · NavigationLink { destination } label: { … }
             guard let destinationClosure = args.closure("destination") ?? args.trailing,
@@ -292,7 +317,7 @@ extension CompilerContext {
             if let helper = helpers[name] {
                 return helperView(helper, args, at: call)
             }
-            error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
+            error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, TabView, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
             return nil
         }
     }
@@ -486,11 +511,19 @@ extension CompilerContext {
                 if field.isBinding {
                     guard let binding = bindingPath(argument) else { return nil }
                     parameters[field.name] = .binding(path: binding.path, type: binding.type)
+                } else if field.type == .color {
+                    guard let hex = color(argument) else { return nil }
+                    parameters[field.name] = .value(Typed(expression: hex, type: .color))
                 } else {
                     guard let typed = expression(argument) else { return nil }
                     parameters[field.name] = .value(typed)
                 }
             } else if let defaultValue = field.defaultValue, !field.isBinding {
+                if field.type == .color {
+                    guard let hex = color(defaultValue) else { return nil }
+                    parameters[field.name] = .value(Typed(expression: hex, type: .color))
+                    continue
+                }
                 guard let typed = expression(defaultValue) else { return nil }
                 parameters[field.name] = .value(typed)
             } else {

@@ -67,5 +67,7 @@ extension InjectedModifier {
         "tabItem", "keyboardType", "autocorrectionDisabled", "textInputAutocapitalization", "textContentType",
         "onAppear", "onDisappear", "onTapGesture", "onChange", "onSubmit", "antialiased", "resizable",
         "renderingMode", "path",
+        // schema 1.1
+        "systemFontSize", "aspectRatio", "tabViewStyle", "indexViewStyle",
     ]
 }

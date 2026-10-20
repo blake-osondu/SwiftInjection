@@ -51,6 +51,10 @@ final class ModifierTests: XCTestCase {
       {"popover": {"isPresented": "showPopover", "arrowEdge": "bottom", "content": {"empty": {"id": ""}}}},
       {"alert": {"isPresented": "showAlert", "alert": {"title": "Hi", "message": {"var": "count"}, "buttons": [{"label": "OK", "action": [{"set": "count", "to": 0}]}]}}},
       {"navigationTitle": {"title": {"var": "count"}}},
+      {"systemFontSize": {"size": 48, "weight": "bold", "design": "rounded"}},
+      {"aspectRatio": {"ratio": 1.5, "contentMode": "fit"}},
+      {"tabViewStyle": {"style": "page", "indexDisplayMode": "always"}},
+      {"indexViewStyle": {"backgroundDisplayMode": "always"}},
       {"confirmationDialog": {"isPresented": "showDialog", "title": "Sure?", "actions": {"empty": {"id": ""}}}},
       {"disabled": {"isDisabled": {"gt": [{"var": "count"}, 3]}}},
       {"buttonStyle": {"style": "borderedProminent"}},
@@ -77,9 +81,9 @@ final class ModifierTests: XCTestCase {
 
     func testEveryModifierDecodesAndRoundTrips() throws {
         let modifiers = try JSONDecoder().decode([InjectedModifier].self, from: Data(Self.allModifiersJSON.utf8))
-        XCTAssertEqual(modifiers.count, 64)
+        XCTAssertEqual(modifiers.count, 68)
         let reencoded = try JSONEncoder().encode(modifiers)
-        XCTAssertEqual(try JSONDecoder().decode([InjectedModifier].self, from: reencoded).count, 64)
+        XCTAssertEqual(try JSONDecoder().decode([InjectedModifier].self, from: reencoded).count, 68)
     }
 
     func testPaddingDecodesToExpressions() throws {
