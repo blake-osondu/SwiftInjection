@@ -54,7 +54,7 @@ jobs:
           fi
 
   core-macos:
-    # Also runs the Tools tests and builds the CLI; the name is kept because branch protection requires it.
+    # Also runs the Tools and Compiler tests and builds the CLI; the name is kept because branch protection requires it.
     name: Core tests (macOS)
     runs-on: macos-26
     timeout-minutes: 20
@@ -66,11 +66,12 @@ jobs:
           sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
           xcodebuild -version
 
-      - name: Test Core and Tools
+      - name: Test Core, Tools and Compiler
         run: |
           set -o pipefail
           xcodebuild test -scheme SwiftInjectionCore -destination "platform=macOS" 2>&1 | tee build.log
           xcodebuild test -scheme SwiftInjectionTools -destination "platform=macOS" 2>&1 | tee -a build.log
+          xcodebuild test -scheme SwiftInjectionCompiler -destination "platform=macOS" 2>&1 | tee -a build.log
 
       - name: Build the swift-injection CLI
         run: |

@@ -8,14 +8,52 @@ import ArgumentParser
 import CryptoKit
 import SwiftInjectionCore
 import SwiftInjectionTools
+import SwiftInjectionCompiler
 
 @main
 struct SwiftInjectionCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "swift-injection",
-        abstract: "Create signing keys, and sign and validate SwiftInjection payloads.",
+        abstract: "Compile SwiftUI screens to payloads, create signing keys, and sign and validate payloads.",
         version: "0.1.0 (schema \(SchemaVersion.current))",
-        subcommands: [Keygen.self, Sign.self, Validate.self])
+        subcommands: [Compile.self, Keygen.self, Sign.self, Validate.self])
+}
+
+struct Compile: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Compile a SwiftUI screen (a supported subset of Swift) to a payload.",
+        discussion: """
+        The source is ordinary SwiftUI: one `struct …: View` with @State properties and a body. \
+        Unsupported Swift is reported as file:line:column errors and nothing is written.
+        """)
+
+    @Argument(help: "The Swift file to compile.")
+    var source: String
+
+    @Option(name: .shortAndLong, help: "Where to write the payload (default: the source path with .json).")
+    var output: String?
+
+    @Option(name: .customLong("payload-version"), help: "The payload's `version` identifier, e.g. a build number.")
+    var payloadVersion: String?
+
+    func run() throws {
+        let sourceURL = URL(fileURLWithPath: source)
+        guard let data = FileManager.default.contents(atPath: sourceURL.path) else {
+            throw ToolError.unreadable(source)
+        }
+        let result = SwiftUICompiler.compile(source: String(decoding: data, as: UTF8.self), fileName: source, version: payloadVersion)
+        for diagnostic in result.diagnostics {
+            FileHandle.standardError.write(Data("\(diagnostic)\n".utf8))
+        }
+        guard let json = try result.json() else {
+            let count = result.errors.count
+            FileHandle.standardError.write(Data("\(count) error\(count == 1 ? "" : "s"); no payload written.\n".utf8))
+            throw ExitCode.failure
+        }
+        let destination = output.map(URL.init(fileURLWithPath:)) ?? sourceURL.deletingPathExtension().appendingPathExtension("json")
+        try json.write(to: destination, options: .atomic)
+        print("Compiled \(source) → \(destination.path)")
+    }
 }
 
 struct Keygen: ParsableCommand {
