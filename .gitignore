@@ -19,3 +19,5 @@ DerivedData/
 /Examples/*/*/*.swiftpm/Resources/payload-signing.pub
 /Examples/*/*/*.swiftpm/.swiftpm
 /Examples/*/*/*.swiftpm/.build
+/Examples/*/*/Packages/*/.swiftpm
+/Examples/*/*/Packages/*/.build

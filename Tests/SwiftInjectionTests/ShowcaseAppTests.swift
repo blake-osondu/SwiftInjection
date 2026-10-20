@@ -18,7 +18,9 @@ final class ShowcaseAppTests: XCTestCase {
         let screens = Self.examples.appendingPathComponent(app).appendingPathComponent("screens")
         let source = try String(contentsOf: screens.appendingPathComponent("\(screen).swift"), encoding: .utf8)
         let scripts = try? String(contentsOf: screens.appendingPathComponent("\(screen).scripts.js"), encoding: .utf8)
-        let result = SwiftUICompiler.compile(source: source, fileName: "\(screen).swift", scripts: scripts)
+        let components = (try? String(contentsOf: screens.appendingPathComponent("components"), encoding: .utf8))
+            .map { Set($0.split(separator: "\n").map(String.init).filter { !$0.isEmpty && !$0.hasPrefix("#") }) } ?? []
+        let result = SwiftUICompiler.compile(source: source, fileName: "\(screen).swift", scripts: scripts, components: components)
         XCTAssertEqual(result.diagnostics.map(\.description), [])
         let json = try XCTUnwrap(try result.json())
         let payload = try PayloadValidator().validate(json, signature: nil).payload
@@ -82,5 +84,35 @@ final class ShowcaseAppTests: XCTestCase {
         for candidate in try screen.inspect().findAll(ViewType.AnyView.self) where (try? candidate.callOnAppear()) != nil { break }
         try screen.inspect().find(button: "Skip").tap()
         XCTAssertEqual(calls, ["track:onboarding_shown", "finish:skipped"])
+    }
+
+    // MARK: Banking (#42)
+
+    func testBankingScreensCompile() throws {
+        for screen in ["Offers", "Help", "WhatsNew", "AlertsBanner"] {
+            XCTAssertNoThrow(try load("Enterprise/Banking", screen), screen)
+        }
+    }
+
+    func testBankingOffersUseInjectedUserAndHostFunctions() throws {
+        let (screen, store) = try load("Enterprise/Banking", "Offers")
+        // Stand-ins for the design system and services RemoteBridge registers in the app.
+        store.components["PrimaryButton"] = { context in
+            AnyView(Button(context.prop("title") ?? "") { context.send("action") })
+        }
+        var calls: [String] = []
+        store.functions["applyForOffer"] = { args, _ in calls.append("apply:" + (args.first?.displayString ?? "")); return .null }
+        store.functions["navigate"] = { args, _ in calls.append("navigate:" + (args.first?.displayString ?? "")); return .null }
+        store.functions["track"] = { args, _ in calls.append("track:" + (args.first?.displayString ?? "")); return .null }
+        store.update { $0 = $0.setting(["firstName": "Alex"], at: ["user"]) }
+
+        XCTAssertNoThrow(try screen.inspect().find(text: "Picked for you, Alex"))
+        try screen.inspect().findAll(ViewType.Button.self).first { (try? $0.labelView().text().string()) == "Apply" }?.tap()
+        try screen.inspect().find(button: "Start saving").tap()
+        XCTAssertEqual(calls, ["apply:savings-boost", "track:spring_promo_tapped", "navigate:transfer"])
+
+        // The app reports the result into state; the screen shows it.
+        store.update { $0 = $0.setting(true, at: ["applied", "savings-boost"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Application received"))
     }
 }

@@ -1,0 +1,73 @@
+{
+  "body" : {
+    "if" : {
+      "condition" : {
+        "call" : [
+          "featureEnabled",
+          "maintenance_notice"
+        ]
+      },
+      "then" : {
+        "hStack" : {
+          "alignment" : "top",
+          "children" : [
+            {
+              "image" : {
+                "modifiers" : [
+                  {
+                    "foregroundColor" : {
+                      "color" : "#FFFF9500"
+                    }
+                  }
+                ],
+                "systemName" : "wrench.and.screwdriver.fill"
+              }
+            },
+            {
+              "text" : {
+                "modifiers" : [
+                  {
+                    "systemFont" : {
+                      "font" : "subheadline"
+                    }
+                  }
+                ],
+                "value" : "Scheduled maintenance Sunday 2–4 AM ET. Transfers made then may arrive late."
+              }
+            }
+          ],
+          "modifiers" : [
+            {
+              "padding" : {
+
+              }
+            },
+            {
+              "frame" : {
+                "alignment" : "leading",
+                "maxWidth" : "infinity"
+              }
+            },
+            {
+              "background" : {
+                "content" : {
+                  "color" : {
+                    "color" : "#26FF9500"
+                  }
+                }
+              }
+            },
+            {
+              "cornerRadius" : {
+                "radius" : 12
+              }
+            }
+          ],
+          "spacing" : 10
+        }
+      }
+    }
+  },
+  "schemaVersion" : "1.0",
+  "version" : "4e911f3116ee"
+}

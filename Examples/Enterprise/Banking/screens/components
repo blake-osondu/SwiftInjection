@@ -1,0 +1,4 @@
+# The design system views remote screens use (compiled as custom components; registered by RemoteBridge).
+BankCard
+PrimaryButton
+AmountText
