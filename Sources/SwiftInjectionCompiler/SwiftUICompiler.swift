@@ -25,6 +25,8 @@ public struct CompilerDiagnostic: Error, Equatable, CustomStringConvertible {
 public struct CompileResult {
     /// The compiled payload, or nil when there were errors.
     public var payload: InjectedPayload?
+    /// Host functions the screen calls (`hostAction` / `hostValue`); the app must register each in `StateStore.functions`.
+    public var hostFunctions: [String] = []
     public var diagnostics: [CompilerDiagnostic]
     public var errors: [CompilerDiagnostic] { diagnostics.filter { $0.severity == .error } }
 
@@ -75,7 +77,7 @@ public enum SwiftUICompiler {
             context.error("Internal error: the compiled payload doesn't validate (\(error)). Please report this.", at: folded)
             return CompileResult(payload: nil, diagnostics: context.diagnostics)
         }
-        return CompileResult(payload: payload, diagnostics: context.diagnostics)
+        return CompileResult(payload: payload, hostFunctions: context.hostFunctionsUsed.sorted(), diagnostics: context.diagnostics)
     }
 }
 
@@ -132,6 +134,8 @@ final class CompilerContext {
     var syntheticState: [String: RuntimeValue] = [:]
     var scriptSource: String?
     var scriptsUsed: Set<String> = []
+    /// Host functions the screen calls, which the app must register in `StateStore.functions`.
+    var hostFunctionsUsed: Set<String> = []
     private var generatedIDs = 0
 
     enum Parameter {

@@ -94,6 +94,9 @@ struct Compile: ParsableCommand {
             }
             try json.write(to: destination, options: .atomic)
             print("Compiled \(source) → \(destination.path)")
+            if !result.hostFunctions.isEmpty {
+                print("Host functions the app must register: \(result.hostFunctions.joined(separator: ", "))")
+            }
             return true
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))

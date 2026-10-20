@@ -12,3 +12,10 @@ DerivedData/
 /Examples/TodoApp.swiftpm/.swiftpm
 /Examples/TodoApp.swiftpm/.build
 /Examples/screens/*.json
+# Showcase apps: the local development signing key, published payloads, and per-machine public keys
+/Examples/scripts/.dev-signing.key
+/Examples/scripts/.dev-signing.key.pub
+/Examples/.payloads
+/Examples/*/*/*.swiftpm/Resources/payload-signing.pub
+/Examples/*/*/*.swiftpm/.swiftpm
+/Examples/*/*/*.swiftpm/.build

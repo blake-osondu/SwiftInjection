@@ -114,7 +114,7 @@ struct ContentView: View {
 }
 ```
 
-Edit `Counter.swift`, save, and relaunch the screen to see the change. The [example app](Examples/) does exactly this with a reload button.
+Edit `Counter.swift`, save, and relaunch the screen to see the change. The [examples](Examples/) include this quick start and fuller showcase apps.
 
 **4. Ship it:** create a signing key, sign, and upload over HTTPS. See [Publishing](docs/Publishing.md):
 

@@ -24,3 +24,16 @@ public func script<Value>(_ name: String, _ arguments: Any..., placeholder: Valu
 /// Runs the script `name` from an action, e.g. `Button("Add") { runScript("addTodo", draft) }`.
 /// The script can read and write state with `state.get` / `state.set`. Does nothing in Previews.
 public func runScript(_ name: String, _ arguments: Any...) {}
+
+// Functions screens use to call Swift functions the host app registers in `StateStore.functions` (navigation,
+// analytics, feature flags, …). Unlike scripts, they need no JavaScript; the app must register them.
+
+/// Runs the host function `name` from an action, e.g. `Button("Open") { hostAction("navigate", "offers") }`.
+/// Does nothing in Previews.
+public func hostAction(_ name: String, _ arguments: Any...) {}
+
+/// A value from the host function `name`, e.g. `if hostValue("featureEnabled", "newOffers", placeholder: false) { … }`.
+/// Previews use `placeholder`. Host functions called from expressions can't change state.
+public func hostValue<Value>(_ name: String, _ arguments: Any..., placeholder: Value) -> Value {
+    placeholder
+}

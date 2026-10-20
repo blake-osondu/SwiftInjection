@@ -103,7 +103,7 @@ Arguments can be literals or expressions over state: `.opacity(isBusy ? 0.5 : 1)
 ## Expressions and actions
 
 - **Expressions:** literals, `@State` properties, `ForEach` items and their fields, helper parameters, `+ - * / %`, `== != < <= > >=`, `&& || !`, ternaries, string interpolation, `String(x)`, `Double(x)`, `.count`, `.isEmpty`, subscripts (`items[0]`, `user["name"]`).
-- **Actions** (button, gesture and event closures): assignments (`count = 0`, `todo.title = ""`), `+= -= *= /=`, `flag.toggle()`, `if` / `else if` / `else`, and `runScript(…)`.
+- **Actions** (button, gesture and event closures): assignments (`count = 0`, `todo.title = ""`), `+= -= *= /=`, `flag.toggle()`, `if` / `else if` / `else`, `runScript(…)` and `hostAction(…)`.
 
 ## Scripts
 
@@ -126,6 +126,22 @@ const addTodo = (title) => { state.set("todos", state.get("todos").concat([{ tit
 ```
 
 Only the functions the screen calls are included, and each one can use the other functions in the file. Scripts read and write state with `state.get(path)` / `state.set(path, value)`; see `ScriptRuntime` for details and limits.
+
+## Host functions
+
+To call your app's own Swift code (navigation, analytics, feature flags, API calls), use `hostAction` and `hostValue` from `SwiftInjectionAuthoring`:
+
+```swift
+Button("View offer") { hostAction("navigate", "offers/" + offer.id) }
+if hostValue("featureEnabled", "newOffers", placeholder: false) { OffersBanner() }
+```
+
+They compile to the same `call`s as scripts, but need no JavaScript: the app registers them in `StateStore.functions`. `swift-injection compile` lists the host functions each screen expects:
+
+```
+Compiled EventScreen.swift → EventScreen.json
+Host functions the app must register: submitRSVP
+```
 
 ## Limitations
 

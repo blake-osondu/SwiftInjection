@@ -241,8 +241,8 @@ extension CompilerContext {
         if let callee, let model = models[callee] {
             return modelLiteral(model, call)
         }
-        if callee == "script" {
-            return scriptCall(call).map { Typed(expression: $0.expression, type: $0.type) }
+        if callee == "script" || callee == "hostValue" {
+            return scriptCall(call, host: callee == "hostValue").map { Typed(expression: $0.expression, type: $0.type) }
         }
         if callee == "Date", call.arguments.isEmpty {
             // "Now": stored as null, which date pickers read as the current date.
@@ -369,12 +369,13 @@ extension CompilerContext {
         return Typed(expression: .object(fields), type: .model(model.name))
     }
 
-    /// `script("name", args…)` (from SwiftInjectionAuthoring) → `{"call": ["name", args…]}`.
-    /// The result is a String unless `placeholder:` gives another type.
-    func scriptCall(_ call: FunctionCallExprSyntax) -> (name: String, arguments: [InjectedExpression], expression: InjectedExpression, type: ValueType)? {
+    /// `script("name", args…)` / `hostValue("name", args…, placeholder:)` / `runScript` / `hostAction`
+    /// (from SwiftInjectionAuthoring) → `{"call": ["name", args…]}`. The result is a String unless `placeholder:`
+    /// gives another type. Scripts must be defined in the script file; host functions are registered by the app.
+    func scriptCall(_ call: FunctionCallExprSyntax, host: Bool = false) -> (name: String, arguments: [InjectedExpression], expression: InjectedExpression, type: ValueType)? {
         guard let first = call.arguments.first, first.label == nil,
               let literal = first.expression.as(StringLiteralExprSyntax.self), let name = plainText(literal) else {
-            error("The first argument of script(…) must be the function name as a string literal", at: call)
+            error("The first argument of \(call.calledExpression.trimmedDescription)(…) must be the function name as a string literal", at: call)
             return nil
         }
         var arguments: [InjectedExpression] = []
@@ -391,7 +392,11 @@ extension CompilerContext {
             }
             arguments.append(typed.expression)
         }
-        scriptsUsed.insert(name)
+        if host {
+            hostFunctionsUsed.insert(name)
+        } else {
+            scriptsUsed.insert(name)
+        }
         return (name, arguments, .operation(.call, [.literal(.string(name))] + arguments), type)
     }
 }
