@@ -79,6 +79,8 @@ Expressions never crash. A failure (an unknown path, a type mismatch, division b
 | `length` | string, array or object | its length |
 | `count` | string, array or object | its length |
 | `at` | `[array, index]` or `[object, key]` | the element |
+| `currency` | `[amount]` or `[amount, "USD"]` | the amount as currency, in the user's locale (schema 1.1) |
+| `fixed` | `[number, digits]` | the number with `digits` decimal places (0–10), e.g. `"3.50"` (schema 1.1) |
 | `call` | `["function", args…]` | the result of a host function or script (it can't change state) |
 
 ```json

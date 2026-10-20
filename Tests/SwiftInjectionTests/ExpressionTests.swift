@@ -125,4 +125,26 @@ final class ExpressionTests: XCTestCase {
         let decodedLiteral = try JSONDecoder().decode(InjectedExpression.self, from: JSONEncoder().encode(objectLiteral))
         XCTAssertEqual(try ExpressionEvaluator().evaluate(decodedLiteral, in: scope), ["a": 1])
     }
+
+    // MARK: number formatting
+
+    func testCurrencyAndFixed() throws {
+        let usd = try eval(#"{"currency": [{"var": "price"}, "USD"]}"#)
+        XCTAssertEqual(usd, .string(2.5.formatted(.currency(code: "USD"))))
+        XCTAssertNotNil(try eval(#"{"currency": [{"var": "price"}]}"#).displayString.first)
+        XCTAssertEqual(try eval(#"{"fixed": [{"var": "price"}, 2]}"#), "2.50")
+        XCTAssertEqual(try eval(#"{"fixed": [3.14159, 0]}"#), "3")
+        XCTAssertThrowsError(try eval(#"{"fixed": [{"var": "name"}, 2]}"#))
+        XCTAssertThrowsError(try eval(#"{"fixed": [1, 11]}"#))
+        XCTAssertThrowsError(try eval(#"{"currency": [{"var": "price"}, 3]}"#))
+    }
+
+    func testCodableBridge() throws {
+        struct Product: Codable, Equatable { var id: String; var price: Double; var tags: [String]; var sale: Bool? }
+        let product = Product(id: "mug", price: 12.5, tags: ["kitchen"], sale: nil)
+        let value = try RuntimeValue(encoding: product)
+        XCTAssertEqual(value, ["id": "mug", "price": 12.5, "tags": ["kitchen"]])
+        XCTAssertEqual(try value.decode(Product.self), product)
+        XCTAssertEqual(try RuntimeValue(encoding: [product]).decode([Product].self), [product])
+    }
 }

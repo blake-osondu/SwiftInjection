@@ -302,6 +302,12 @@ extension CompilerContext {
         if let tuple = syntax.as(TupleExprSyntax.self), tuple.elements.count == 1, let inner = tuple.elements.first {
             return color(inner.expression, reportErrors: reportErrors)
         }
+        // `Color(hex: product.color)` (from SwiftInjectionAuthoring): a color from state.
+        if let call = syntax.as(FunctionCallExprSyntax.self), call.calledExpression.trimmedDescription == "Color",
+           call.arguments.count == 1, call.arguments.first?.label?.text == "hex", let argument = call.arguments.first {
+            guard let typed = expression(argument.expression), expect(typed, .string, for: "Color(hex:)", at: argument) else { return nil }
+            return typed.expression
+        }
         // A `Color` property of a helper view, already compiled at the call site.
         if let reference = syntax.as(DeclReferenceExprSyntax.self), case .value(let typed)? = parameters[reference.baseName.text],
            typed.type == .color {

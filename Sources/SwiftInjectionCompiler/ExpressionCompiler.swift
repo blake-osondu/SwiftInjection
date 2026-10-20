@@ -237,7 +237,28 @@ extension CompilerContext {
     }
 
     private func conversion(_ call: FunctionCallExprSyntax) -> Typed? {
+        // `value.formatted(.currency(code: "USD"))`
+        if let member = call.calledExpression.as(MemberAccessExprSyntax.self), member.declName.baseName.text == "formatted",
+           let base = member.base {
+            guard let value = expression(base) else { return nil }
+            guard let style = call.arguments.first?.expression, call.arguments.count == 1 else {
+                error("Supported: .formatted(.currency(code:)) and .formatted(.number.precision(.fractionLength(n)))", at: call)
+                return nil
+            }
+            return formatted(value, style: style)
+        }
         let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
+        // `String(format: "%.2f", value)`
+        if callee == "String", let format = call.arguments.first, format.label?.text == "format" {
+            guard let literal = format.expression.as(StringLiteralExprSyntax.self), let pattern = plainText(literal),
+                  let digits = Self.fractionDigits(inPrintfPattern: pattern), call.arguments.count == 2,
+                  let argument = call.arguments.last.flatMap({ expression($0.expression) }) else {
+                error("Supported: String(format: \"%.Nf\", number)", at: call)
+                return nil
+            }
+            guard expectNumber(argument, for: "String(format:)", at: call) else { return nil }
+            return Typed(expression: .operation(.fixed, [argument.expression, .literal(.number(Double(digits)))]), type: .string)
+        }
         if let callee, let model = models[callee] {
             return modelLiteral(model, call)
         }
@@ -398,5 +419,31 @@ extension CompilerContext {
             scriptsUsed.insert(name)
         }
         return (name, arguments, .operation(.call, [.literal(.string(name))] + arguments), type)
+    }
+
+    // MARK: - Number formatting
+
+    /// `.currency(code: "USD")` → `currency`; `.number.precision(.fractionLength(2))` → `fixed`.
+    func formatted(_ value: Typed, style: ExprSyntax) -> Typed? {
+        guard expectNumber(value, for: "formatted", at: style) else { return nil }
+        if let call = style.as(FunctionCallExprSyntax.self),
+           let name = call.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text {
+            if name == "currency", let code = call.arguments.first(where: { $0.label?.text == "code" }).flatMap({ expression($0.expression) }) {
+                return Typed(expression: .operation(.currency, [value.expression, code.expression]), type: .string)
+            }
+            if name == "precision", let length = call.arguments.first?.expression.as(FunctionCallExprSyntax.self),
+               length.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "fractionLength",
+               let digits = length.arguments.first?.expression.as(IntegerLiteralExprSyntax.self).flatMap({ Int($0.literal.text) }) {
+                return Typed(expression: .operation(.fixed, [value.expression, .literal(.number(Double(digits)))]), type: .string)
+            }
+        }
+        error("Supported formats: .currency(code:) and .number.precision(.fractionLength(n))", at: style)
+        return nil
+    }
+
+    /// `%.2f` → 2.
+    static func fractionDigits(inPrintfPattern pattern: String) -> Int? {
+        guard pattern.hasPrefix("%."), pattern.hasSuffix("f") else { return nil }
+        return Int(pattern.dropFirst(2).dropLast())
     }
 }
