@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum InjectedEdgeSet: String, Codable {
+public enum InjectedEdgeSet: String, Codable, CaseIterable {
     case all
     case bottom
     case horizontal

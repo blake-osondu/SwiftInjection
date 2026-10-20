@@ -247,6 +247,16 @@ extension CompilerContext {
     /// A color as the runtime's `#AARRGGBB` hex: `.red`, `Color.blue`, `.red.opacity(0.5)`,
     /// `Color(red:green:blue:opacity:)` with literal components.
     func color(_ syntax: ExprSyntax, reportErrors: Bool = true) -> InjectedExpression? {
+        // `done ? .green : .gray` picks between two colors at runtime.
+        if let ternary = syntax.as(TernaryExprSyntax.self) {
+            guard let condition = expression(ternary.condition), expect(condition, .bool, for: "?:", at: ternary.condition),
+                  let then = color(ternary.thenExpression, reportErrors: reportErrors),
+                  let otherwise = color(ternary.elseExpression, reportErrors: reportErrors) else { return nil }
+            return .operation(.if, [condition.expression, then, otherwise])
+        }
+        if let tuple = syntax.as(TupleExprSyntax.self), tuple.elements.count == 1, let inner = tuple.elements.first {
+            return color(inner.expression, reportErrors: reportErrors)
+        }
         guard let argb = colorValue(syntax) else {
             if reportErrors {
                 error("Unsupported color '\(syntax.trimmedDescription)': use a named color like .blue or Color(red:green:blue:)", at: syntax)
