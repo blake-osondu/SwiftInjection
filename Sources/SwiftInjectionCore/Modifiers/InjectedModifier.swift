@@ -69,6 +69,7 @@ public enum InjectedModifier: Codable {
     case popover(isPresented: String, attachmentAnchor: Expression? = nil, arrowEdge: Expression? = nil, content: InjectedView)
     case alert(isPresented: String, alert: InjectedAlert)
     case confirmationDialog(isPresented: String, title: Expression, titleVisibility: Expression? = nil, actions: InjectedView)
+    case navigationTitle(title: Expression)
 
     // MARK: Controls & input
     case disabled(isDisabled: Expression)

@@ -36,23 +36,69 @@ struct Compile: ParsableCommand {
     @Option(name: .customLong("payload-version"), help: "The payload's `version` identifier, e.g. a build number.")
     var payloadVersion: String?
 
+    @Option(help: "JavaScript for script(…) / runScript(…) calls (default: <source>.scripts.js if it exists).")
+    var scripts: String?
+
+    @Flag(help: "Recompile whenever the source or script file changes.")
+    var watch = false
+
     func run() throws {
         let sourceURL = URL(fileURLWithPath: source)
-        guard let data = FileManager.default.contents(atPath: sourceURL.path) else {
-            throw ToolError.unreadable(source)
+        let scriptsURL = scripts.map(URL.init(fileURLWithPath:))
+            ?? sourceURL.deletingPathExtension().appendingPathExtension("scripts.js")
+        let destination = output.map(URL.init(fileURLWithPath:)) ?? sourceURL.deletingPathExtension().appendingPathExtension("json")
+
+        // Line-buffer stdout so progress shows up immediately when piped (a watcher never exits normally).
+        setvbuf(stdout, nil, _IOLBF, 0)
+        guard watch else {
+            if !compileOnce(sourceURL, scriptsURL, destination) { throw ExitCode.failure }
+            return
         }
-        let result = SwiftUICompiler.compile(source: String(decoding: data, as: UTF8.self), fileName: source, version: payloadVersion)
+        print("Watching \(source) (Ctrl-C to stop)")
+        var lastChange: Date?
+        while true {
+            let change = [sourceURL, scriptsURL].compactMap(modificationDate).max()
+            if change != lastChange {
+                lastChange = change
+                _ = compileOnce(sourceURL, scriptsURL, destination)
+            }
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+    }
+
+    private func modificationDate(_ url: URL) -> Date? {
+        (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+    }
+
+    /// Compiles and writes the payload; prints diagnostics. Returns false if there were errors.
+    private func compileOnce(_ sourceURL: URL, _ scriptsURL: URL, _ destination: URL) -> Bool {
+        guard let data = FileManager.default.contents(atPath: sourceURL.path) else {
+            FileHandle.standardError.write(Data("\(ToolError.unreadable(source))\n".utf8))
+            return false
+        }
+        if let scripts, FileManager.default.contents(atPath: scriptsURL.path) == nil {
+            FileHandle.standardError.write(Data("\(ToolError.unreadable(scripts))\n".utf8))
+            return false
+        }
+        let scriptSource = FileManager.default.contents(atPath: scriptsURL.path).map { String(decoding: $0, as: UTF8.self) }
+        let result = SwiftUICompiler.compile(source: String(decoding: data, as: UTF8.self), fileName: source,
+                                             version: payloadVersion, scripts: scriptSource)
         for diagnostic in result.diagnostics {
             FileHandle.standardError.write(Data("\(diagnostic)\n".utf8))
         }
-        guard let json = try result.json() else {
-            let count = result.errors.count
-            FileHandle.standardError.write(Data("\(count) error\(count == 1 ? "" : "s"); no payload written.\n".utf8))
-            throw ExitCode.failure
+        do {
+            guard let json = try result.json() else {
+                let count = result.errors.count
+                FileHandle.standardError.write(Data("\(count) error\(count == 1 ? "" : "s"); no payload written.\n".utf8))
+                return false
+            }
+            try json.write(to: destination, options: .atomic)
+            print("Compiled \(source) → \(destination.path)")
+            return true
+        } catch {
+            FileHandle.standardError.write(Data("\(error)\n".utf8))
+            return false
         }
-        let destination = output.map(URL.init(fileURLWithPath:)) ?? sourceURL.deletingPathExtension().appendingPathExtension("json")
-        try json.write(to: destination, options: .atomic)
-        print("Compiled \(source) → \(destination.path)")
     }
 }
 

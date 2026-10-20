@@ -148,12 +148,98 @@ extension CompilerContext {
         case "onTapGesture":
             guard let closure = args.trailing ?? args.closure("perform"), let actions = actions(closure) else { return nil }
             return .onTapGesture(count: args.labeled["count"].flatMap(number), do: actions)
+        case "onChange":
+            guard let value = args.labeled["of"].flatMap(expression), let closure = args.trailing else { break }
+            // `{ oldValue, newValue in … }` parameters are accepted but can't be used; read state instead.
+            guard let actions = actions(closure.statements) else { return nil }
+            return .onChange(of: value.expression, do: actions)
+        case "onSubmit":
+            guard let closure = args.trailing, let actions = actions(closure) else { return nil }
+            return .onSubmit(do: actions)
+        case "tag":
+            return first.flatMap(expression).map { .tag(value: $0.expression) }
+
+        // MARK: Navigation & presentation
+        case "navigationTitle":
+            guard let first else { break }
+            if first.as(FunctionCallExprSyntax.self)?.calledExpression.trimmedDescription == "Text" {
+                return textValue(first).map { .navigationTitle(title: $0) }
+            }
+            return expression(first).map { .navigationTitle(title: $0.expression) }
+        case "sheet", "fullScreenCover":
+            guard let isPresented = presentedPath(args, at: call), let closure = args.trailing ?? args.closure("content"),
+                  let views = viewList(closure.statements) else { return nil }
+            return name == "sheet" ? .sheet(isPresented: isPresented, content: single(views))
+                                   : .fullScreenCover(isPresented: isPresented, content: single(views))
+        case "alert":
+            guard let titleSyntax = first, let title = expression(titleSyntax), let isPresented = presentedPath(args, at: call) else { return nil }
+            var buttons: [InjectedAlertButton] = []
+            if let closure = args.trailing ?? args.closure("actions") {
+                guard let compiled = alertButtons(closure) else { return nil }
+                buttons = compiled
+            }
+            var message: InjectedExpression?
+            if let messageClosure = args.closure("message") {
+                guard messageClosure.statements.count == 1, case .expr(let expr)? = messageClosure.statements.first?.item,
+                      let text = textValue(expr) else {
+                    error("An alert message must be a single Text(…)", at: messageClosure)
+                    return nil
+                }
+                message = text
+            }
+            return .alert(isPresented: isPresented, alert: InjectedAlert(title: title.expression, message: message, buttons: buttons))
+        case "confirmationDialog":
+            guard let titleSyntax = first, let title = expression(titleSyntax), let isPresented = presentedPath(args, at: call),
+                  let closure = args.trailing ?? args.closure("actions"), let views = viewList(closure.statements) else { return nil }
+            let visibility = args.labeled["titleVisibility"].flatMap { option($0, InjectedVisbility.self, "title visibility") }
+            return .confirmationDialog(isPresented: isPresented, title: title.expression, titleVisibility: visibility, actions: single(views))
         default:
-            error("Modifier '.\(name)' isn't supported in v1", at: location)
+            error("Modifier '.\(name)' isn't supported", at: location)
             return nil
         }
         error("Unsupported use of '.\(name)': check its arguments", at: location)
         return nil
+    }
+
+    private func presentedPath(_ args: Arguments, at call: FunctionCallExprSyntax) -> String? {
+        guard let argument = args.labeled["isPresented"] else {
+            error("Expected `isPresented: $flag` (item-based presentation isn't supported)", at: call)
+            return nil
+        }
+        return bindingPath(argument)?.path
+    }
+
+    /// `Button("Delete", role: .destructive) { … }` entries of an alert's actions.
+    private func alertButtons(_ closure: ClosureExprSyntax) -> [InjectedAlertButton]? {
+        var buttons: [InjectedAlertButton] = []
+        for statement in closure.statements {
+            guard case .expr(let expr) = statement.item, let call = expr.as(FunctionCallExprSyntax.self),
+                  call.calledExpression.trimmedDescription == "Button" else {
+                error("Alert actions must be Button(\"Title\", role:) { … }", at: statement)
+                return nil
+            }
+            let args = Arguments(call)
+            guard let label = args.unlabeled.first.flatMap(expression) else {
+                error("Alert buttons need a title", at: call)
+                return nil
+            }
+            var role: InjectedButtonRole?
+            if let roleSyntax = args.labeled["role"] {
+                guard let raw = roleSyntax.as(MemberAccessExprSyntax.self)?.declName.baseName.text,
+                      let parsed = InjectedButtonRole(rawValue: raw) else {
+                    error("Button role must be .destructive or .cancel", at: roleSyntax)
+                    return nil
+                }
+                role = parsed
+            }
+            var actions: [InjectedAction] = []
+            if let closure = args.trailing ?? args.closure("action") {
+                guard let compiled = self.actions(closure) else { return nil }
+                actions = compiled
+            }
+            buttons.append(InjectedAlertButton(label: label.expression, role: role, action: actions))
+        }
+        return buttons
     }
 
     // MARK: - Colors

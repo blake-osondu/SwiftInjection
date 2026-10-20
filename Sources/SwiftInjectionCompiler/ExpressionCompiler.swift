@@ -143,11 +143,48 @@ extension CompilerContext {
     }
 
     private func stateReference(_ name: String, at node: some SyntaxProtocol) -> Typed? {
+        if name.hasPrefix("$") {
+            error("'\(name)' is a binding; bindings can only be passed where SwiftUI expects one (text:, isOn:, selection:, …)", at: node)
+            return nil
+        }
+        switch parameters[name] {
+        case .value(let typed)?: return typed
+        case let .binding(path, type)?: return Typed(expression: .var(path), type: type)
+        case nil: break
+        }
+        if let type = locals[name] { return Typed(expression: .var(name), type: type) }
         guard let type = state[name] else {
-            error("Unknown name '\(name)': expressions can use @State properties and literals", at: node)
+            error("Unknown name '\(name)': expressions can use @State properties, ForEach items, view parameters and literals", at: node)
             return nil
         }
         return Typed(expression: .var(name), type: type)
+    }
+
+    /// The state path behind a binding argument: `$name`, `$todo.title`, or a `@Binding` parameter.
+    func bindingPath(_ syntax: ExprSyntax) -> (path: String, type: ValueType)? {
+        func resolve(_ syntax: ExprSyntax) -> (path: String, type: ValueType)? {
+            if let reference = syntax.as(DeclReferenceExprSyntax.self) {
+                let name = reference.baseName.text
+                if name.hasPrefix("$") {
+                    let root = String(name.dropFirst())
+                    if case let .binding(path, type)? = parameters[root] { return (path, type) }
+                    if let type = locals[root] { return (root, type) }
+                    if let type = state[root] { return (root, type) }
+                    error("Unknown binding '\(name)'", at: reference)
+                    return nil
+                }
+                if case let .binding(path, type)? = parameters[name] { return (path, type) }
+            } else if let member = syntax.as(MemberAccessExprSyntax.self), let base = member.base,
+                      let (path, type) = resolve(base) {
+                let field = member.declName.baseName.text
+                var fieldType: ValueType = .unknown
+                if case .model(let modelName) = type { fieldType = models[modelName]?.field(field)?.type ?? .unknown }
+                return ("\(path).\(field)", fieldType)
+            }
+            error("Expected a binding like `$name` or `$item.field`", at: syntax)
+            return nil
+        }
+        return resolve(syntax)
     }
 
     private func memberAccess(_ member: MemberAccessExprSyntax) -> Typed? {
@@ -160,13 +197,21 @@ extension CompilerContext {
             return stateReference(name, at: member)
         }
         guard let typed = expression(base) else { return nil }
+        // Model fields (`todo.title`) stay paths, so they're readable and writable.
+        if case .model(let modelName) = typed.type, let field = models[modelName]?.field(name),
+           case let .variable(path, nil) = typed.expression {
+            return Typed(expression: .var("\(path).\(name)"), type: field.type)
+        }
         switch name {
         case "count":
             return Typed(expression: .operation(.count, [typed.expression]), type: .int)
         case "isEmpty":
             return Typed(expression: .operation(.eq, [.operation(.count, [typed.expression]), 0]), type: .bool)
         default:
-            error("'.\(name)' isn't supported (use `.count`, `.isEmpty`, or a subscript)", at: member.declName)
+            if case let .variable(path, nil) = typed.expression, typed.type == .unknown || typed.type == .dictionary {
+                return Typed(expression: .var("\(path).\(name)"), type: .unknown)
+            }
+            error("'.\(name)' isn't supported (use model fields, `.count`, `.isEmpty`, or a subscript)", at: member.declName)
             return nil
         }
     }
@@ -193,6 +238,20 @@ extension CompilerContext {
 
     private func conversion(_ call: FunctionCallExprSyntax) -> Typed? {
         let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
+        if let callee, let model = models[callee] {
+            return modelLiteral(model, call)
+        }
+        if callee == "script" {
+            return scriptCall(call).map { Typed(expression: $0.expression, type: $0.type) }
+        }
+        if callee == "Date", call.arguments.isEmpty {
+            // "Now": stored as null, which date pickers read as the current date.
+            return Typed(expression: .literal(.null), type: .date)
+        }
+        if call.trimmedDescription == "UUID().uuidString" || callee == "UUID" {
+            error("UUID() is only supported as a model field default (it becomes a fixed id)", at: call)
+            return nil
+        }
         guard let callee, call.arguments.count == 1, let argument = call.arguments.first, argument.label == nil,
               call.trailingClosure == nil else {
             error("Unsupported call '\(call.trimmedDescription)'", at: call)
@@ -276,5 +335,63 @@ extension CompilerContext {
             return false
         }
         return true
+    }
+
+    // MARK: - Models and scripts
+
+    /// `Todo(title: "Milk")` → `{"title": "Milk", "done": false}` using the memberwise initializer and defaults.
+    private func modelLiteral(_ model: ModelType, _ call: FunctionCallExprSyntax) -> Typed? {
+        var provided: [String: ExprSyntax] = [:]
+        for argument in call.arguments {
+            guard let label = argument.label?.text, model.field(label) != nil else {
+                error("'\(model.name)' has no field '\(argument.label?.text ?? "_")'", at: argument)
+                return nil
+            }
+            provided[label] = argument.expression
+        }
+        var fields: [String: InjectedExpression] = [:]
+        for field in model.fields {
+            if let argument = provided[field.name] {
+                guard let typed = expression(argument) else { return nil }
+                fields[field.name] = typed.expression
+            } else if let defaultValue = field.defaultValue {
+                if defaultValue.trimmedDescription == "UUID()" || defaultValue.trimmedDescription == "UUID().uuidString" {
+                    fields[field.name] = .literal(.string(generatedID(for: model.name)))
+                } else {
+                    guard let typed = expression(defaultValue) else { return nil }
+                    fields[field.name] = typed.expression
+                }
+            } else {
+                error("Missing argument '\(field.name)' for '\(model.name)'", at: call)
+                return nil
+            }
+        }
+        return Typed(expression: .object(fields), type: .model(model.name))
+    }
+
+    /// `script("name", args…)` (from SwiftInjectionAuthoring) → `{"call": ["name", args…]}`.
+    /// The result is a String unless `placeholder:` gives another type.
+    func scriptCall(_ call: FunctionCallExprSyntax) -> (name: String, arguments: [InjectedExpression], expression: InjectedExpression, type: ValueType)? {
+        guard let first = call.arguments.first, first.label == nil,
+              let literal = first.expression.as(StringLiteralExprSyntax.self), let name = plainText(literal) else {
+            error("The first argument of script(…) must be the function name as a string literal", at: call)
+            return nil
+        }
+        var arguments: [InjectedExpression] = []
+        var type: ValueType = .string
+        for argument in call.arguments.dropFirst() {
+            if argument.label?.text == "placeholder" {
+                guard let placeholder = expression(argument.expression) else { return nil }
+                type = placeholder.type
+                continue
+            }
+            guard argument.label == nil, let typed = expression(argument.expression) else {
+                if argument.label != nil { error("Unexpected argument label '\(argument.label!.text)'", at: argument) }
+                return nil
+            }
+            arguments.append(typed.expression)
+        }
+        scriptsUsed.insert(name)
+        return (name, arguments, .operation(.call, [.literal(.string(name))] + arguments), type)
     }
 }

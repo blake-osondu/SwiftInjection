@@ -63,7 +63,7 @@ extension InjectedModifier {
         "fixedSize", "ignoresSafeArea", "foregroundColor", "background", "cornerRadius", "border", "opacity",
         "shadow", "blur", "brightness", "blendMode", "colorInvert", "colorMultiply", "symbolRenderingMode",
         "imageScale", "unredacted", "animation", "sheet", "fullScreenCover", "popover", "alert",
-        "confirmationDialog", "disabled", "buttonStyle", "pickerStyle", "datePickerStyle", "tag", "badge",
+        "confirmationDialog", "navigationTitle", "disabled", "buttonStyle", "pickerStyle", "datePickerStyle", "tag", "badge",
         "tabItem", "keyboardType", "autocorrectionDisabled", "textInputAutocapitalization", "textContentType",
         "onAppear", "onDisappear", "onTapGesture", "onChange", "onSubmit", "antialiased", "resizable",
         "renderingMode", "path",

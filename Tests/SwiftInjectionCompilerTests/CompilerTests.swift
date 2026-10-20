@@ -99,12 +99,12 @@ final class CompilerTests: XCTestCase {
 
     func testStateMustBeLiteral() {
         XCTAssertEqual(diagnostics(screen(state: "@State var a = 1\n    @State var b = a + 1", "Text(\"x\")")),
-                       ["Screen.swift:5:20: error: Unknown name 'a': expressions can use @State properties and literals"])
+                       ["Screen.swift:5:20: error: Unknown name 'a': expressions can use @State properties, ForEach items, view parameters and literals"])
         XCTAssertEqual(diagnostics(screen(state: "@State var a: String = 1", "Text(\"x\")")),
                        ["Screen.swift:4:28: error: 'a' is declared String but initialized with a Int"])
         XCTAssertEqual(diagnostics(screen(state: "let title = \"x\"", "Text(title)")),
-                       ["Screen.swift:4:5: error: Only @State properties are supported in v1; 'title' isn't one",
-                        "Screen.swift:6:14: error: Unknown name 'title': expressions can use @State properties and literals"])
+                       ["Screen.swift:4:5: error: The screen's properties must be @State; 'title' isn't (pass values into helper views instead)",
+                        "Screen.swift:6:14: error: Unknown name 'title': expressions can use @State properties, ForEach items, view parameters and literals"])
     }
 
     // MARK: expressions
@@ -275,10 +275,9 @@ final class CompilerTests: XCTestCase {
     // MARK: diagnostics
 
     func testUnsupportedViewsModifiersAndOptions() {
-        XCTAssertEqual(diagnostics(screen("List { Text(\"a\") }")),
-                       ["Screen.swift:6:9: error: 'List' isn't supported in v1 (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack)"])
-        XCTAssertEqual(diagnostics(screen("Text(\"a\").navigationTitle(\"x\")")),
-                       ["Screen.swift:6:19: error: Modifier '.navigationTitle' isn't supported in v1"])
+        XCTAssertEqual(diagnostics(screen("Menu(\"More\") { Text(\"a\") }")).first?.hasPrefix("Screen.swift:6:9: error: 'Menu' isn't supported (supported: Text, Image,"), true)
+        XCTAssertEqual(diagnostics(screen("Text(\"a\").toolbar { Text(\"b\") }")),
+                       ["Screen.swift:6:19: error: Modifier '.toolbar' isn't supported"])
         XCTAssertEqual(diagnostics(screen("Text(\"a\").font(.huge)")),
                        ["Screen.swift:6:24: error: '.huge' isn't a supported font"])
         XCTAssertEqual(diagnostics(screen("Text(\"a\").foregroundColor(.primary)")),
@@ -299,8 +298,8 @@ final class CompilerTests: XCTestCase {
     func testFileLevelErrors() {
         XCTAssertEqual(diagnostics("import SwiftUI\nstruct Model { var x = 1 }"),
                        ["Screen.swift:1:1: error: No `struct …: View` found to compile"])
-        XCTAssertEqual(diagnostics(screen("Text(\"a\")") + "\nstruct Other: View { var body: some View { Text(\"b\") } }").last,
-                       "Screen.swift:9:8: error: Only one View per file is supported in v1 (helper views come in v2): move 'Other' to its own file")
+        // Other View structs are helper views; unused ones are fine.
+        XCTAssertEqual(diagnostics(screen("Text(\"a\")") + "\nstruct Other: View { var body: some View { Text(\"b\") } }"), [])
         XCTAssertEqual(diagnostics("struct Broken: View { var body: some View { Text(\"a\" } }").first?.contains("doesn't parse as Swift"), true)
     }
 

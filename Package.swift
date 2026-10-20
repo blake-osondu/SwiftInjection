@@ -10,6 +10,8 @@ let package = Package(
         .library(name: "SwiftInjection", targets: ["SwiftInjection"]),
         /// The platform-neutral payload model: views, expressions, actions, validation and signing.
         .library(name: "SwiftInjectionCore", targets: ["SwiftInjectionCore"]),
+        /// `script(…)` / `runScript(…)` for screens that call payload scripts; import it in the target holding your screens.
+        .library(name: "SwiftInjectionAuthoring", targets: ["SwiftInjectionAuthoring"]),
         /// Compiles a subset of SwiftUI source into payloads (macOS).
         .library(name: "SwiftInjectionCompiler", targets: ["SwiftInjectionCompiler"]),
         /// Command-line tool for publishing payloads: compile, keygen, sign, validate (macOS).
@@ -25,6 +27,7 @@ let package = Package(
         .target(name: "SwiftInjectionCore"),
         .target(name: "SwiftInjection", dependencies: ["SwiftInjectionCore"]),
         .target(name: "SwiftInjectionTools", dependencies: ["SwiftInjectionCore"]),
+        .target(name: "SwiftInjectionAuthoring"),
         .target(name: "SwiftInjectionCompiler", dependencies: [
             "SwiftInjectionCore",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
@@ -39,6 +42,6 @@ let package = Package(
         .testTarget(name: "SwiftInjectionCoreTests", dependencies: ["SwiftInjectionCore"]),
         .testTarget(name: "SwiftInjectionToolsTests", dependencies: ["SwiftInjectionTools"]),
         .testTarget(name: "SwiftInjectionCompilerTests", dependencies: ["SwiftInjectionCompiler"]),
-        .testTarget(name: "SwiftInjectionTests", dependencies: ["SwiftInjection", "ViewInspector"]),
+        .testTarget(name: "SwiftInjectionTests", dependencies: ["SwiftInjection", "SwiftInjectionCompiler", "ViewInspector"]),
     ]
 )
