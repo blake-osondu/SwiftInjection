@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum InjectedSystemFont: String, Codable {
+public enum InjectedSystemFont: String, Codable, CaseIterable {
     case callout, caption, caption2, footnote, headline, largeTitle,
     subheadline, title, title2, title3
 }

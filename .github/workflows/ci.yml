@@ -44,6 +44,12 @@ jobs:
           xcodebuild test -scheme SwiftInjection-Package -destination "id=$SIMULATOR_ID" \
             -clonedSourcePackagesDirPath .spm 2>&1 | tee build.log
 
+      - name: Build the example app
+        working-directory: Examples/TodoApp.swiftpm
+        run: |
+          set -o pipefail
+          xcodebuild build -scheme TodoApp -destination "id=$SIMULATOR_ID" -clonedSourcePackagesDirPath ../../.spm 2>&1 | tail -5
+
       - name: No warnings in Sources
         run: |
           warnings=$(grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u || true)

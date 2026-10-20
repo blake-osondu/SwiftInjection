@@ -288,6 +288,7 @@ final class PayloadLoadingTests: XCTestCase {
         await immediately.start()
         XCTAssertEqual(immediately.payload?.version, "3")
         XCTAssertEqual(immediately.source, .remote)
+        XCTAssertEqual(immediately.generation, 2, "cached payload shown, then rebuilt for the remote one")
     }
 
     @MainActor

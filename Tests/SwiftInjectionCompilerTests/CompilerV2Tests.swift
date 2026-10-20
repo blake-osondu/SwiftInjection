@@ -317,4 +317,11 @@ final class CompilerV2Tests: XCTestCase {
         ]}}}}
         """#)
     }
+
+    func testConditionalColors() throws {
+        let payload = try compile(screen(state: "@State var done = false", "Text(\"x\").foregroundColor(done ? .green : (.gray))"))
+        try assertBody(payload, equals: #"""
+        {"text": {"value": "x", "modifiers": [{"foregroundColor": {"color": {"if": [{"var": "done"}, "#FF34C759", "#FF8E8E93"]}}}]}}
+        """#)
+    }
 }

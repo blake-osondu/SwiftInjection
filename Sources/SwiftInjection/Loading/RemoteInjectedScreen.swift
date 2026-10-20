@@ -21,6 +21,9 @@ public final class RemotePayloadModel: ObservableObject {
     @Published public private(set) var payload: InjectedPayload?
     @Published public private(set) var source: PayloadLoader.Source?
     @Published public private(set) var error: PayloadError?
+    /// Increments each time a payload is shown, so the screen is rebuilt rather than diffed. A swapped-in payload
+    /// brings new state, and reusing the old view tree can leave stale UI (e.g. a navigation title).
+    @Published public private(set) var generation = 0
 
     private let loader: PayloadLoader
     private let updatePolicy: PayloadUpdatePolicy
@@ -64,6 +67,7 @@ public final class RemotePayloadModel: ObservableObject {
         self.payload = loaded.payload
         self.source = loaded.source
         self.error = nil
+        generation += 1
     }
 }
 
@@ -93,6 +97,7 @@ public struct RemoteInjectedScreen<Placeholder: View, Failure: View>: View {
         Group {
             if let store = model.store, let payload = model.payload {
                 InjectedScreen(store: store, payload: payload)
+                    .id(model.generation)
             } else if let error = model.error {
                 failure(error)
             } else {
