@@ -393,4 +393,33 @@ final class CompilerV2Tests: XCTestCase {
         XCTAssertEqual(diagnostics(screen(state: "@State var p = 0", "Text(\"a\").animation(.easeInOut(duration: 1), value: p)")).first,
                        "Screen.swift:7:40: error: Animation parameters aren't supported; use a preset like .easeInOut or .spring()")
     }
+
+    func testCustomComponents() throws {
+        let source = screen(state: "@State var balance = 1250.5\n    @State var id = \"chk\"", """
+        VStack {
+                    BankCard(name: "Checking", last4: "4821", balance: balance, tint: .blue)
+                    PrimaryButton(title: "Transfer") { hostAction("navigate", "transfer/" + id) }
+                    Rating(value: 3, onChange: { balance = 0 })
+                }
+        """, extra: "import DesignSystem")
+        let result = SwiftUICompiler.compile(source: source, fileName: "Screen.swift", components: ["BankCard", "PrimaryButton", "Rating"])
+        XCTAssertEqual(result.diagnostics.map(\.description), [])
+        XCTAssertEqual(result.components, ["BankCard", "PrimaryButton", "Rating"])
+        try assertBody(try XCTUnwrap(result.payload), equals: #"""
+        {"vStack": {"children": [
+          {"custom": {"name": "BankCard", "props": {"name": "Checking", "last4": "4821", "balance": {"var": "balance"}, "tint": "#FF007AFF"}}},
+          {"custom": {"name": "PrimaryButton", "props": {"title": "Transfer"},
+                      "on": {"action": [{"call": "navigate", "args": [{"concat": ["transfer/", {"var": "id"}]}]}]}}},
+          {"custom": {"name": "Rating", "props": {"value": 3}, "on": {"onChange": [{"set": "balance", "to": 0}]}}}
+        ]}}
+        """#)
+        // Without the components list, they're unknown views (never guessed).
+        XCTAssertEqual(diagnostics(source).count, 3)
+        XCTAssertEqual(diagnostics(screen("BankCard(\"x\")")).count, 1)
+    }
+
+    func testCustomComponentArgumentsMustBeLabeled() {
+        let errors = SwiftUICompiler.compile(source: screen("PrimaryButton(\"Go\")"), fileName: "Screen.swift", components: ["PrimaryButton"]).diagnostics.map(\.description)
+        XCTAssertEqual(errors, ["Screen.swift:7:9: error: Arguments to the custom component 'PrimaryButton' must be labeled (they become its props)"])
+    }
 }

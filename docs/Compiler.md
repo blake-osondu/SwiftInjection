@@ -130,6 +130,24 @@ const addTodo = (title) => { state.set("todos", state.get("todos").concat([{ tit
 
 Only the functions the screen calls are included, and each one can use the other functions in the file. Scripts read and write state with `state.get(path)` / `state.set(path, value)`; see `ScriptRuntime` for details and limits.
 
+## Your own components
+
+Enterprise screens are built from the app's design system, not raw SwiftUI. List those views with `--components`, and calls to them compile to `custom` components that the app registers in `StateStore.components`:
+
+```swift
+import DesignSystem
+
+BankCard(name: account.name, last4: account.last4, balance: account.balance)
+PrimaryButton(title: "Apply") { hostAction("applyForOffer", offer.id) }
+```
+
+```sh
+swift-injection compile Offers.swift --components BankCard,PrimaryButton,AmountText
+# Components the app must register: PrimaryButton
+```
+
+Labeled arguments become props (expressions, so they can use state). A trailing closure becomes the `action` event, and labeled closures use their label as the event name. The native view runs them with `context.send("action")`. Screens keep using the real types, so Previews show the real components. `publish-local.sh` reads the list from an optional `screens/components` file.
+
 ## Host functions
 
 To call your app's own Swift code (navigation, analytics, feature flags, API calls), use `hostAction` and `hostValue` from `SwiftInjectionAuthoring`:

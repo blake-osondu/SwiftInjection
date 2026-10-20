@@ -1,0 +1,242 @@
+{
+  "body" : {
+    "vStack" : {
+      "alignment" : "leading",
+      "children" : [
+        {
+          "text" : {
+            "modifiers" : [
+              {
+                "systemFont" : {
+                  "font" : "largeTitle"
+                }
+              },
+              {
+                "bold" : {
+
+                }
+              }
+            ],
+            "value" : "What's new"
+          }
+        },
+        {
+          "hStack" : {
+            "alignment" : "top",
+            "children" : [
+              {
+                "image" : {
+                  "modifiers" : [
+                    {
+                      "systemFont" : {
+                        "font" : "title2"
+                      }
+                    },
+                    {
+                      "foregroundColor" : {
+                        "color" : "#FFFF9500"
+                      }
+                    },
+                    {
+                      "frame" : {
+                        "width" : 32
+                      }
+                    }
+                  ],
+                  "systemName" : "bolt.fill"
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          }
+                        ],
+                        "value" : "Instant transfers"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "Money between your Northwind accounts now arrives immediately."
+                      }
+                    }
+                  ],
+                  "spacing" : 4
+                }
+              }
+            ],
+            "spacing" : 14
+          }
+        },
+        {
+          "hStack" : {
+            "alignment" : "top",
+            "children" : [
+              {
+                "image" : {
+                  "modifiers" : [
+                    {
+                      "systemFont" : {
+                        "font" : "title2"
+                      }
+                    },
+                    {
+                      "foregroundColor" : {
+                        "color" : "#FFAF52DE"
+                      }
+                    },
+                    {
+                      "frame" : {
+                        "width" : 32
+                      }
+                    }
+                  ],
+                  "systemName" : "chart.pie.fill"
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          }
+                        ],
+                        "value" : "Spending insights"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "See where your money goes each month, by category."
+                      }
+                    }
+                  ],
+                  "spacing" : 4
+                }
+              }
+            ],
+            "spacing" : 14
+          }
+        },
+        {
+          "hStack" : {
+            "alignment" : "top",
+            "children" : [
+              {
+                "image" : {
+                  "modifiers" : [
+                    {
+                      "systemFont" : {
+                        "font" : "title2"
+                      }
+                    },
+                    {
+                      "foregroundColor" : {
+                        "color" : "#FF34C759"
+                      }
+                    },
+                    {
+                      "frame" : {
+                        "width" : 32
+                      }
+                    }
+                  ],
+                  "systemName" : "lock.fill"
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          }
+                        ],
+                        "value" : "Card controls"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "Freeze and unfreeze cards from the app in one tap."
+                      }
+                    }
+                  ],
+                  "spacing" : 4
+                }
+              }
+            ],
+            "spacing" : 14
+          }
+        },
+        {
+          "spacer" : {
+
+          }
+        },
+        {
+          "custom" : {
+            "name" : "PrimaryButton",
+            "on" : {
+              "action" : [
+                {
+                  "call" : "dismissWhatsNew"
+                }
+              ]
+            },
+            "props" : {
+              "title" : "Continue"
+            }
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "padding" : {
+            "length" : 24
+          }
+        }
+      ],
+      "spacing" : 20
+    }
+  },
+  "schemaVersion" : "1.0",
+  "version" : "e044035fea1d"
+}

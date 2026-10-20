@@ -39,6 +39,9 @@ struct Compile: ParsableCommand {
     @Option(help: "JavaScript for script(…) / runScript(…) calls (default: <source>.scripts.js if it exists).")
     var scripts: String?
 
+    @Option(help: "Comma-separated names of the app's own views (e.g. design-system components) to compile as custom components.")
+    var components: String?
+
     @Flag(help: "Recompile whenever the source or script file changes.")
     var watch = false
 
@@ -82,7 +85,8 @@ struct Compile: ParsableCommand {
         }
         let scriptSource = FileManager.default.contents(atPath: scriptsURL.path).map { String(decoding: $0, as: UTF8.self) }
         let result = SwiftUICompiler.compile(source: String(decoding: data, as: UTF8.self), fileName: source,
-                                             version: payloadVersion, scripts: scriptSource)
+                                             version: payloadVersion, scripts: scriptSource,
+                                             components: Set((components ?? "").split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }))
         for diagnostic in result.diagnostics {
             FileHandle.standardError.write(Data("\(diagnostic)\n".utf8))
         }
@@ -96,6 +100,9 @@ struct Compile: ParsableCommand {
             print("Compiled \(source) → \(destination.path)")
             if !result.hostFunctions.isEmpty {
                 print("Host functions the app must register: \(result.hostFunctions.joined(separator: ", "))")
+            }
+            if !result.components.isEmpty {
+                print("Components the app must register: \(result.components.joined(separator: ", "))")
             }
             return true
         } catch {

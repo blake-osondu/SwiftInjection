@@ -317,6 +317,9 @@ extension CompilerContext {
             if let helper = helpers[name] {
                 return helperView(helper, args, at: call)
             }
+            if customComponents.contains(name) {
+                return customComponent(name, args, at: call)
+            }
             error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, TabView, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
             return nil
         }
@@ -447,6 +450,41 @@ extension CompilerContext {
         return .picker(viewStore: PickerViewStore(selection: selection.path, items: key, itemName: "option", title: title, label: label,
                                                   content: .text(viewStore: TextViewStore(value: .var("option.label"))),
                                                   value: .var("option.value")))
+    }
+
+    // MARK: - Custom components
+
+    /// An app view listed in `components`: `PrimaryButton(title: "Apply") { hostAction("apply", offer.id) }` →
+    /// `{"custom": {"name": "PrimaryButton", "props": {"title": "Apply"}, "on": {"action": [...]}}}`.
+    /// A trailing closure is the `action` event; labeled closures use their label.
+    private func customComponent(_ name: String, _ args: Arguments, at call: FunctionCallExprSyntax) -> InjectedView? {
+        guard args.unlabeled.isEmpty else {
+            error("Arguments to the custom component '\(name)' must be labeled (they become its props)", at: call)
+            return nil
+        }
+        var props: [String: InjectedExpression] = [:]
+        var events: [String: [InjectedAction]] = [:]
+        var failed = false
+        for (label, argument) in args.labeled {
+            if let closure = argument.as(ClosureExprSyntax.self) {
+                if let compiled = actions(closure) { events[label] = compiled } else { failed = true }
+            } else if let color = color(argument, reportErrors: false) {
+                props[label] = color
+            } else if let typed = expression(argument) {
+                props[label] = typed.expression
+            } else {
+                failed = true
+            }
+        }
+        if let trailing = args.trailing {
+            if let compiled = actions(trailing) { events["action"] = compiled } else { failed = true }
+        }
+        for (label, closure) in args.additionalTrailing {
+            if let compiled = actions(closure) { events[label] = compiled } else { failed = true }
+        }
+        if failed { return nil }
+        customComponentsUsed.insert(name)
+        return .custom(viewStore: CustomViewStore(name: name, props: props, on: events))
     }
 
     // MARK: - Helper views

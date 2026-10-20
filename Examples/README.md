@@ -5,7 +5,7 @@
 | [TodoApp](TodoApp.swiftpm) | Quick start | One remote screen loaded from a local server, with a Reload button. Run it with `Examples/serve.sh`. |
 | [Event RSVP](Simple/EventRSVP) | Simple | A whole event page served remotely: forms with validation, pickers, an alert, a JavaScript countdown, a host function for submitting, signed payloads, and the offline fallback. |
 | [Onboarding](Simple/Onboarding) | Simple | A paged onboarding flow (page dots, progress, Skip/Next) served remotely as two **A/B variants**. It hands off to a native home screen through a `finishOnboarding` host function and tracks exposure through `track`. |
-| Banking (MVVM + Coordinators + DI) | Enterprise | Coming in #42 |
+| [Banking](Enterprise/Banking) | Enterprise | **MVVM + Coordinators + DI** across six modules. Native sign-in, accounts and transfers; remote offers (with a kill switch), help, release notes, and an alerts banner embedded in a native screen. Design-system components and host functions (navigation, analytics, flags, async API calls) via a single `RemoteBridge`. |
 | Retail (The Composable Architecture) | Enterprise | Coming in #43 |
 
 Each app is an app package (`.swiftpm`) that opens in Xcode, depends on this repository by path, and is built by CI on every pull request.
@@ -25,8 +25,9 @@ If you skip step 1, the apps show the copy bundled with them (`<App>.swiftpm/Res
 ## Layout
 
 ```
-Examples/Simple/<App>/
+Examples/Simple/<App>/  (or Examples/Enterprise/<App>/)
   screens/<Screen>.swift         the screen, in SwiftUI (+ <Screen>.scripts.js)
+  screens/components             optional: the app's own views the screens use, one per line
   <App>.swiftpm/                 the app; scheme <App>
     Resources/<Screen>.json      bundled fallback, written by publish-local.sh
 ```

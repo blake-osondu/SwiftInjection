@@ -41,7 +41,10 @@ publish_app() {
         # The version is a hash of the sources: stable across runs, different whenever the screen changes.
         local version
         version="$(cat "$screen" "${screen%.swift}.scripts.js" 2>/dev/null | shasum -a 256 | cut -c1-12)"
-        "$CLI" compile "$screen" -o "$OUT/$app/$name.json" --payload-version "$version" >/dev/null
+        # Optional screens/components: the app's own views (one name per line) compiled as custom components.
+        local components=""
+        [ -f "$dir/screens/components" ] && components="$(grep -v '^#' "$dir/screens/components" | tr '\n' ',' | sed 's/,*$//')"
+        "$CLI" compile "$screen" -o "$OUT/$app/$name.json" --payload-version "$version" --components "$components" >/dev/null
         "$CLI" validate "$OUT/$app/$name.json" >/dev/null
         "$CLI" sign "$OUT/$app/$name.json" --key "$KEY" >/dev/null
         cp "$OUT/$app/$name.json" "$dir/$app.swiftpm/Resources/$name.json"

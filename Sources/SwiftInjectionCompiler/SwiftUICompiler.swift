@@ -27,6 +27,8 @@ public struct CompileResult {
     public var payload: InjectedPayload?
     /// Host functions the screen calls (`hostAction` / `hostValue`); the app must register each in `StateStore.functions`.
     public var hostFunctions: [String] = []
+    /// Custom components the screen uses; the app must register each in `StateStore.components`.
+    public var components: [String] = []
     public var diagnostics: [CompilerDiagnostic]
     public var errors: [CompilerDiagnostic] { diagnostics.filter { $0.severity == .error } }
 
@@ -49,12 +51,17 @@ public struct CompileResult {
 ///
 /// Anything outside the subset produces a diagnostic at its location; the compiler never guesses.
 public enum SwiftUICompiler {
-    /// - Parameter scripts: JavaScript defining the functions the screen calls with `script(…)` / `runScript(…)`.
+    /// - Parameters:
+    ///   - scripts: JavaScript defining the functions the screen calls with `script(…)` / `runScript(…)`.
+    ///   - components: Names of the app's own views (e.g. design-system components) that compile to `custom`
+    ///     components the app registers in `StateStore.components`: labeled arguments become props, and closure
+    ///     arguments become events.
     public static func compile(source: String, fileName: String = "Screen.swift", version: String? = nil,
-                               scripts: String? = nil) -> CompileResult {
+                               scripts: String? = nil, components: Set<String> = []) -> CompileResult {
         let tree = Parser.parse(source: source)
         let context = CompilerContext(fileName: fileName, tree: tree)
         context.scriptSource = scripts
+        context.customComponents = components
 
         if tree.hasError {
             context.error("The file doesn't parse as Swift; fix the syntax errors Xcode reports first", at: tree)
@@ -77,7 +84,8 @@ public enum SwiftUICompiler {
             context.error("Internal error: the compiled payload doesn't validate (\(error)). Please report this.", at: folded)
             return CompileResult(payload: nil, diagnostics: context.diagnostics)
         }
-        return CompileResult(payload: payload, hostFunctions: context.hostFunctionsUsed.sorted(), diagnostics: context.diagnostics)
+        return CompileResult(payload: payload, hostFunctions: context.hostFunctionsUsed.sorted(),
+                             components: context.customComponentsUsed.sorted(), diagnostics: context.diagnostics)
     }
 }
 
@@ -137,6 +145,9 @@ final class CompilerContext {
     var scriptsUsed: Set<String> = []
     /// Host functions the screen calls, which the app must register in `StateStore.functions`.
     var hostFunctionsUsed: Set<String> = []
+    /// View names that compile to `custom` components, and those the screen used.
+    var customComponents: Set<String> = []
+    var customComponentsUsed: Set<String> = []
     private var generatedIDs = 0
 
     enum Parameter {
