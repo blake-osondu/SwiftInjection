@@ -1,0 +1,448 @@
+{
+  "body" : {
+    "navigationStack" : {
+      "root" : {
+        "form" : {
+          "children" : [
+            {
+              "section" : {
+                "children" : [
+                  {
+                    "vStack" : {
+                      "alignment" : "leading",
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "title"
+                                }
+                              },
+                              {
+                                "bold" : {
+
+                                }
+                              }
+                            ],
+                            "value" : "SwiftUI Meetup"
+                          }
+                        },
+                        {
+                          "label" : {
+                            "systemImage" : "calendar",
+                            "title" : "Thursday, Nov 19 · 6:00 PM"
+                          }
+                        },
+                        {
+                          "label" : {
+                            "systemImage" : "mappin.and.ellipse",
+                            "title" : "The Foundry, 12 Main St"
+                          }
+                        },
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "footnote"
+                                }
+                              },
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FFFF9500"
+                                }
+                              }
+                            ],
+                            "value" : {
+                              "call" : [
+                                "countdown",
+                                {
+                                  "var" : "startsAt"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ],
+                      "spacing" : 6
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "section" : {
+                "children" : [
+                  {
+                    "forEach" : {
+                      "content" : {
+                        "hStack" : {
+                          "alignment" : "top",
+                          "children" : [
+                            {
+                              "text" : {
+                                "modifiers" : [
+                                  {
+                                    "monospacedDigit" : {
+
+                                    }
+                                  },
+                                  {
+                                    "foregroundColor" : {
+                                      "color" : "#FF8E8E93"
+                                    }
+                                  }
+                                ],
+                                "value" : {
+                                  "var" : "session.time"
+                                }
+                              }
+                            },
+                            {
+                              "vStack" : {
+                                "alignment" : "leading",
+                                "children" : [
+                                  {
+                                    "text" : {
+                                      "value" : {
+                                        "var" : "session.title"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "if" : {
+                                      "condition" : {
+                                        "not" : [
+                                          {
+                                            "eq" : [
+                                              {
+                                                "count" : [
+                                                  {
+                                                    "var" : "session.speaker"
+                                                  }
+                                                ]
+                                              },
+                                              0
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "then" : {
+                                        "text" : {
+                                          "modifiers" : [
+                                            {
+                                              "systemFont" : {
+                                                "font" : "caption"
+                                              }
+                                            },
+                                            {
+                                              "foregroundColor" : {
+                                                "color" : "#FF8E8E93"
+                                              }
+                                            }
+                                          ],
+                                          "value" : {
+                                            "var" : "session.speaker"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ],
+                                "spacing" : 2
+                              }
+                            }
+                          ],
+                          "spacing" : 12
+                        }
+                      },
+                      "identity" : {
+                        "var" : "session.id"
+                      },
+                      "itemName" : "session",
+                      "items" : "agenda"
+                    }
+                  }
+                ],
+                "title" : "Agenda"
+              }
+            },
+            {
+              "if" : {
+                "condition" : {
+                  "var" : "isGoing"
+                },
+                "else" : {
+                  "section" : {
+                    "children" : [
+                      {
+                        "field" : {
+                          "text" : "name",
+                          "title" : "Name"
+                        }
+                      },
+                      {
+                        "field" : {
+                          "text" : "email",
+                          "title" : "Email"
+                        }
+                      },
+                      {
+                        "picker" : {
+                          "content" : {
+                            "text" : {
+                              "value" : {
+                                "format" : [
+                                  "{0}",
+                                  {
+                                    "var" : "count"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "itemName" : "count",
+                          "items" : "guestOptions",
+                          "selection" : "guests",
+                          "title" : "Guests",
+                          "value" : {
+                            "var" : "count"
+                          }
+                        }
+                      },
+                      {
+                        "picker" : {
+                          "content" : {
+                            "text" : {
+                              "value" : {
+                                "var" : "option.label"
+                              }
+                            }
+                          },
+                          "itemName" : "option",
+                          "items" : "__options0",
+                          "selection" : "diet",
+                          "title" : "Dietary needs",
+                          "value" : {
+                            "var" : "option.value"
+                          }
+                        }
+                      },
+                      {
+                        "toggle" : {
+                          "isOn" : "wantsUpdates",
+                          "title" : "Email me updates"
+                        }
+                      },
+                      {
+                        "button" : {
+                          "action" : [
+                            {
+                              "set" : "confirming",
+                              "to" : true
+                            }
+                          ],
+                          "modifiers" : [
+                            {
+                              "disabled" : {
+                                "isDisabled" : {
+                                  "or" : [
+                                    {
+                                      "eq" : [
+                                        {
+                                          "count" : [
+                                            {
+                                              "var" : "name"
+                                            }
+                                          ]
+                                        },
+                                        0
+                                      ]
+                                    },
+                                    {
+                                      "eq" : [
+                                        {
+                                          "count" : [
+                                            {
+                                              "var" : "email"
+                                            }
+                                          ]
+                                        },
+                                        0
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ],
+                          "title" : "RSVP"
+                        }
+                      }
+                    ],
+                    "title" : "RSVP"
+                  }
+                },
+                "then" : {
+                  "section" : {
+                    "children" : [
+                      {
+                        "label" : {
+                          "modifiers" : [
+                            {
+                              "foregroundColor" : {
+                                "color" : "#FF34C759"
+                              }
+                            }
+                          ],
+                          "systemImage" : "checkmark.seal.fill",
+                          "title" : {
+                            "format" : [
+                              "You're going, {0}! We'll see you there.",
+                              {
+                                "var" : "name"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "button" : {
+                          "action" : [
+                            {
+                              "set" : "isGoing",
+                              "to" : false
+                            }
+                          ],
+                          "title" : "Change my RSVP"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "modifiers" : [
+            {
+              "navigationTitle" : {
+                "title" : "You're invited"
+              }
+            },
+            {
+              "alert" : {
+                "alert" : {
+                  "buttons" : [
+                    {
+                      "action" : [
+                        {
+                          "set" : "isGoing",
+                          "to" : true
+                        },
+                        {
+                          "args" : [
+                            {
+                              "var" : "name"
+                            },
+                            {
+                              "var" : "email"
+                            },
+                            {
+                              "var" : "guests"
+                            },
+                            {
+                              "var" : "diet"
+                            },
+                            {
+                              "var" : "wantsUpdates"
+                            }
+                          ],
+                          "call" : "submitRSVP"
+                        }
+                      ],
+                      "label" : "Confirm"
+                    },
+                    {
+                      "label" : "Cancel",
+                      "role" : "cancel"
+                    }
+                  ],
+                  "message" : {
+                    "format" : [
+                      "We'll save a spot for you and {0} guest(s).",
+                      {
+                        "var" : "guests"
+                      }
+                    ]
+                  },
+                  "title" : "Confirm your RSVP"
+                },
+                "isPresented" : "confirming"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "schemaVersion" : "1.0",
+  "scripts" : {
+    "countdown" : "(function () {\n// \"Starts in 12 days\", computed on the device at render time.\nfunction countdown(startsAt) {\n  const days = Math.ceil((new Date(startsAt) - new Date()) / 86400000);\n  if (days > 1) return \"Starts in \" + days + \" days\";\n  if (days === 1) return \"Starts tomorrow\";\n  if (days === 0) return \"Happening today\";\n  return \"This event has ended\";\n}\n\nreturn countdown;\n})()"
+  },
+  "state" : {
+    "__options0" : [
+      {
+        "label" : "None",
+        "value" : "none"
+      },
+      {
+        "label" : "Vegetarian",
+        "value" : "vegetarian"
+      },
+      {
+        "label" : "Vegan",
+        "value" : "vegan"
+      },
+      {
+        "label" : "Gluten-free",
+        "value" : "gluten-free"
+      }
+    ],
+    "agenda" : [
+      {
+        "id" : "Session-1",
+        "speaker" : "",
+        "time" : "6:00",
+        "title" : "Doors open, pizza"
+      },
+      {
+        "id" : "Session-2",
+        "speaker" : "Blake O.",
+        "time" : "6:30",
+        "title" : "Shipping SwiftUI without waiting on review"
+      },
+      {
+        "id" : "Session-3",
+        "speaker" : "",
+        "time" : "7:15",
+        "title" : "Lightning talks"
+      }
+    ],
+    "confirming" : false,
+    "diet" : "none",
+    "email" : "",
+    "guestOptions" : [
+      0,
+      1,
+      2,
+      3
+    ],
+    "guests" : 0,
+    "isGoing" : false,
+    "name" : "",
+    "startsAt" : "2026-11-19T18:00:00-05:00",
+    "wantsUpdates" : true
+  },
+  "version" : "557de0b463b4"
+}

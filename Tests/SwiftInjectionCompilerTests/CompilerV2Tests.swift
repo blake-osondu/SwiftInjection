@@ -324,4 +324,22 @@ final class CompilerV2Tests: XCTestCase {
         {"text": {"value": "x", "modifiers": [{"foregroundColor": {"color": {"if": [{"var": "done"}, "#FF34C759", "#FF8E8E93"]}}}]}}
         """#)
     }
+
+    func testHostFunctionsNeedNoScriptFile() throws {
+        let result = SwiftUICompiler.compile(source: screen(state: "@State var id = \"a\"", """
+        VStack {
+                    if hostValue("featureEnabled", "offers", placeholder: false) {
+                        Button("Open") { hostAction("navigate", "offers/" + id) }
+                    }
+                }
+        """, extra: "import SwiftInjectionAuthoring"), fileName: "Screen.swift")
+        XCTAssertEqual(result.diagnostics.map(\.description), [])
+        XCTAssertEqual(result.hostFunctions, ["featureEnabled", "navigate"])
+        let payload = try XCTUnwrap(result.payload)
+        XCTAssertTrue(payload.scripts.isEmpty)
+        try assertBody(payload, equals: #"""
+        {"vStack": {"children": [{"if": {"condition": {"call": ["featureEnabled", "offers"]},
+          "then": {"button": {"title": "Open", "action": [{"call": "navigate", "args": [{"concat": ["offers/", {"var": "id"}]}]}]}}}}]}}
+        """#)
+    }
 }

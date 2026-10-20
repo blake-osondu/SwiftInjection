@@ -1,23 +1,38 @@
-# Example: a to-do screen updated without a release
+# Examples
 
-`TodoApp.swiftpm` is an iOS app whose main screen is downloaded at runtime. `screens/TodoScreen.swift` is that screen, written in ordinary SwiftUI and compiled to a payload.
+| App | Kind | What it shows |
+|---|---|---|
+| [TodoApp](TodoApp.swiftpm) | Quick start | One remote screen loaded from a local server, with a Reload button. Run it with `Examples/serve.sh`. |
+| [Event RSVP](Simple/EventRSVP) | Simple | A whole event page served remotely: forms with validation, pickers, an alert, a JavaScript countdown, a host function for submitting, signed payloads, and the offline fallback. |
+| Onboarding and feature tour | Simple | Coming in #41 |
+| Banking (MVVM + Coordinators + DI) | Enterprise | Coming in #42 |
+| Retail (The Composable Architecture) | Enterprise | Coming in #43 |
 
-## Run it
+Each app is an app package (`.swiftpm`) that opens in Xcode, depends on this repository by path, and is built by CI on every pull request.
 
-1. Start the development server. It compiles `screens/TodoScreen.swift` on every save and serves it at `http://localhost:8000/TodoScreen.json`:
+## Running the showcase apps
+
+1. Publish and serve every app's screens. This compiles, validates and **signs** them the way a release pipeline would, then republishes on every save:
    ```sh
-   Examples/serve.sh
+   Examples/scripts/publish-local.sh --serve
    ```
-2. Open `Examples/TodoApp.swiftpm` in Xcode and run it on an iPhone simulator.
-3. Edit `screens/TodoScreen.swift`: change the title, add a to-do, restyle a row. Save it, then tap **Reload from server** in the app. The screen updates without rebuilding the app.
+   The first run creates a development signing key in `Examples/scripts/.dev-signing.key`. It's git-ignored and stays on your machine. The script copies its public key into each app.
+2. Open an app package (e.g. `Examples/Simple/EventRSVP/EventRSVP.swiftpm`) in Xcode and run it on an iPhone simulator.
+3. Edit the app's `screens/*.swift`, save, and relaunch the app twice. The default `.nextLaunch` policy downloads the update on the first launch and shows it on the next, so nobody's screen changes mid-use.
 
-Stop the server and relaunch the app: it shows the last version it downloaded (from its cache). Delete the app and launch it with no server: it shows the copy bundled in `TodoApp.swiftpm/Resources`.
+If you skip step 1, the apps show the copy bundled with them (`<App>.swiftpm/Resources`), and remote payloads are refused because there's no public key to verify them against.
 
-## What to look at
+## Layout
 
-- **`TodoApp.swiftpm/TodoApp.swift`:** the whole integration, a `RemoteInjectedScreen` with a `PayloadLoader`.
-- **`screens/TodoScreen.swift`:** a model struct, `@State`, `List($todos)` with a `@Binding` row view, a sheet and a navigation title. See [docs/Compiler.md](../docs/Compiler.md) for what the compiler supports.
+```
+Examples/Simple/<App>/
+  screens/<Screen>.swift         the screen, in SwiftUI (+ <Screen>.scripts.js)
+  <App>.swiftpm/                 the app; scheme <App>
+    Resources/<Screen>.json      bundled fallback, written by publish-local.sh
+```
 
-## Going to production
+Served at `http://localhost:8000/<App>/<Screen>.json` with `<Screen>.json.sig` next to it.
 
-The example loads unsigned payloads over HTTP from `localhost` (`allowUnsigned`, `allowInsecureHTTP`). That's for local development only. For a real app, sign payloads and serve them over HTTPS, as described in [docs/Publishing.md](../docs/Publishing.md), and pass a `PayloadVerifier` instead.
+## Development settings
+
+The apps load from `http://localhost` (`allowInsecureHTTP`), which is fine on a simulator during development. In production, serve payloads over HTTPS and sign them in CI with a key that never leaves it. See [Publishing](../docs/Publishing.md).
