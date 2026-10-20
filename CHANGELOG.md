@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](https://semver.org). The payload format is versioned separately by `schemaVersion` (see `SchemaVersion`).
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-10-20
 
 First release. Payload schema `1.0`.
 
