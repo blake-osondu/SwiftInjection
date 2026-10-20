@@ -422,4 +422,47 @@ final class CompilerV2Tests: XCTestCase {
         let errors = SwiftUICompiler.compile(source: screen("PrimaryButton(\"Go\")"), fileName: "Screen.swift", components: ["PrimaryButton"]).diagnostics.map(\.description)
         XCTAssertEqual(errors, ["Screen.swift:7:9: error: Arguments to the custom component 'PrimaryButton' must be labeled (they become its props)"])
     }
+
+    func testNumberFormatting() throws {
+        let payload = try compile(screen(state: "@State var price = 12.5", """
+        VStack {
+                    Text(price.formatted(.currency(code: "USD")))
+                    Text(price, format: .currency(code: "EUR"))
+                    Text("Rating " + price.formatted(.number.precision(.fractionLength(1))))
+                    Text(String(format: "%.2f", price))
+                }
+        """))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 1))
+        try assertBody(payload, equals: #"""
+        {"vStack": {"children": [
+          {"text": {"value": {"currency": [{"var": "price"}, "USD"]}}},
+          {"text": {"value": {"currency": [{"var": "price"}, "EUR"]}}},
+          {"text": {"value": {"concat": ["Rating ", {"fixed": [{"var": "price"}, 1]}]}}},
+          {"text": {"value": {"fixed": [{"var": "price"}, 2]}}}
+        ]}}
+        """#)
+        XCTAssertEqual(diagnostics(screen(state: "@State var name = \"x\"", "Text(name.formatted(.currency(code: \"USD\")))")).count, 1)
+        XCTAssertEqual(diagnostics(screen(state: "@State var price = 1.0", "Text(price.formatted(.percent))")).count, 1)
+    }
+
+    func testGridsAndColorsFromState() throws {
+        let source = screen(state: "@State var products = [Product(name: \"Mug\", color: \"#FF8800\")]", """
+        VStack {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 16) {
+                        ForEach(products) { product in
+                            Text(product.name).foregroundColor(Color(hex: product.color))
+                        }
+                    }
+                    LazyHGrid(rows: Array(repeating: GridItem(.fixed(80)), count: 2)) { Text("a") }
+                    Grid(horizontalSpacing: 4) { GridRow { Text("x"); Text("y") } }
+                }
+        """, extra: "struct Product: Identifiable { var id = UUID(); var name: String; var color: String }")
+        let body = try json(try compile(source).body)
+        XCTAssertTrue(body.contains(#""columns":[{"minimum":160,"size":"adaptive","spacing":12}]"#), body)
+        XCTAssertTrue(body.contains(#""rows":[{"size":"fixed","value":80},{"size":"fixed","value":80}]"#), body)
+        XCTAssertTrue(body.contains(#""foregroundColor":{"color":{"var":"product.color"}}"#), body)
+        XCTAssertTrue(body.contains(#""gridRow""#) && body.contains(#""horizontalSpacing":4"#), body)
+        XCTAssertEqual(diagnostics(screen("LazyVGrid(columns: cols) { Text(\"a\") }")).count, 1)
+        XCTAssertEqual(diagnostics(screen("LazyVGrid(columns: [GridItem(.huge)]) { Text(\"a\") }")).count, 1)
+    }
 }

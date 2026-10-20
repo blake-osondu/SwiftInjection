@@ -28,13 +28,33 @@ public final class RemotePayloadModel: ObservableObject {
     private let loader: PayloadLoader
     private let updatePolicy: PayloadUpdatePolicy
     private let configureStore: (StateStore) -> Void
+    private var hostState: [String: RuntimeValue]
     private var started = false
 
     public init(loader: PayloadLoader, updatePolicy: PayloadUpdatePolicy = .nextLaunch,
+                hostState: [String: RuntimeValue] = [:],
                 configureStore: @escaping (StateStore) -> Void = { _ in }) {
         self.loader = loader
         self.updatePolicy = updatePolicy
+        self.hostState = hostState
         self.configureStore = configureStore
+    }
+
+    /// Writes app-owned values (e.g. a cart from TCA) into the screen's state at the given paths. Applied to every
+    /// payload shown, and pushed into the current screen whenever they change. The payload's own state at other
+    /// paths is untouched.
+    public func setHostState(_ state: [String: RuntimeValue]) {
+        hostState = state
+        if let store { apply(state, to: store) }
+    }
+
+    private func apply(_ state: [String: RuntimeValue], to store: StateStore) {
+        guard !state.isEmpty else { return }
+        store.update { root in
+            for (path, value) in state {
+                root = root.setting(value, at: path.statePath)
+            }
+        }
     }
 
     public func start() async {
@@ -62,6 +82,7 @@ public final class RemotePayloadModel: ObservableObject {
         for warning in loaded.warnings {
             store.onLog("warning: \(warning)")
         }
+        apply(hostState, to: store)
         configureStore(store)
         self.store = store
         self.payload = loaded.payload
@@ -80,15 +101,21 @@ public final class RemotePayloadModel: ObservableObject {
 /// ```
 public struct RemoteInjectedScreen<Placeholder: View, Failure: View>: View {
     @StateObject private var model: RemotePayloadModel
+    private let hostState: [String: RuntimeValue]
     private let placeholder: () -> Placeholder
     private let failure: (PayloadError) -> Failure
 
+    /// - Parameter hostState: App-owned values written into the screen's state at these paths and kept live, e.g.
+    ///   `["cart": try RuntimeValue(encoding: cart)]`. The screen declares matching `@State` with sample values.
     public init(loader: PayloadLoader,
                 updatePolicy: PayloadUpdatePolicy = .nextLaunch,
+                hostState: [String: RuntimeValue] = [:],
                 configureStore: @escaping (StateStore) -> Void = { _ in },
                 @ViewBuilder placeholder: @escaping () -> Placeholder,
                 @ViewBuilder failure: @escaping (PayloadError) -> Failure) {
-        _model = StateObject(wrappedValue: RemotePayloadModel(loader: loader, updatePolicy: updatePolicy, configureStore: configureStore))
+        _model = StateObject(wrappedValue: RemotePayloadModel(loader: loader, updatePolicy: updatePolicy,
+                                                              hostState: hostState, configureStore: configureStore))
+        self.hostState = hostState
         self.placeholder = placeholder
         self.failure = failure
     }
@@ -105,6 +132,7 @@ public struct RemoteInjectedScreen<Placeholder: View, Failure: View>: View {
             }
         }
         .task { await model.start() }
+        .onChange(of: hostState) { model.setHostState($0) }
     }
 }
 
@@ -112,8 +140,9 @@ extension RemoteInjectedScreen where Placeholder == ProgressView<EmptyView, Empt
     /// Shows a spinner while loading and the error's description if nothing could be loaded.
     public init(loader: PayloadLoader,
                 updatePolicy: PayloadUpdatePolicy = .nextLaunch,
+                hostState: [String: RuntimeValue] = [:],
                 configureStore: @escaping (StateStore) -> Void = { _ in }) {
-        self.init(loader: loader, updatePolicy: updatePolicy, configureStore: configureStore,
+        self.init(loader: loader, updatePolicy: updatePolicy, hostState: hostState, configureStore: configureStore,
                   placeholder: { ProgressView() }, failure: { Text($0.description) })
     }
 }

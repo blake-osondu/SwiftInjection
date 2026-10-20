@@ -292,6 +292,21 @@ final class PayloadLoadingTests: XCTestCase {
     }
 
     @MainActor
+    func testHostStateIsInjectedAndKeptLive() async throws {
+        StubURLProtocol.responses[url] = (200, payload("remote", version: "2"))
+        struct Cart: Codable, Equatable { var items: [String]; var total: Double }
+        let model = RemotePayloadModel(loader: try loader(),
+                                       hostState: ["cart": try RuntimeValue(encoding: Cart(items: ["Mug"], total: 12.5)), "user.name": "Ada"])
+        await model.start()
+        let store = try XCTUnwrap(model.store)
+        XCTAssertEqual(try store.value(at: ["cart"])?.decode(Cart.self), Cart(items: ["Mug"], total: 12.5))
+        XCTAssertEqual(store.value(at: ["user", "name"]), "Ada")
+
+        model.setHostState(["cart": try RuntimeValue(encoding: Cart(items: ["Mug", "Tee"], total: 40)), "user.name": "Ada"])
+        XCTAssertEqual(try store.value(at: ["cart"])?.decode(Cart.self), Cart(items: ["Mug", "Tee"], total: 40))
+    }
+
+    @MainActor
     func testModelReportsErrorWhenNothingLoads() async throws {
         let model = RemotePayloadModel(loader: try loader())
         await model.start()

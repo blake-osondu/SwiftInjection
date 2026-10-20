@@ -90,6 +90,7 @@ The output's `schemaVersion` is the **lowest version the screen needs**: `1.0` u
 | `TextField(_:text:prompt:)`, `SecureField(_:text:)`, `Toggle(_:isOn:)` | Bound to state with `$name` / `$item.field` |
 | `Picker(_:selection:) { ForEach(…) { x in Text(x).tag(x) } }` | Or static options: `Text("Small").tag("s")` |
 | `DatePicker(_:selection:displayedComponents:)`, `ProgressView(_:value:total:)` | Dates are stored as ISO 8601 strings |
+| `LazyVGrid(columns:)`, `LazyHGrid(rows:)`, `Grid { GridRow { … } }` | Columns/rows are literal `GridItem(.flexible())`, `.fixed(n)` or `.adaptive(minimum:)` arrays, or `Array(repeating: GridItem(…), count: n)` |
 | `if` / `else if` / `else` | Re-evaluated when state changes |
 
 ## Modifiers
@@ -105,7 +106,8 @@ Arguments can be literals or expressions over state: `.opacity(isBusy ? 0.5 : 1)
 
 ## Expressions and actions
 
-- **Expressions:** literals, `@State` properties, `ForEach` items and their fields, helper parameters, `+ - * / %`, `== != < <= > >=`, `&& || !`, ternaries, string interpolation, `String(x)`, `Double(x)`, `.count`, `.isEmpty`, subscripts (`items[0]`, `user["name"]`).
+- **Expressions:** literals, `@State` properties, `ForEach` items and their fields, helper parameters, `+ - * / %`, `== != < <= > >=`, `&& || !`, ternaries, string interpolation, `String(x)`, `Double(x)`, `.count`, `.isEmpty`, subscripts (`items[0]`, `user["name"]`), and number formatting: `price.formatted(.currency(code: "USD"))`, `Text(price, format: .currency(code: "USD"))`, `x.formatted(.number.precision(.fractionLength(1)))`, `String(format: "%.2f", x)` (schema 1.1).
+- **Colors from state:** `Color(hex: product.color)` (from `SwiftInjectionAuthoring`) takes a `#RRGGBB` string expression.
 - **Actions** (button, gesture and event closures): assignments (`count = 0`, `todo.title = ""`), `+= -= *= /=`, `flag.toggle()`, `if` / `else if` / `else`, `runScript(…)` and `hostAction(…)`.
 
 ## Scripts
@@ -168,6 +170,6 @@ Host functions the app must register: submitRSVP
 
 - **Types are inferred, not checked.** SwiftSyntax reads syntax only; there's no type checker. Types come from `@State` values, model fields, annotations and literals, and they decide things like whether `+` adds numbers or joins strings.
 - **No integer division.** `a / b` on two `Int`s is an error, because the runtime's numbers are doubles and would give `3.5` where Swift gives `3`. Make one side a `Double`.
-- **Colors become fixed hex values.** `.blue` uses the iOS light-appearance value and doesn't adapt to dark mode. Asset colors and dynamic colors (`.primary`, `.secondary`) aren't supported.
+- **Colors become fixed hex values** (unless they come from state with `Color(hex:)`). `.blue` uses the iOS light-appearance value and doesn't adapt to dark mode. Asset colors and dynamic colors (`.primary`, `.secondary`) aren't supported.
 - **Closures need named parameters** (`{ todo in … }`, not `$0`). `ForEach` iterates `@State` arrays and their fields, not ranges.
 - **Not supported yet:** item-based presentation (`.sheet(item:)`), `DatePicker` ranges, `Slider`, `Stepper`, `Menu`, toolbars, environment values, and adding or removing array elements in Swift (use a script). Register a native view as a [custom component](../Sources/SwiftInjection/Custom/CustomComponent.swift) when you need something the subset can't express.

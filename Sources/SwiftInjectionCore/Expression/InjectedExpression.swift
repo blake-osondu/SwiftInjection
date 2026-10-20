@@ -32,6 +32,8 @@ public indirect enum InjectedExpression: Hashable, Sendable {
         case count, at
         // host functions: {"call": ["name", arg, ...]}
         case call
+        // number formatting (schema 1.1): {"currency": [amount, "USD"]}, {"fixed": [number, 2]}
+        case currency, fixed
     }
 }
 

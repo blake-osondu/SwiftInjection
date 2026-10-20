@@ -71,5 +71,10 @@ final class CorePayloadTests: XCTestCase {
         XCTAssertEqual(SchemaVersion.minimum(for: paged), SchemaVersion(major: 1, minor: 1))
         XCTAssertTrue(SchemaVersion.minimum(for: paged).isSupported(by: .current))
         XCTAssertFalse(SchemaVersion.minimum(for: paged).isSupported(by: SchemaVersion(major: 1, minor: 0)))
+
+        let priced = try JSONDecoder().decode(InjectedPayload.self, from: Data(#"""
+        {"body": {"text": {"value": {"currency": [{"var": "price"}, "USD"]}}}}
+        """#.utf8))
+        XCTAssertEqual(SchemaVersion.minimum(for: priced), SchemaVersion(major: 1, minor: 1))
     }
 }

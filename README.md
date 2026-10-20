@@ -145,6 +145,12 @@ store.functions["track"] = { args, _ in
 }
 ```
 
+To drive a remote screen from your app's own state (a cart, search results), pass it in. The screen reads it like any other state, and it updates when your state does:
+
+```swift
+RemoteInjectedScreen(loader: loader, hostState: ["cart": try RuntimeValue(encoding: cart)])
+```
+
 Treat anything you expose like a public API: a payload can call it with any arguments.
 
 ## Documentation

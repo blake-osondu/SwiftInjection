@@ -20,6 +20,7 @@ public struct SchemaVersion: Hashable, Comparable, Codable, CustomStringConverti
     static let introduced: [String: SchemaVersion] = [
         "systemFontSize": .init(major: 1, minor: 1), "aspectRatio": .init(major: 1, minor: 1),
         "tabViewStyle": .init(major: 1, minor: 1), "indexViewStyle": .init(major: 1, minor: 1),
+        "currency": .init(major: 1, minor: 1), "fixed": .init(major: 1, minor: 1),
     ]
 
     /// The lowest schema version that can render `payload`: 1.0 unless it uses something added later.
