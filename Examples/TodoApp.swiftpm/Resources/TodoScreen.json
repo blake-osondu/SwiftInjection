@@ -1,0 +1,156 @@
+{
+  "body" : {
+    "navigationStack" : {
+      "root" : {
+        "group" : {
+          "children" : [
+            {
+              "list" : {
+                "content" : {
+                  "hStack" : {
+                    "children" : [
+                      {
+                        "button" : {
+                          "action" : [
+                            {
+                              "set" : "todo.done",
+                              "to" : {
+                                "not" : [
+                                  {
+                                    "var" : "todo.done"
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "label" : {
+                            "image" : {
+                              "modifiers" : [
+                                {
+                                  "foregroundColor" : {
+                                    "color" : {
+                                      "if" : [
+                                        {
+                                          "var" : "todo.done"
+                                        },
+                                        "#FF34C759",
+                                        "#FF8E8E93"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "systemName" : {
+                                "if" : [
+                                  {
+                                    "var" : "todo.done"
+                                  },
+                                  "checkmark.circle.fill",
+                                  "circle"
+                                ]
+                              }
+                            }
+                          },
+                          "modifiers" : [
+                            {
+                              "buttonStyle" : {
+                                "style" : "borderless"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "field" : {
+                          "modifiers" : [
+                            {
+                              "strikethrough" : {
+                                "isActive" : {
+                                  "var" : "todo.done"
+                                }
+                              }
+                            }
+                          ],
+                          "text" : "todo.title",
+                          "title" : "To-do"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "identity" : {
+                  "var" : "todo.id"
+                },
+                "itemName" : "todo",
+                "items" : "todos",
+                "modifiers" : [
+                  {
+                    "navigationTitle" : {
+                      "title" : "To-dos"
+                    }
+                  },
+                  {
+                    "sheet" : {
+                      "content" : {
+                        "text" : {
+                          "modifiers" : [
+                            {
+                              "padding" : {
+
+                              }
+                            }
+                          ],
+                          "value" : "This screen was downloaded, not built into the app."
+                        }
+                      },
+                      "isPresented" : "showingAbout"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "button" : {
+                "action" : [
+                  {
+                    "set" : "showingAbout",
+                    "to" : true
+                  }
+                ],
+                "modifiers" : [
+                  {
+                    "padding" : {
+
+                    }
+                  }
+                ],
+                "title" : "About this screen"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "schemaVersion" : "1.0",
+  "state" : {
+    "showingAbout" : false,
+    "todos" : [
+      {
+        "done" : false,
+        "id" : "Todo-1",
+        "title" : "Try SwiftInjection"
+      },
+      {
+        "done" : false,
+        "id" : "Todo-2",
+        "title" : "Edit TodoScreen.swift"
+      },
+      {
+        "done" : false,
+        "id" : "Todo-3",
+        "title" : "Tap Reload"
+      }
+    ]
+  }
+}

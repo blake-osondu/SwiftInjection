@@ -1,29 +1,47 @@
-// swift-tools-version: 5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
     name: "SwiftInjection",
-    platforms: [.iOS(.v16)],
+    platforms: [.iOS(.v16), .macOS(.v13)],
     products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(
-            name: "SwiftInjection",
-            targets: ["SwiftInjection"]),
+        /// The SwiftUI runtime that renders payloads (iOS).
+        .library(name: "SwiftInjection", targets: ["SwiftInjection"]),
+        /// The platform-neutral payload model: views, expressions, actions, validation and signing.
+        .library(name: "SwiftInjectionCore", targets: ["SwiftInjectionCore"]),
+        /// `script(…)` / `runScript(…)` for screens that call payload scripts; import it in the target holding your screens.
+        .library(name: "SwiftInjectionAuthoring", targets: ["SwiftInjectionAuthoring"]),
+        /// Compiles a subset of SwiftUI source into payloads (macOS).
+        .library(name: "SwiftInjectionCompiler", targets: ["SwiftInjectionCompiler"]),
+        /// Command-line tool for publishing payloads: compile, keygen, sign, validate (macOS).
+        .executable(name: "swift-injection", targets: ["SwiftInjectionCLI"]),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
+        // Matches the Swift 6.2 toolchain; bump with the toolchain.
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "SwiftInjection",
-            dependencies: []),
-        .testTarget(
-            name: "SwiftInjectionTests",
-            dependencies: ["SwiftInjection"]),
+        .target(name: "SwiftInjectionCore"),
+        .target(name: "SwiftInjection", dependencies: ["SwiftInjectionCore"]),
+        .target(name: "SwiftInjectionTools", dependencies: ["SwiftInjectionCore"]),
+        .target(name: "SwiftInjectionAuthoring"),
+        .target(name: "SwiftInjectionCompiler", dependencies: [
+            "SwiftInjectionCore",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftParser", package: "swift-syntax"),
+            .product(name: "SwiftOperators", package: "swift-syntax"),
+        ]),
+        .executableTarget(name: "SwiftInjectionCLI", dependencies: [
+            "SwiftInjectionTools",
+            "SwiftInjectionCompiler",
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+        ]),
+        .testTarget(name: "SwiftInjectionCoreTests", dependencies: ["SwiftInjectionCore"]),
+        .testTarget(name: "SwiftInjectionToolsTests", dependencies: ["SwiftInjectionTools"]),
+        .testTarget(name: "SwiftInjectionCompilerTests", dependencies: ["SwiftInjectionCompiler"]),
+        .testTarget(name: "SwiftInjectionTests", dependencies: ["SwiftInjection", "SwiftInjectionCompiler", "ViewInspector"]),
     ]
 )

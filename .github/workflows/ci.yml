@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - uses: actions/cache@v4
+        with:
+          path: .spm
+          key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
+
+      - name: Pick an iPhone simulator
+        run: |
+          id=$(xcrun simctl list devices available --json | python3 -c '
+          import json, re, sys
+          devices = json.load(sys.stdin)["devices"]
+          version = lambda runtime: [int(n) for n in re.findall(r"\d+", runtime.split("iOS")[-1])]
+          phones = [(version(runtime), d["udid"]) for runtime, ds in devices.items() if "iOS" in runtime
+                    for d in ds if d["name"].startswith("iPhone")]
+          print(max(phones)[1])')
+          echo "SIMULATOR_ID=$id" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test -scheme SwiftInjection-Package -destination "id=$SIMULATOR_ID" \
+            -clonedSourcePackagesDirPath .spm 2>&1 | tee build.log
+
+      - name: Build the example app
+        working-directory: Examples/TodoApp.swiftpm
+        run: |
+          set -o pipefail
+          xcodebuild build -scheme TodoApp -destination "id=$SIMULATOR_ID" -clonedSourcePackagesDirPath ../../.spm 2>&1 | tail -5
+
+      - name: No warnings in Sources
+        run: |
+          warnings=$(grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u || true)
+          if [ -n "$warnings" ]; then
+            echo "$warnings"
+            echo "::error::Compiler warnings in Sources/ (listed above)"
+            exit 1
+          fi
+
+  core-macos:
+    # Also runs the Tools and Compiler tests and builds the CLI; the name is kept because branch protection requires it.
+    name: Core tests (macOS)
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Test Core, Tools and Compiler
+        run: |
+          set -o pipefail
+          xcodebuild test -scheme SwiftInjectionCore -destination "platform=macOS" 2>&1 | tee build.log
+          xcodebuild test -scheme SwiftInjectionTools -destination "platform=macOS" 2>&1 | tee -a build.log
+          xcodebuild test -scheme SwiftInjectionCompiler -destination "platform=macOS" 2>&1 | tee -a build.log
+
+      - name: Build the swift-injection CLI
+        run: |
+          set -o pipefail
+          swift build -c release --product swift-injection 2>&1 | tee -a build.log
+          "$(swift build -c release --product swift-injection --show-bin-path)/swift-injection" --version
+
+      - name: No warnings in Sources
+        run: |
+          warnings=$(grep -E "^$GITHUB_WORKSPACE/Sources/.*: warning:" build.log | sort -u || true)
+          if [ -n "$warnings" ]; then
+            echo "$warnings"
+            echo "::error::Compiler warnings in Sources/ (listed above)"
+            exit 1
+          fi

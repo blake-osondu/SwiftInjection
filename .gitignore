@@ -7,3 +7,8 @@ DerivedData/
 .swiftpm/config/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+/.spm
+# Example app: Xcode's package state, and payloads compiled by Examples/serve.sh
+/Examples/TodoApp.swiftpm/.swiftpm
+/Examples/TodoApp.swiftpm/.build
+/Examples/screens/*.json
