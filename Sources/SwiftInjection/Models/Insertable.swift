@@ -96,6 +96,8 @@ struct Insertable: View {
             ScrollViewInsertable(viewStore: viewStore)
         case .custom(let viewStore):
             CustomInsertable(viewStore: viewStore)
+        case .toggle(let viewStore):
+            ToggleInsertable(viewStore: viewStore)
         case .viewStoreReference(let id):
             if let view = views[id] {
                 InjectedContent(view)

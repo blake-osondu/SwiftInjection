@@ -60,6 +60,7 @@ indirect public enum InjectedView: Codable, Hashable {
     case scrollView(viewStore: ScrollViewStore)
     /// A view registered by the host app.
     case custom(viewStore: CustomViewStore)
+    case toggle(viewStore: ToggleViewStore)
     /// A view defined once in the container and referenced by id.
     case viewStoreReference(id: String)
     case empty(id: String = "")
@@ -109,6 +110,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .datePicker(let viewStore): return viewStore
         case .scrollView(let viewStore): return viewStore
         case .custom(let viewStore): return viewStore
+        case .toggle(let viewStore): return viewStore
         case .viewStoreReference, .empty, .unsupported: return nil
         }
     }
@@ -165,6 +167,7 @@ indirect public enum InjectedView: Codable, Hashable {
             case .datePicker(var viewStore): viewStore.modifiers = newValue; self = .datePicker(viewStore: viewStore)
             case .scrollView(var viewStore): viewStore.modifiers = newValue; self = .scrollView(viewStore: viewStore)
             case .custom(var viewStore): viewStore.modifiers = newValue; self = .custom(viewStore: viewStore)
+            case .toggle(var viewStore): viewStore.modifiers = newValue; self = .toggle(viewStore: viewStore)
             case .viewStoreReference, .empty, .unsupported: break
             }
         }
@@ -228,6 +231,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case "datePicker": self = .datePicker(viewStore: try container.decode(DatePickerViewStore.self, forKey: key))
         case "scrollView": self = .scrollView(viewStore: try container.decode(ScrollViewStore.self, forKey: key))
         case "custom": self = .custom(viewStore: try container.decode(CustomViewStore.self, forKey: key))
+        case "toggle": self = .toggle(viewStore: try container.decode(ToggleViewStore.self, forKey: key))
         case "ref": self = .viewStoreReference(id: try container.decode(String.self, forKey: key))
         case "empty": self = .empty()
         default:
@@ -279,6 +283,7 @@ indirect public enum InjectedView: Codable, Hashable {
         case .datePicker(let viewStore): try container.encode(viewStore, forKey: Key("datePicker"))
         case .scrollView(let viewStore): try container.encode(viewStore, forKey: Key("scrollView"))
         case .custom(let viewStore): try container.encode(viewStore, forKey: Key("custom"))
+        case .toggle(let viewStore): try container.encode(viewStore, forKey: Key("toggle"))
         case .viewStoreReference(let id): try container.encode(id, forKey: Key("ref"))
         case .empty: try container.encode([String: String](), forKey: Key("empty"))
         case let .unsupported(name, content): try container.encode(content, forKey: Key(name))
@@ -328,5 +333,6 @@ extension SpacerViewStore: InjectedViewStore {}
 extension TableViewStore: InjectedViewStore {}
 extension TabViewStore: InjectedViewStore {}
 extension TextViewStore: InjectedViewStore {}
+extension ToggleViewStore: InjectedViewStore {}
 extension VStackViewStore: InjectedViewStore {}
 extension ZStackViewStore: InjectedViewStore {}

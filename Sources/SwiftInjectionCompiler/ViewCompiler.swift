@@ -109,7 +109,8 @@ extension CompilerContext {
             if let modifier = modifier(name, Arguments(call), at: call) { modifiers.append(modifier) } else { failed = true }
         }
         guard var view = base, !failed else { return nil }
-        view.modifiers = modifiers
+        // Inlined helper views bring their own modifiers; the call site's apply after them.
+        view.modifiers += modifiers
         return view
     }
 
@@ -209,10 +210,299 @@ extension CompilerContext {
             let header = args.closure("header").flatMap { self.children($0) }.map(single) ?? args.labeled["header"].flatMap(view)
             let footer = args.closure("footer").flatMap { self.children($0) }.map(single) ?? args.labeled["footer"].flatMap(view)
             return .section(viewStore: SectionViewStore(title: title, header: header, footer: footer, children: children))
+        case "NavigationLink":
+            // NavigationLink("Title") { destination } · NavigationLink { destination } label: { … }
+            guard let destinationClosure = args.closure("destination") ?? args.trailing,
+                  let destination = viewList(destinationClosure.statements).map(single) else {
+                if args.closure("destination") == nil && args.trailing == nil { error("NavigationLink needs a destination closure", at: call) }
+                return nil
+            }
+            let label: InjectedView
+            if let labelClosure = args.closure("label") {
+                guard let views = viewList(labelClosure.statements) else { return nil }
+                label = single(views)
+            } else if let title = args.unlabeled.first, let typed = expression(title) {
+                label = .text(viewStore: TextViewStore(value: typed.expression))
+            } else {
+                error("NavigationLink needs a title or a label", at: call)
+                return nil
+            }
+            return .navigationLink(viewStore: NavigationLinkViewStore(destination: destination, label: label))
+        case "ForEach":
+            return dataSource(args, at: call).map {
+                .forEach(viewStore: ForEachViewStore(items: $0.items, itemName: $0.itemName, identity: $0.identity, content: $0.content))
+            }
+        case "List":
+            if args.unlabeled.isEmpty {
+                return children(args.trailing).map { .list(viewStore: ListViewStore(children: $0)) }
+            }
+            return dataSource(args, at: call).map {
+                .list(viewStore: ListViewStore(items: $0.items, itemName: $0.itemName, identity: $0.identity, content: $0.content))
+            }
+        case "TextField", "SecureField":
+            guard let text = args.labeled["text"].flatMap(bindingPath) else {
+                if args.labeled["text"] == nil { error("\(name) needs `text: $binding`", at: call) }
+                return nil
+            }
+            let title = args.unlabeled.first.flatMap(expression)?.expression
+            let prompt = args.labeled["prompt"].flatMap(textValue)
+            return name == "TextField"
+                ? .field(viewStore: FieldViewStore(text: text.path, title: title, prompt: prompt))
+                : .secureField(viewStore: SecureFieldViewStore(text: text.path, title: title, prompt: prompt))
+        case "Toggle":
+            guard let isOn = args.labeled["isOn"].flatMap(bindingPath) else {
+                if args.labeled["isOn"] == nil { error("Toggle needs `isOn: $binding`", at: call) }
+                return nil
+            }
+            let label = args.trailing.flatMap { self.children($0) }.map(single)
+            let title = args.unlabeled.first.flatMap(expression)?.expression
+            return .toggle(viewStore: ToggleViewStore(isOn: isOn.path, title: title, label: label))
+        case "Picker":
+            return picker(args, at: call)
+        case "DatePicker":
+            guard let selection = args.labeled["selection"].flatMap(bindingPath) else {
+                if args.labeled["selection"] == nil { error("DatePicker needs `selection: $binding`", at: call) }
+                return nil
+            }
+            if let range = args.labeled["in"] {
+                error("DatePicker ranges aren't supported yet", at: range)
+                return nil
+            }
+            var components: [InjectedDatePickerComponents]?
+            if let argument = args.labeled["displayedComponents"] {
+                let names = argument.as(ArrayExprSyntax.self).map { $0.elements.map(\.expression) } ?? [argument]
+                components = []
+                for name in names {
+                    guard let raw = name.as(MemberAccessExprSyntax.self)?.declName.baseName.text,
+                          let component = InjectedDatePickerComponents(rawValue: raw) else {
+                        error("displayedComponents must be .date, .hourAndMinute or both", at: name)
+                        return nil
+                    }
+                    components?.append(component)
+                }
+            }
+            let title = args.unlabeled.first.flatMap(expression)?.expression
+            return .datePicker(viewStore: DatePickerViewStore(selection: selection.path, title: title, components: components))
+        case "ProgressView":
+            let title = args.unlabeled.first.flatMap(expression)?.expression
+            let value = args.labeled["value"].flatMap(number)
+            let total = args.labeled["total"].flatMap(number)
+            return .progressView(viewStore: ProgressViewStore(title: title, value: value, total: total))
         default:
-            error("'\(name)' isn't supported in v1 (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack)", at: call.calledExpression)
+            if let helper = helpers[name] {
+                return helperView(helper, args, at: call)
+            }
+            error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
             return nil
         }
+    }
+
+    // MARK: - Data-driven views
+
+    struct DataSource {
+        var items: String
+        var itemName: String
+        var identity: InjectedExpression?
+        var content: InjectedView
+    }
+
+    /// `ForEach(todos) { todo in … }`, `ForEach($todos) { $todo in … }`, `ForEach(names, id: \.self) { name in … }`.
+    func dataSource(_ args: Arguments, at call: FunctionCallExprSyntax) -> DataSource? {
+        guard let data = args.unlabeled.first else {
+            error("Expected the data to iterate, e.g. ForEach(todos) { todo in … }", at: call)
+            return nil
+        }
+        if let infix = data.as(InfixOperatorExprSyntax.self),
+           ["..<", "..."].contains(infix.operator.as(BinaryOperatorExprSyntax.self)?.operator.text ?? "") {
+            error("ForEach/List can iterate @State arrays and their fields (not ranges or computed values)", at: data)
+            return nil
+        }
+        let source: (path: String, type: ValueType)?
+        if data.as(DeclReferenceExprSyntax.self)?.baseName.text.hasPrefix("$") == true || data.as(MemberAccessExprSyntax.self)?.base?.trimmedDescription.hasPrefix("$") == true {
+            source = bindingPath(data)
+        } else if let typed = expression(data), case let .variable(path, nil) = typed.expression {
+            source = (path, typed.type)
+        } else {
+            error("ForEach/List can iterate @State arrays and their fields (not ranges or computed values)", at: data)
+            return nil
+        }
+        guard let source else { return nil }
+        guard let closure = args.trailing ?? args.closure("content") else {
+            error("Expected a closure: { item in … }", at: call)
+            return nil
+        }
+        guard let parameter = closureParameter(closure) else {
+            error("Name the closure's parameter, e.g. { todo in … } ($0 isn't supported)", at: closure)
+            return nil
+        }
+        let itemName = parameter.hasPrefix("$") ? String(parameter.dropFirst()) : parameter
+        let elementType = source.type.element
+
+        var identity: InjectedExpression?
+        if let keyPath = args.labeled["id"] {
+            guard let keyPathSyntax = keyPath.as(KeyPathExprSyntax.self), keyPathSyntax.components.count == 1,
+                  case .property(let property)? = keyPathSyntax.components.first?.component else {
+                error("id: must be a key path like \\.self or \\.id", at: keyPath)
+                return nil
+            }
+            let field = property.declName.baseName.text
+            identity = field == "self" ? .var(itemName) : .var("\(itemName).\(field)")
+        } else if case .model(let modelName) = elementType, models[modelName]?.hasID == true {
+            identity = .var("\(itemName).id")
+        }
+
+        let savedLocals = locals
+        locals[itemName] = elementType
+        defer { locals = savedLocals }
+        guard let views = viewList(closure.statements) else { return nil }
+        return DataSource(items: source.path, itemName: itemName, identity: identity, content: single(views))
+    }
+
+    func closureParameter(_ closure: ClosureExprSyntax) -> String? {
+        switch closure.signature?.parameterClause {
+        case .simpleInput(let list)?: return list.first?.name.text
+        case .parameterClause(let clause)?: return clause.parameters.first?.firstName.text
+        case nil: return nil
+        }
+    }
+
+    /// The string inside `Text("…")`, used for prompts and alert messages.
+    func textValue(_ syntax: ExprSyntax) -> InjectedExpression? {
+        guard let call = syntax.as(FunctionCallExprSyntax.self), call.calledExpression.trimmedDescription == "Text",
+              let value = Arguments(call).unlabeled.first, let typed = expression(value) else {
+            error("Expected Text(\"…\")", at: syntax)
+            return nil
+        }
+        return typed.expression
+    }
+
+    /// `Picker("Size", selection: $size) { ForEach(sizes, id: \.self) { size in Text(size).tag(size) } }`, or static
+    /// options `Text("Small").tag("s")`, which become synthesized state.
+    private func picker(_ args: Arguments, at call: FunctionCallExprSyntax) -> InjectedView? {
+        guard let selection = args.labeled["selection"].flatMap(bindingPath) else {
+            if args.labeled["selection"] == nil { error("Picker needs `selection: $binding`", at: call) }
+            return nil
+        }
+        guard let content = args.trailing ?? args.closure("content") else {
+            error("Picker needs its options in a closure", at: call)
+            return nil
+        }
+        let title = args.unlabeled.first.flatMap(expression)?.expression
+        let label = args.closure("label").flatMap { children($0) }.map(single)
+        let statements = Array(content.statements)
+
+        if statements.count == 1, case .expr(let expr) = statements[0].item, let forEach = expr.as(FunctionCallExprSyntax.self),
+           forEach.calledExpression.trimmedDescription == "ForEach" {
+            guard var source = dataSource(Arguments(forEach), at: forEach) else { return nil }
+            // The option's `.tag(…)` is the value written to the selection.
+            var value: InjectedExpression?
+            source.content.modifiers.removeAll { modifier in
+                if case .tag(let tag) = modifier { value = tag; return true }
+                return false
+            }
+            return .picker(viewStore: PickerViewStore(selection: selection.path, items: source.items, itemName: source.itemName,
+                                                      title: title, label: label, content: source.content, value: value))
+        }
+
+        var options: [RuntimeValue] = []
+        for statement in statements {
+            guard case .expr(let expr) = statement.item, let tagCall = expr.as(FunctionCallExprSyntax.self),
+                  let member = tagCall.calledExpression.as(MemberAccessExprSyntax.self), member.declName.baseName.text == "tag",
+                  let textCall = member.base?.as(FunctionCallExprSyntax.self), textCall.calledExpression.trimmedDescription == "Text",
+                  let labelSyntax = Arguments(textCall).unlabeled.first?.as(StringLiteralExprSyntax.self), let labelText = plainText(labelSyntax),
+                  let tagSyntax = Arguments(tagCall).unlabeled.first, let tag = expression(tagSyntax),
+                  case .literal(let tagValue) = tag.expression else {
+                error("Picker options must be ForEach(…) { … .tag(…) } or Text(\"Label\").tag(literal)", at: statement)
+                return nil
+            }
+            options.append(["label": .string(labelText), "value": tagValue])
+        }
+        let key = "__options\(syntheticState.count)"
+        syntheticState[key] = .array(options)
+        return .picker(viewStore: PickerViewStore(selection: selection.path, items: key, itemName: "option", title: title, label: label,
+                                                  content: .text(viewStore: TextViewStore(value: .var("option.label"))),
+                                                  value: .var("option.value")))
+    }
+
+    // MARK: - Helper views
+
+    /// Another View struct in the file. Without properties it becomes a shared named view (`{"ref": name}`);
+    /// with properties it's inlined with its arguments (`@Binding` properties take `$bindings`).
+    private func helperView(_ decl: StructDeclSyntax, _ args: Arguments, at call: FunctionCallExprSyntax) -> InjectedView? {
+        let name = decl.name.text
+        guard !helperStack.contains(name) else {
+            error("'\(name)' uses itself; recursive views aren't supported", at: call)
+            return nil
+        }
+        var fields: [(name: String, isBinding: Bool, defaultValue: ExprSyntax?, type: ValueType)] = []
+        var body: CodeBlockItemListSyntax?
+        for member in decl.memberBlock.members {
+            guard let variable = member.decl.as(VariableDeclSyntax.self), let binding = variable.bindings.first,
+                  let fieldName = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text else { continue }
+            if fieldName == "body" {
+                if case .getter(let statements)? = binding.accessorBlock?.accessors { body = statements }
+                continue
+            }
+            if isState(variable) {
+                error("Helper views can't have @State; keep state in the screen and pass it in (with @Binding to change it)", at: variable)
+                return nil
+            }
+            fields.append((fieldName, hasAttribute("Binding", variable), binding.initializer?.value,
+                           binding.typeAnnotation.map { valueType(of: $0.type) } ?? .unknown))
+        }
+        guard let body else {
+            error("'\(name)' has no `body`", at: decl.name)
+            return nil
+        }
+
+        func compileBody(with parameters: [String: Parameter]) -> InjectedView? {
+            let saved = (state, locals, self.parameters)
+            state = [:]
+            locals = [:]
+            self.parameters = parameters
+            helperStack.append(name)
+            defer {
+                (state, locals, self.parameters) = saved
+                helperStack.removeLast()
+            }
+            return viewBody(body)
+        }
+
+        if fields.isEmpty {
+            if !args.unlabeled.isEmpty || !args.labeled.isEmpty {
+                error("'\(name)' takes no arguments", at: call)
+                return nil
+            }
+            if namedViews[name] == nil {
+                guard let compiled = compileBody(with: [:]) else { return nil }
+                namedViews[name] = compiled
+            }
+            return .viewStoreReference(id: name)
+        }
+
+        var parameters: [String: Parameter] = [:]
+        for field in fields {
+            if let argument = args.labeled[field.name] {
+                if field.isBinding {
+                    guard let binding = bindingPath(argument) else { return nil }
+                    parameters[field.name] = .binding(path: binding.path, type: binding.type)
+                } else {
+                    guard let typed = expression(argument) else { return nil }
+                    parameters[field.name] = .value(typed)
+                }
+            } else if let defaultValue = field.defaultValue, !field.isBinding {
+                guard let typed = expression(defaultValue) else { return nil }
+                parameters[field.name] = .value(typed)
+            } else {
+                error("Missing argument '\(field.name)' for '\(name)'", at: call)
+                return nil
+            }
+        }
+        for label in args.labeled.keys where !fields.contains(where: { $0.name == label }) {
+            error("'\(name)' has no property '\(label)'", at: call)
+            return nil
+        }
+        return compileBody(with: parameters)
     }
 
     private func button(_ args: Arguments, at call: FunctionCallExprSyntax) -> InjectedView? {

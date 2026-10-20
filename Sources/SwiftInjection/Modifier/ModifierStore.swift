@@ -194,6 +194,9 @@ struct ModifierStore: ViewModifier {
         case let .onSubmit(actions):
             return AnyView(content.onSubmit { scope.perform(actions) })
 
+        case let .navigationTitle(title):
+            return AnyView(content.navigationTitle(Text(scope.string(title))))
+
         // MARK: Controls & input
         case let .disabled(isDisabled):
             return when(scope.resolve(isDisabled, as: Bool.self)) { AnyView(content.disabled($0)) }
