@@ -44,6 +44,12 @@ struct ModifierStore: ViewModifier {
         // MARK: Text & fonts
         case let .systemFont(font):
             return when(scope.resolve(font, as: InjectedSystemFont.self)) { AnyView(content.font($0.font)) }
+        case let .systemFontSize(size, weight, design):
+            return when(length(size)) {
+                AnyView(content.font(.system(size: $0,
+                                             weight: scope.resolve(weight, as: InjectedFontWeight.self)?.render,
+                                             design: scope.resolve(design, as: InjectedFontDesign.self)?.render)))
+            }
         case let .font(name, size):
             guard let name = scope.resolve(name, as: String.self), let size = length(size) else { return plain }
             return AnyView(content.font(.custom(name, size: size)))
@@ -113,6 +119,10 @@ struct ModifierStore: ViewModifier {
             let (horizontal, vertical) = (scope.resolve(horizontal, as: Bool.self), scope.resolve(vertical, as: Bool.self))
             guard horizontal != nil || vertical != nil else { return AnyView(content.fixedSize()) }
             return AnyView(content.fixedSize(horizontal: horizontal ?? false, vertical: vertical ?? false))
+        case let .aspectRatio(ratio, contentMode):
+            return when(scope.resolve(contentMode, as: InjectedContentMode.self)) {
+                AnyView(content.aspectRatio(length(ratio), contentMode: $0.render))
+            }
         case let .ignoresSafeArea(edges):
             return AnyView(content.ignoresSafeArea(.container, edges: scope.resolve(edges, as: InjectedEdgeSet.self)?.render ?? .all))
 
@@ -194,6 +204,18 @@ struct ModifierStore: ViewModifier {
         case let .onSubmit(actions):
             return AnyView(content.onSubmit { scope.perform(actions) })
 
+        case let .tabViewStyle(style, indexDisplayMode):
+            switch scope.resolve(style, as: InjectedTabViewStyle.self) {
+            case .page?:
+                let mode = scope.resolve(indexDisplayMode, as: InjectedIndexDisplayMode.self) ?? .automatic
+                return AnyView(content.tabViewStyle(.page(indexDisplayMode: mode.pageIndexDisplayMode)))
+            case .automatic?: return AnyView(content.tabViewStyle(.automatic))
+            case nil: return plain
+            }
+        case let .indexViewStyle(mode):
+            return when(scope.resolve(mode, as: InjectedIndexDisplayMode.self)) {
+                AnyView(content.indexViewStyle(.page(backgroundDisplayMode: $0.backgroundDisplayMode)))
+            }
         case let .navigationTitle(title):
             return AnyView(content.navigationTitle(Text(scope.string(title))))
 

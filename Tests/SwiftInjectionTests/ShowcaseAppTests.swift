@@ -54,4 +54,33 @@ final class ShowcaseAppTests: XCTestCase {
         XCTAssertEqual(submitted, ["Ada", "ada@example.com", 0, "none", true])
         XCTAssertTrue(try texts().contains("You're going, Ada! We'll see you there."))
     }
+
+    // MARK: Onboarding (#41)
+
+    func testOnboardingVariantsPageThroughAndHandOff() throws {
+        for (screenName, finalButton) in [("OnboardingScreen", "Get started"), ("OnboardingScreenB", "Let's go")] {
+            let (screen, store) = try load("Simple/Onboarding", screenName)
+            var calls: [String] = []
+            store.functions["finishOnboarding"] = { args, _ in calls.append("finish:" + (args.first?.displayString ?? "")); return .null }
+            store.functions["track"] = { args, _ in calls.append("track:" + (args.first?.displayString ?? "")); return .null }
+
+            XCTAssertNoThrow(try screen.inspect().find(ViewType.TabView.self), screenName)
+            try screen.inspect().find(button: "Next").tap()
+            try screen.inspect().find(button: "Next").tap()
+            XCTAssertEqual(store.value(at: ["page"]), 2, screenName)
+            try screen.inspect().find(button: finalButton).tap()
+            XCTAssertEqual(calls, ["finish:completed"], screenName)
+        }
+    }
+
+    func testOnboardingSkipAndExposureTracking() throws {
+        let (screen, store) = try load("Simple/Onboarding", "OnboardingScreen")
+        var calls: [String] = []
+        store.functions["finishOnboarding"] = { args, _ in calls.append("finish:" + (args.first?.displayString ?? "")); return .null }
+        store.functions["track"] = { args, _ in calls.append("track:" + (args.first?.displayString ?? "")); return .null }
+
+        for candidate in try screen.inspect().findAll(ViewType.AnyView.self) where (try? candidate.callOnAppear()) != nil { break }
+        try screen.inspect().find(button: "Skip").tap()
+        XCTAssertEqual(calls, ["track:onboarding_shown", "finish:skipped"])
+    }
 }

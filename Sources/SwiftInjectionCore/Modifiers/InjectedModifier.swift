@@ -17,6 +17,8 @@ public enum InjectedModifier: Codable {
 
     // MARK: Text & fonts
     case systemFont(font: Expression)
+    /// `.font(.system(size:weight:design:))` (schema 1.1)
+    case systemFontSize(size: Expression, weight: Expression? = nil, design: Expression? = nil)
     case font(name: Expression, size: Expression)
     case fontWeight(weight: Expression)
     case fontDesign(design: Expression)
@@ -45,6 +47,8 @@ public enum InjectedModifier: Codable {
     case layoutPriority(priority: Expression)
     case fixedSize(horizontal: Expression? = nil, vertical: Expression? = nil)
     case ignoresSafeArea(edges: Expression? = nil)
+    /// `ratio` (width ÷ height) or the content's own; `contentMode` "fit" or "fill" (schema 1.1)
+    case aspectRatio(ratio: Expression? = nil, contentMode: Expression)
 
     // MARK: Appearance
     case foregroundColor(color: Expression)
@@ -70,6 +74,10 @@ public enum InjectedModifier: Codable {
     case alert(isPresented: String, alert: InjectedAlert)
     case confirmationDialog(isPresented: String, title: Expression, titleVisibility: Expression? = nil, actions: InjectedView)
     case navigationTitle(title: Expression)
+    /// "page" swipes between a tab view's children; `indexDisplayMode` shows the page dots (schema 1.1)
+    case tabViewStyle(style: Expression, indexDisplayMode: Expression? = nil)
+    /// The page dots' background: "automatic", "always" or "never" (schema 1.1)
+    case indexViewStyle(backgroundDisplayMode: Expression)
 
     // MARK: Controls & input
     case disabled(isDisabled: Expression)
@@ -127,3 +135,6 @@ extension InjectedTextLineStylePattern: RuntimeConvertible {}
 extension InjectedTextTruncation: RuntimeConvertible {}
 extension InjectedVisbility: RuntimeConvertible {}
 extension InjectdDatePickerStyle: RuntimeConvertible {}
+extension InjectedTabViewStyle: RuntimeConvertible {}
+extension InjectedIndexDisplayMode: RuntimeConvertible {}
+extension InjectedContentMode: RuntimeConvertible {}

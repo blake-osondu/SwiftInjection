@@ -83,7 +83,7 @@ public enum SwiftUICompiler {
 
 /// The value types the compiler tracks to choose operators (e.g. `+` as addition or concatenation).
 indirect enum ValueType: Equatable, CustomStringConvertible {
-    case int, double, string, bool, date, array(ValueType), dictionary, model(String), unknown
+    case int, double, string, bool, date, color, array(ValueType), dictionary, model(String), unknown
 
     var isNumber: Bool { self == .int || self == .double }
 
@@ -101,6 +101,7 @@ indirect enum ValueType: Equatable, CustomStringConvertible {
         case .array(let element): return "[\(element)]"
         case .dictionary: return "Dictionary"
         case .date: return "Date"
+        case .color: return "Color"
         case .model(let name): return name
         case .unknown: return "unknown"
         }
@@ -228,8 +229,11 @@ final class CompilerContext {
         guard let root = viewBody(body) else { return nil }
         for (key, value) in syntheticState { initialState[key] = value }
         let compiledScripts = compileScripts(at: screen.name)
-        return InjectedPayload(schemaVersion: .current, version: version, state: .object(initialState), body: root,
-                               views: namedViews, scripts: compiledScripts)
+        var payload = InjectedPayload(schemaVersion: .current, version: version, state: .object(initialState), body: root,
+                                      views: namedViews, scripts: compiledScripts)
+        // Stamp the lowest schema that can render it, so apps on older runtimes still load it.
+        payload.schemaVersion = SchemaVersion.minimum(for: payload)
+        return payload
     }
 
     /// Each used script becomes a function expression evaluating the whole script file, so helpers in it work.
@@ -332,6 +336,7 @@ final class CompilerContext {
         case "String": return .string
         case "Bool": return .bool
         case "Date": return .date
+        case "Color": return .color
         default: return .unknown
         }
     }

@@ -2,6 +2,17 @@
 
 This project follows [Semantic Versioning](https://semver.org). The payload format is versioned separately by `schemaVersion` (see `SchemaVersion`).
 
+## [Unreleased]
+
+Payload schema `1.1`. Runtimes accept 1.0 and 1.1 payloads; the compiler stamps each payload with the lowest schema it needs, so payloads that don't use 1.1 features still load in 0.1.0 apps.
+
+### Added
+- Modifiers (schema 1.1): `tabViewStyle` (page-style tab views with page dots), `indexViewStyle`, `aspectRatio`, and `systemFontSize` (`.font(.system(size:weight:design:))`).
+- `SchemaVersion.minimum(for:)`: the lowest schema a payload needs.
+- Compiler: `TabView`, `tabItem`, `tabViewStyle`, `indexViewStyle`, `animation(_:value:)`, `.font(.system(size:…))`, `aspectRatio` / `scaledToFit` / `scaledToFill`, `Color` parameters on helper views.
+- `hostAction(…)` / `hostValue(…)` in `SwiftInjectionAuthoring`: call Swift functions the app registers, without JavaScript. `swift-injection compile` lists the host functions a screen needs.
+- Showcase apps: Event RSVP and Onboarding, plus `Examples/scripts/publish-local.sh`, a local pipeline that compiles, validates, signs and serves the examples' screens.
+
 ## [0.1.0] - 2026-10-20
 
 First release. Payload schema `1.0`.

@@ -4,7 +4,7 @@
 |---|---|---|
 | [TodoApp](TodoApp.swiftpm) | Quick start | One remote screen loaded from a local server, with a Reload button. Run it with `Examples/serve.sh`. |
 | [Event RSVP](Simple/EventRSVP) | Simple | A whole event page served remotely: forms with validation, pickers, an alert, a JavaScript countdown, a host function for submitting, signed payloads, and the offline fallback. |
-| Onboarding and feature tour | Simple | Coming in #41 |
+| [Onboarding](Simple/Onboarding) | Simple | A paged onboarding flow (page dots, progress, Skip/Next) served remotely as two **A/B variants**. It hands off to a native home screen through a `finishOnboarding` host function and tracks exposure through `track`. |
 | Banking (MVVM + Coordinators + DI) | Enterprise | Coming in #42 |
 | Retail (The Composable Architecture) | Enterprise | Coming in #43 |
 
