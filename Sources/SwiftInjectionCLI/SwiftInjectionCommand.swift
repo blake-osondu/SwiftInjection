@@ -15,7 +15,7 @@ struct SwiftInjectionCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "swift-injection",
         abstract: "Compile SwiftUI screens to payloads, create signing keys, and sign and validate payloads.",
-        version: "0.1.0 (schema \(SchemaVersion.current))",
+        version: "0.2.0 (schema \(SchemaVersion.current))",
         subcommands: [Compile.self, Keygen.self, Sign.self, Validate.self])
 }
 
