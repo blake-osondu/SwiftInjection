@@ -37,7 +37,7 @@ RemoteInjectedScreen(loader: PayloadLoader(configuration: .init(
 
 ## Status
 
-**0.1 (pre-release).** Payload schema `1.0`. The library API may still change before 1.0. Payloads follow [`SchemaVersion`](Sources/SwiftInjectionCore/Payload/SchemaVersion.swift): minor schema versions only add things.
+**0.2 (pre-release).** Payload schema `1.1` (apps on 0.2 also load `1.0` payloads). The library API may still change before 1.0. Payloads follow [`SchemaVersion`](Sources/SwiftInjectionCore/Payload/SchemaVersion.swift): minor schema versions only add things.
 
 Requirements: **iOS 16+** for the runtime, **macOS 13+** for the CLI and compiler. Developed and tested with Xcode 26 (Swift 6.2).
 
@@ -46,7 +46,7 @@ Requirements: **iOS 16+** for the runtime, **macOS 13+** for the CLI and compile
 Swift Package Manager:
 
 ```swift
-.package(url: "https://github.com/blake-osondu/SwiftInjection", from: "0.1.0")
+.package(url: "https://github.com/blake-osondu/SwiftInjection", from: "0.2.0")
 ```
 
 | Product | Use it in |
