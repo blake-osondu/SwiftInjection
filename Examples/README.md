@@ -6,7 +6,7 @@
 | [Event RSVP](Simple/EventRSVP) | Simple | A whole event page served remotely: forms with validation, pickers, an alert, a JavaScript countdown, a host function for submitting, signed payloads, and the offline fallback. |
 | [Onboarding](Simple/Onboarding) | Simple | A paged onboarding flow (page dots, progress, Skip/Next) served remotely as two **A/B variants**. It hands off to a native home screen through a `finishOnboarding` host function and tracks exposure through `track`. |
 | [Banking](Enterprise/Banking) | Enterprise | **MVVM + Coordinators + DI** across six modules. Native sign-in, accounts and transfers; remote offers (with a kill switch), help, release notes, and an alerts banner embedded in a native screen. Design-system components and host functions (navigation, analytics, flags, async API calls) via a single `RemoteBridge`. |
-| Retail (The Composable Architecture) | Enterprise | Coming in #43 |
+| [Retail](Enterprise/Retail) | Enterprise | **The Composable Architecture**, with most of the app remote: home feed, catalog and search, product pages, cart, checkout review, confirmation and account. Reducers own all state and logic, and remote screens are their views. State flows in through `hostState`, and taps flow back as TCA actions. The tab bar, navigation and payment stay native. |
 
 Each app is an app package (`.swiftpm`) that opens in Xcode, depends on this repository by path, and is built by CI on every pull request.
 

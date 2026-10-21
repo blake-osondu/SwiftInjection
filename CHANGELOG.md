@@ -15,7 +15,7 @@ Payload schema `1.1`. Runtimes accept 1.0 and 1.1 payloads; the compiler stamps 
 - Expression operators (schema 1.1): `currency` and `fixed` for number formatting. The compiler maps `x.formatted(.currency(code:))`, `.formatted(.number.precision(.fractionLength(n)))`, `String(format: "%.2f", x)` and `Text(x, format: …)` to them.
 - `RemoteInjectedScreen(hostState:)`: inject app state (a cart, a product list) into a remote screen and keep it updated as the app's state changes. `RuntimeValue(encoding:)` and `RuntimeValue.decode(_:)` bridge `Codable` models.
 - Compiler: `LazyVGrid`, `LazyHGrid`, `Grid` and `GridRow` with literal `GridItem` columns/rows; `Color(hex:)` from `SwiftInjectionAuthoring` for colors that come from state.
-- Showcase apps: Event RSVP, Onboarding and Banking (MVVM + Coordinators + DI), plus `Examples/scripts/publish-local.sh`, a local pipeline that compiles, validates, signs and serves the examples' screens.
+- Showcase apps: Event RSVP, Onboarding, Banking (MVVM + Coordinators + DI) and Retail (TCA, with seven remote screens driven by reducer state), plus `Examples/scripts/publish-local.sh`, a local pipeline that compiles, validates, signs and serves the examples' screens.
 
 ## [0.1.0] - 2026-10-20
 
