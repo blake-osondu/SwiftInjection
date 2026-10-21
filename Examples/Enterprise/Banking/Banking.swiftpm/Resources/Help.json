@@ -1,0 +1,150 @@
+{
+  "body" : {
+    "list" : {
+      "children" : [
+        {
+          "section" : {
+            "children" : [
+              {
+                "navigationLink" : {
+                  "destination" : {
+                    "scrollView" : {
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "padding" : {
+
+                                }
+                              }
+                            ],
+                            "value" : "Open Accounts, choose the card and tap Freeze. Unfreeze it any time; nothing is canceled."
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "navigationTitle" : {
+                            "title" : "Freeze a lost card"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "label" : {
+                    "text" : {
+                      "value" : "Freeze a lost card"
+                    }
+                  }
+                }
+              },
+              {
+                "navigationLink" : {
+                  "destination" : {
+                    "scrollView" : {
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "padding" : {
+
+                                }
+                              }
+                            ],
+                            "value" : "You can move up to $10,000 a day between your own accounts. Larger transfers are reviewed within one business day."
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "navigationTitle" : {
+                            "title" : "Transfer limits"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "label" : {
+                    "text" : {
+                      "value" : "Transfer limits"
+                    }
+                  }
+                }
+              },
+              {
+                "navigationLink" : {
+                  "destination" : {
+                    "scrollView" : {
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "padding" : {
+
+                                }
+                              }
+                            ],
+                            "value" : "Tap the transaction, then Report a problem. We'll credit your account while we investigate."
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "navigationTitle" : {
+                            "title" : "Dispute a charge"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "label" : {
+                    "text" : {
+                      "value" : "Dispute a charge"
+                    }
+                  }
+                }
+              }
+            ],
+            "title" : "Popular"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "custom" : {
+                  "name" : "PrimaryButton",
+                  "on" : {
+                    "action" : [
+                      {
+                        "args" : [
+                          "support/chat"
+                        ],
+                        "call" : "navigate"
+                      }
+                    ]
+                  },
+                  "props" : {
+                    "title" : "Chat with us"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Help"
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.0",
+  "version" : "34e5ed06d829"
+}

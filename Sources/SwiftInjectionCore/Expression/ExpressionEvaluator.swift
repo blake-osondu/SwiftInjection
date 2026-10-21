@@ -190,6 +190,25 @@ public struct ExpressionEvaluator {
             case let (a, b):
                 throw EvaluationError.typeMismatch(op: name, expected: "(array, number) or (object, string)", got: "\(a.typeName), \(b.typeName)")
             }
+        case .currency:
+            guard (1...2).contains(args.count) else { throw EvaluationError.arity(op: name, expected: "1 or 2", got: args.count) }
+            let amount = try number(eval(args[0]))
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            if args.count == 2 {
+                guard case .string(let code) = try eval(args[1]) else {
+                    throw EvaluationError.typeMismatch(op: name, expected: "currency code", got: try eval(args[1]).typeName)
+                }
+                formatter.currencyCode = code
+            }
+            return .string(formatter.string(from: NSNumber(value: amount)) ?? String(amount))
+        case .fixed:
+            try arity(2)
+            let value = try number(eval(args[0]))
+            guard let digits = Int(exactly: try number(eval(args[1]))), (0...10).contains(digits) else {
+                throw EvaluationError.typeMismatch(op: name, expected: "0–10 fraction digits", got: try eval(args[1]).displayString)
+            }
+            return .string(String(format: "%.\(digits)f", value))
         case .call:
             guard let first = args.first else { throw EvaluationError.arity(op: name, expected: "at least 1", got: 0) }
             guard case .string(let function) = try eval(first) else {

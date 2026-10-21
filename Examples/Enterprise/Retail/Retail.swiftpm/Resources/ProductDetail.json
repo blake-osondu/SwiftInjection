@@ -1,0 +1,735 @@
+{
+  "body" : {
+    "scrollView" : {
+      "children" : [
+        {
+          "vStack" : {
+            "alignment" : "leading",
+            "children" : [
+              {
+                "zStack" : {
+                  "children" : [
+                    {
+                      "rectangle" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : {
+                                "var" : "product.color"
+                              }
+                            }
+                          },
+                          {
+                            "opacity" : {
+                              "value" : 0.16
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "systemFontSize" : {
+                              "size" : 120
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : {
+                                "var" : "product.color"
+                              }
+                            }
+                          }
+                        ],
+                        "systemName" : {
+                          "var" : "product.symbol"
+                        }
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "frame" : {
+                        "height" : 300
+                      }
+                    },
+                    {
+                      "cornerRadius" : {
+                        "radius" : 24
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "subheadline"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "var" : "product.brand"
+                        }
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "var" : "product.name"
+                        }
+                      }
+                    }
+                  ],
+                  "spacing" : 4
+                }
+              },
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title2"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "currency" : [
+                            {
+                              "var" : "product.price"
+                            },
+                            "USD"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "if" : {
+                        "condition" : {
+                          "var" : "product.onSale"
+                        },
+                        "then" : {
+                          "group" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "strikethrough" : {
+
+                                      }
+                                    },
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FF8E8E93"
+                                      }
+                                    }
+                                  ],
+                                  "value" : {
+                                    "currency" : [
+                                      {
+                                        "var" : "product.compareAtPrice"
+                                      },
+                                      "USD"
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "systemFont" : {
+                                        "font" : "caption"
+                                      }
+                                    },
+                                    {
+                                      "bold" : {
+
+                                      }
+                                    },
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FFFFFFFF"
+                                      }
+                                    },
+                                    {
+                                      "padding" : {
+                                        "edges" : "horizontal",
+                                        "length" : 8
+                                      }
+                                    },
+                                    {
+                                      "padding" : {
+                                        "edges" : "vertical",
+                                        "length" : 3
+                                      }
+                                    },
+                                    {
+                                      "background" : {
+                                        "content" : {
+                                          "color" : {
+                                            "color" : "#FFFF3B30"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "cornerRadius" : {
+                                        "radius" : 6
+                                      }
+                                    }
+                                  ],
+                                  "value" : "SALE"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FFFF9500"
+                            }
+                          }
+                        ],
+                        "systemName" : "star.fill"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "fixed" : [
+                            {
+                              "var" : "product.rating"
+                            },
+                            1
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "format" : [
+                            "({0})",
+                            {
+                              "var" : "product.reviewCount"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "spacing" : 8
+                }
+              },
+              {
+                "text" : {
+                  "modifiers" : [
+                    {
+                      "foregroundColor" : {
+                        "color" : "#FF8E8E93"
+                      }
+                    }
+                  ],
+                  "value" : {
+                    "var" : "product.summary"
+                  }
+                }
+              },
+              {
+                "if" : {
+                  "condition" : {
+                    "not" : [
+                      {
+                        "eq" : [
+                          {
+                            "count" : [
+                              {
+                                "var" : "product.sizes"
+                              }
+                            ]
+                          },
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "then" : {
+                    "vStack" : {
+                      "alignment" : "leading",
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "headline"
+                                }
+                              }
+                            ],
+                            "value" : "Size"
+                          }
+                        },
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "forEach" : {
+                                  "content" : {
+                                    "button" : {
+                                      "action" : [
+                                        {
+                                          "args" : [
+                                            {
+                                              "var" : "size"
+                                            }
+                                          ],
+                                          "call" : "selectSize"
+                                        }
+                                      ],
+                                      "label" : {
+                                        "text" : {
+                                          "modifiers" : [
+                                            {
+                                              "systemFont" : {
+                                                "font" : "subheadline"
+                                              }
+                                            },
+                                            {
+                                              "bold" : {
+
+                                              }
+                                            },
+                                            {
+                                              "frame" : {
+                                                "height" : 40,
+                                                "width" : 52
+                                              }
+                                            },
+                                            {
+                                              "foregroundColor" : {
+                                                "color" : {
+                                                  "if" : [
+                                                    {
+                                                      "eq" : [
+                                                        {
+                                                          "var" : "selectedSize"
+                                                        },
+                                                        {
+                                                          "var" : "size"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "#FFFFFFFF",
+                                                    "#FF000000"
+                                                  ]
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "background" : {
+                                                "content" : {
+                                                  "color" : {
+                                                    "color" : {
+                                                      "if" : [
+                                                        {
+                                                          "eq" : [
+                                                            {
+                                                              "var" : "selectedSize"
+                                                            },
+                                                            {
+                                                              "var" : "size"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "#FF292E4A",
+                                                        "#FFF0F0F5"
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "cornerRadius" : {
+                                                "radius" : 10
+                                              }
+                                            }
+                                          ],
+                                          "value" : {
+                                            "var" : "size"
+                                          }
+                                        }
+                                      },
+                                      "modifiers" : [
+                                        {
+                                          "buttonStyle" : {
+                                            "style" : "plain"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "identity" : {
+                                    "var" : "size"
+                                  },
+                                  "itemName" : "size",
+                                  "items" : "product.sizes"
+                                }
+                              }
+                            ],
+                            "spacing" : 10
+                          }
+                        },
+                        {
+                          "if" : {
+                            "condition" : {
+                              "var" : "needsSize"
+                            },
+                            "then" : {
+                              "label" : {
+                                "modifiers" : [
+                                  {
+                                    "systemFont" : {
+                                      "font" : "footnote"
+                                    }
+                                  },
+                                  {
+                                    "foregroundColor" : {
+                                      "color" : "#FFFF3B30"
+                                    }
+                                  }
+                                ],
+                                "systemImage" : "exclamationmark.circle",
+                                "title" : "Choose a size first"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "spacing" : 10
+                    }
+                  }
+                }
+              },
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          }
+                        ],
+                        "value" : "Quantity"
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "button" : {
+                        "action" : [
+                          {
+                            "args" : [
+                              -1
+                            ],
+                            "call" : "changeQuantity"
+                          }
+                        ],
+                        "label" : {
+                          "image" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "title2"
+                                }
+                              }
+                            ],
+                            "systemName" : "minus.circle.fill"
+                          }
+                        },
+                        "modifiers" : [
+                          {
+                            "disabled" : {
+                              "isDisabled" : {
+                                "lte" : [
+                                  {
+                                    "var" : "quantity"
+                                  },
+                                  1
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title3"
+                            }
+                          },
+                          {
+                            "monospacedDigit" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "format" : [
+                            "{0}",
+                            {
+                              "var" : "quantity"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "button" : {
+                        "action" : [
+                          {
+                            "args" : [
+                              1
+                            ],
+                            "call" : "changeQuantity"
+                          }
+                        ],
+                        "label" : {
+                          "image" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "title2"
+                                }
+                              }
+                            ],
+                            "systemName" : "plus.circle.fill"
+                          }
+                        },
+                        "modifiers" : [
+                          {
+                            "disabled" : {
+                              "isDisabled" : {
+                                "gte" : [
+                                  {
+                                    "var" : "quantity"
+                                  },
+                                  10
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "spacing" : 16
+                }
+              },
+              {
+                "button" : {
+                  "action" : [
+                    {
+                      "call" : "addToCart"
+                    }
+                  ],
+                  "label" : {
+                    "label" : {
+                      "modifiers" : [
+                        {
+                          "systemFont" : {
+                            "font" : "headline"
+                          }
+                        },
+                        {
+                          "frame" : {
+                            "maxWidth" : "infinity"
+                          }
+                        },
+                        {
+                          "padding" : {
+                            "edges" : "vertical",
+                            "length" : 6
+                          }
+                        }
+                      ],
+                      "systemImage" : "cart.badge.plus",
+                      "title" : "Add to cart"
+                    }
+                  },
+                  "modifiers" : [
+                    {
+                      "buttonStyle" : {
+                        "style" : "borderedProminent"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "if" : {
+                  "condition" : {
+                    "var" : "added"
+                  },
+                  "then" : {
+                    "hStack" : {
+                      "children" : [
+                        {
+                          "label" : {
+                            "modifiers" : [
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF34C759"
+                                }
+                              }
+                            ],
+                            "systemImage" : "checkmark.circle.fill",
+                            "title" : "Added to your cart"
+                          }
+                        },
+                        {
+                          "spacer" : {
+
+                          }
+                        },
+                        {
+                          "button" : {
+                            "action" : [
+                              {
+                                "call" : "viewCart"
+                              }
+                            ],
+                            "title" : "View cart"
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "systemFont" : {
+                            "font" : "subheadline"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "modifiers" : [
+              {
+                "padding" : {
+                  "length" : 16
+                }
+              }
+            ],
+            "spacing" : 18
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : {
+              "var" : "product.name"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "added" : false,
+    "needsSize" : false,
+    "product" : {
+      "brand" : "Northwind",
+      "color" : "#3B6EA5",
+      "compareAtPrice" : 199,
+      "id" : "puffer",
+      "name" : "Alpine Puffer Jacket",
+      "onSale" : true,
+      "price" : 149,
+      "rating" : 4.7,
+      "reviewCount" : 812,
+      "sizes" : [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "summary" : "Recycled down fill, a water-resistant shell and a packable hood.",
+      "symbol" : "snowflake"
+    },
+    "quantity" : 1,
+    "selectedSize" : ""
+  },
+  "version" : "4ef5050a119e"
+}

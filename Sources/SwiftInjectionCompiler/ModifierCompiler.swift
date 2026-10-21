@@ -20,6 +20,17 @@ extension CompilerContext {
             if let member = first.as(MemberAccessExprSyntax.self), member.base == nil || member.base?.trimmedDescription == "Font" {
                 return option(first, InjectedSystemFont.self, "font").map { .systemFont(font: $0) }
             }
+            if let system = first.as(FunctionCallExprSyntax.self),
+               system.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "system" {
+                let systemArgs = Arguments(system)
+                guard let size = systemArgs.labeled["size"].flatMap(number) else {
+                    error("Supported: .system(size:weight:design:)", at: system)
+                    return nil
+                }
+                let weight = systemArgs.labeled["weight"].flatMap { option($0, InjectedFontWeight.self, "font weight") }
+                let design = systemArgs.labeled["design"].flatMap { option($0, InjectedFontDesign.self, "font design") }
+                return .systemFontSize(size: size, weight: weight, design: design)
+            }
             if let custom = first.as(FunctionCallExprSyntax.self),
                custom.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "custom" {
                 let customArgs = Arguments(custom)
@@ -28,7 +39,7 @@ extension CompilerContext {
                 }
                 return .font(name: fontName.expression, size: size)
             }
-            error("Supported fonts: text styles like .title, and .custom(\"Name\", size:)", at: first)
+            error("Supported fonts: text styles like .title, .system(size:weight:design:), and .custom(\"Name\", size:)", at: first)
             return nil
         case "fontWeight":
             return first.flatMap { option($0, InjectedFontWeight.self, "font weight") }.map { .fontWeight(weight: $0) }
@@ -92,6 +103,11 @@ extension CompilerContext {
             return .frame(width: values["width"], height: values["height"], minWidth: values["minWidth"],
                           idealWidth: values["idealWidth"], maxWidth: values["maxWidth"], minHeight: values["minHeight"],
                           idealHeight: values["idealHeight"], maxHeight: values["maxHeight"], alignment: alignment)
+        case "aspectRatio":
+            guard let mode = args.labeled["contentMode"].flatMap({ option($0, InjectedContentMode.self, "content mode") }) else { break }
+            return .aspectRatio(ratio: first.flatMap(number), contentMode: mode)
+        case "scaledToFit", "scaledToFill":
+            return .aspectRatio(contentMode: .literal(.string(name == "scaledToFit" ? "fit" : "fill")))
         case "position":
             return .position(x: args.labeled["x"].flatMap(number), y: args.labeled["y"].flatMap(number))
         case "layoutPriority":
@@ -156,6 +172,35 @@ extension CompilerContext {
         case "onSubmit":
             guard let closure = args.trailing, let actions = actions(closure) else { return nil }
             return .onSubmit(do: actions)
+        case "tabItem":
+            guard let closure = args.trailing ?? args.closure("label"), let views = viewList(closure.statements) else { return nil }
+            return .tabItem(content: single(views))
+        case "tabViewStyle":
+            guard let first else { break }
+            // .page · .page(indexDisplayMode: .always) · .automatic
+            let call = first.as(FunctionCallExprSyntax.self)
+            let styleSyntax = call.map { ExprSyntax($0.calledExpression) } ?? first
+            guard let style = option(styleSyntax, InjectedTabViewStyle.self, "tab view style") else { return nil }
+            let mode = call.flatMap { Arguments($0).labeled["indexDisplayMode"] }.flatMap { option($0, InjectedIndexDisplayMode.self, "index display mode") }
+            return .tabViewStyle(style: style, indexDisplayMode: mode)
+        case "indexViewStyle":
+            // .page(backgroundDisplayMode: .always)
+            guard let call = first?.as(FunctionCallExprSyntax.self), call.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "page",
+                  let modeSyntax = Arguments(call).labeled["backgroundDisplayMode"],
+                  let mode = option(modeSyntax, InjectedIndexDisplayMode.self, "background display mode") else { break }
+            return .indexViewStyle(backgroundDisplayMode: mode)
+        case "animation":
+            // .animation(.easeInOut, value: page) · .animation(.spring(), value: page)
+            guard let first, let value = args.labeled["value"].flatMap(expression) else {
+                error("Supported: .animation(.easeInOut, value: state) (an animation and the value it follows)", at: location)
+                return nil
+            }
+            if let call = first.as(FunctionCallExprSyntax.self), !call.arguments.isEmpty {
+                error("Animation parameters aren't supported; use a preset like .easeInOut or .spring()", at: call.arguments)
+                return nil
+            }
+            let animationSyntax = first.as(FunctionCallExprSyntax.self).map { ExprSyntax($0.calledExpression) } ?? first
+            return option(animationSyntax, InjectedAnimation.self, "animation").map { .animation(animation: $0, value: value.expression) }
         case "tag":
             return first.flatMap(expression).map { .tag(value: $0.expression) }
 
@@ -256,6 +301,17 @@ extension CompilerContext {
         }
         if let tuple = syntax.as(TupleExprSyntax.self), tuple.elements.count == 1, let inner = tuple.elements.first {
             return color(inner.expression, reportErrors: reportErrors)
+        }
+        // `Color(hex: product.color)` (from SwiftInjectionAuthoring): a color from state.
+        if let call = syntax.as(FunctionCallExprSyntax.self), call.calledExpression.trimmedDescription == "Color",
+           call.arguments.count == 1, call.arguments.first?.label?.text == "hex", let argument = call.arguments.first {
+            guard let typed = expression(argument.expression), expect(typed, .string, for: "Color(hex:)", at: argument) else { return nil }
+            return typed.expression
+        }
+        // A `Color` property of a helper view, already compiled at the call site.
+        if let reference = syntax.as(DeclReferenceExprSyntax.self), case .value(let typed)? = parameters[reference.baseName.text],
+           typed.type == .color {
+            return typed.expression
         }
         guard let argb = colorValue(syntax) else {
             if reportErrors {

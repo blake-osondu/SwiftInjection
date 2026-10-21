@@ -324,4 +324,145 @@ final class CompilerV2Tests: XCTestCase {
         {"text": {"value": "x", "modifiers": [{"foregroundColor": {"color": {"if": [{"var": "done"}, "#FF34C759", "#FF8E8E93"]}}}]}}
         """#)
     }
+
+    func testHostFunctionsNeedNoScriptFile() throws {
+        let result = SwiftUICompiler.compile(source: screen(state: "@State var id = \"a\"", """
+        VStack {
+                    if hostValue("featureEnabled", "offers", placeholder: false) {
+                        Button("Open") { hostAction("navigate", "offers/" + id) }
+                    }
+                }
+        """, extra: "import SwiftInjectionAuthoring"), fileName: "Screen.swift")
+        XCTAssertEqual(result.diagnostics.map(\.description), [])
+        XCTAssertEqual(result.hostFunctions, ["featureEnabled", "navigate"])
+        let payload = try XCTUnwrap(result.payload)
+        XCTAssertTrue(payload.scripts.isEmpty)
+        try assertBody(payload, equals: #"""
+        {"vStack": {"children": [{"if": {"condition": {"call": ["featureEnabled", "offers"]},
+          "then": {"button": {"title": "Open", "action": [{"call": "navigate", "args": [{"concat": ["offers/", {"var": "id"}]}]}]}}}}]}}
+        """#)
+    }
+
+    func testTabViewsPagingAndNewModifiers() throws {
+        let payload = try compile(screen(state: "@State var page = 0", """
+        TabView(selection: $page) {
+                    Page(symbol: "star", tint: .purple).tag(0)
+                    Page(symbol: "bolt", tint: .orange.opacity(0.5)).tag(1)
+                    Text("Home").tabItem { Label("Home", systemImage: "house") }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .always))
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .animation(.easeInOut, value: page)
+        """, extra: """
+        struct Page: View {
+            let symbol: String
+            var tint: Color = .blue
+            var body: some View {
+                Image(systemName: symbol)
+                    .resizable()
+                    .scaledToFit()
+                    .font(.system(size: 64, weight: .bold, design: .rounded))
+                    .foregroundColor(tint)
+            }
+        }
+        """))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 1), "uses schema 1.1 modifiers")
+        try assertBody(payload, equals: #"""
+        {"tab": {"selection": "page", "children": [
+          {"image": {"systemName": "star", "modifiers": [{"resizable": {}}, {"aspectRatio": {"contentMode": "fit"}},
+            {"systemFontSize": {"size": 64, "weight": "bold", "design": "rounded"}}, {"foregroundColor": {"color": "#FFAF52DE"}}]}},
+          {"image": {"systemName": "bolt", "modifiers": [{"resizable": {}}, {"aspectRatio": {"contentMode": "fit"}},
+            {"systemFontSize": {"size": 64, "weight": "bold", "design": "rounded"}}, {"foregroundColor": {"color": "#80FF9500"}}]}},
+          {"text": {"value": "Home", "modifiers": [{"tabItem": {"content": {"label": {"title": "Home", "systemImage": "house"}}}}]}}
+        ], "modifiers": [
+          {"tabViewStyle": {"style": "page", "indexDisplayMode": "always"}},
+          {"indexViewStyle": {"backgroundDisplayMode": "always"}},
+          {"animation": {"animation": "easeInOut", "value": {"var": "page"}}}
+        ]}}
+        """#)
+    }
+
+    func testPayloadsWithoutNewFeaturesStayOnSchema10() throws {
+        let payload = try compile(screen("Text(\"Hi\").font(.title)"))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 0))
+    }
+
+    func testTabViewDiagnostics() {
+        XCTAssertEqual(diagnostics(screen(state: "@State var p = 0", "TabView(selection: $p) { Text(\"a\").tag(3) }")).first,
+                       "Screen.swift:7:9: error: TabView pages are identified by position: page 0 must have `.tag(0)` or no tag")
+        XCTAssertEqual(diagnostics(screen(state: "@State var p = 0", "Text(\"a\").animation(.easeInOut(duration: 1), value: p)")).first,
+                       "Screen.swift:7:40: error: Animation parameters aren't supported; use a preset like .easeInOut or .spring()")
+    }
+
+    func testCustomComponents() throws {
+        let source = screen(state: "@State var balance = 1250.5\n    @State var id = \"chk\"", """
+        VStack {
+                    BankCard(name: "Checking", last4: "4821", balance: balance, tint: .blue)
+                    PrimaryButton(title: "Transfer") { hostAction("navigate", "transfer/" + id) }
+                    Rating(value: 3, onChange: { balance = 0 })
+                }
+        """, extra: "import DesignSystem")
+        let result = SwiftUICompiler.compile(source: source, fileName: "Screen.swift", components: ["BankCard", "PrimaryButton", "Rating"])
+        XCTAssertEqual(result.diagnostics.map(\.description), [])
+        XCTAssertEqual(result.components, ["BankCard", "PrimaryButton", "Rating"])
+        try assertBody(try XCTUnwrap(result.payload), equals: #"""
+        {"vStack": {"children": [
+          {"custom": {"name": "BankCard", "props": {"name": "Checking", "last4": "4821", "balance": {"var": "balance"}, "tint": "#FF007AFF"}}},
+          {"custom": {"name": "PrimaryButton", "props": {"title": "Transfer"},
+                      "on": {"action": [{"call": "navigate", "args": [{"concat": ["transfer/", {"var": "id"}]}]}]}}},
+          {"custom": {"name": "Rating", "props": {"value": 3}, "on": {"onChange": [{"set": "balance", "to": 0}]}}}
+        ]}}
+        """#)
+        // Without the components list, they're unknown views (never guessed).
+        XCTAssertEqual(diagnostics(source).count, 3)
+        XCTAssertEqual(diagnostics(screen("BankCard(\"x\")")).count, 1)
+    }
+
+    func testCustomComponentArgumentsMustBeLabeled() {
+        let errors = SwiftUICompiler.compile(source: screen("PrimaryButton(\"Go\")"), fileName: "Screen.swift", components: ["PrimaryButton"]).diagnostics.map(\.description)
+        XCTAssertEqual(errors, ["Screen.swift:7:9: error: Arguments to the custom component 'PrimaryButton' must be labeled (they become its props)"])
+    }
+
+    func testNumberFormatting() throws {
+        let payload = try compile(screen(state: "@State var price = 12.5", """
+        VStack {
+                    Text(price.formatted(.currency(code: "USD")))
+                    Text(price, format: .currency(code: "EUR"))
+                    Text("Rating " + price.formatted(.number.precision(.fractionLength(1))))
+                    Text(String(format: "%.2f", price))
+                }
+        """))
+        XCTAssertEqual(payload.schemaVersion, SchemaVersion(major: 1, minor: 1))
+        try assertBody(payload, equals: #"""
+        {"vStack": {"children": [
+          {"text": {"value": {"currency": [{"var": "price"}, "USD"]}}},
+          {"text": {"value": {"currency": [{"var": "price"}, "EUR"]}}},
+          {"text": {"value": {"concat": ["Rating ", {"fixed": [{"var": "price"}, 1]}]}}},
+          {"text": {"value": {"fixed": [{"var": "price"}, 2]}}}
+        ]}}
+        """#)
+        XCTAssertEqual(diagnostics(screen(state: "@State var name = \"x\"", "Text(name.formatted(.currency(code: \"USD\")))")).count, 1)
+        XCTAssertEqual(diagnostics(screen(state: "@State var price = 1.0", "Text(price.formatted(.percent))")).count, 1)
+    }
+
+    func testGridsAndColorsFromState() throws {
+        let source = screen(state: "@State var products = [Product(name: \"Mug\", color: \"#FF8800\")]", """
+        VStack {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 16) {
+                        ForEach(products) { product in
+                            Text(product.name).foregroundColor(Color(hex: product.color))
+                        }
+                    }
+                    LazyHGrid(rows: Array(repeating: GridItem(.fixed(80)), count: 2)) { Text("a") }
+                    Grid(horizontalSpacing: 4) { GridRow { Text("x"); Text("y") } }
+                }
+        """, extra: "struct Product: Identifiable { var id = UUID(); var name: String; var color: String }")
+        let body = try json(try compile(source).body)
+        XCTAssertTrue(body.contains(#""columns":[{"minimum":160,"size":"adaptive","spacing":12}]"#), body)
+        XCTAssertTrue(body.contains(#""rows":[{"size":"fixed","value":80},{"size":"fixed","value":80}]"#), body)
+        XCTAssertTrue(body.contains(#""foregroundColor":{"color":{"var":"product.color"}}"#), body)
+        XCTAssertTrue(body.contains(#""gridRow""#) && body.contains(#""horizontalSpacing":4"#), body)
+        XCTAssertEqual(diagnostics(screen("LazyVGrid(columns: cols) { Text(\"a\") }")).count, 1)
+        XCTAssertEqual(diagnostics(screen("LazyVGrid(columns: [GridItem(.huge)]) { Text(\"a\") }")).count, 1)
+    }
 }

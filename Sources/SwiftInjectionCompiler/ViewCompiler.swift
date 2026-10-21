@@ -126,9 +126,14 @@ extension CompilerContext {
         let args = Arguments(call)
         switch name {
         case "Text":
-            guard let value = args.unlabeled.first ?? args.labeled["verbatim"], let typed = expression(value) else {
+            guard let value = args.unlabeled.first ?? args.labeled["verbatim"], var typed = expression(value) else {
                 if args.unlabeled.isEmpty && args.labeled["verbatim"] == nil { error("Text needs a string", at: call) }
                 return nil
+            }
+            // Text(price, format: .currency(code: "USD"))
+            if let style = args.labeled["format"] {
+                guard let formatted = formatted(typed, style: style) else { return nil }
+                typed = formatted
             }
             return .text(viewStore: TextViewStore(value: typed.expression))
         case "Image":
@@ -210,6 +215,54 @@ extension CompilerContext {
             let header = args.closure("header").flatMap { self.children($0) }.map(single) ?? args.labeled["header"].flatMap(view)
             let footer = args.closure("footer").flatMap { self.children($0) }.map(single) ?? args.labeled["footer"].flatMap(view)
             return .section(viewStore: SectionViewStore(title: title, header: header, footer: footer, children: children))
+        case "TabView":
+            guard var pages = children(args.trailing ?? args.closure("content")) else { return nil }
+            var selection: String?
+            if let argument = args.labeled["selection"] {
+                guard let path = bindingPath(argument) else { return nil }
+                selection = path.path
+            }
+            // Tabs are identified by position, so `.tag(n)` on a page must be its index; it's dropped.
+            for index in pages.indices {
+                var failed = false
+                pages[index].modifiers.removeAll { modifier in
+                    guard case .tag(let value) = modifier else { return false }
+                    if value != .literal(.number(Double(index))) { failed = true }
+                    return true
+                }
+                if failed {
+                    error("TabView pages are identified by position: page \(index) must have `.tag(\(index))` or no tag", at: call)
+                    return nil
+                }
+                if case .forEach = pages[index] {
+                    error("ForEach inside TabView isn't supported; list the pages (helper views keep this short)", at: call)
+                    return nil
+                }
+            }
+            return .tab(viewStore: TabViewStore(selection: selection, children: pages))
+        case "LazyVGrid", "LazyHGrid":
+            let itemsLabel = name == "LazyVGrid" ? "columns" : "rows"
+            guard let itemsSyntax = args.labeled[itemsLabel] else {
+                error("\(name) needs `\(itemsLabel):`", at: call)
+                return nil
+            }
+            guard let items = gridItems(itemsSyntax), let children = children(args.trailing) else { return nil }
+            let spacing = args.labeled["spacing"].flatMap(number)
+            if name == "LazyVGrid" {
+                let alignment = args.labeled["alignment"].flatMap { option($0, InjectedHorizontalAlignment.self, "alignment") }
+                return .lazyVGrid(viewStore: LazyVGridViewStore(columns: items, alignment: alignment, spacing: spacing, children: children))
+            }
+            let alignment = args.labeled["alignment"].flatMap { option($0, InjectedVerticalAlignment.self, "alignment") }
+            return .lazyHGrid(viewStore: LazyHGridViewStore(rows: items, alignment: alignment, spacing: spacing, children: children))
+        case "Grid":
+            guard let children = children(args.trailing) else { return nil }
+            let alignment = args.labeled["alignment"].flatMap { option($0, InjectedAlignment.self, "alignment") }
+            return .grid(viewStore: GridViewStore(alignment: alignment, horizontalSpacing: args.labeled["horizontalSpacing"].flatMap(number),
+                                                  verticalSpacing: args.labeled["verticalSpacing"].flatMap(number), children: children))
+        case "GridRow":
+            guard let children = children(args.trailing) else { return nil }
+            let alignment = args.labeled["alignment"].flatMap { option($0, InjectedVerticalAlignment.self, "alignment") }
+            return .gridRow(viewStore: GridRowViewStore(alignment: alignment, children: children))
         case "NavigationLink":
             // NavigationLink("Title") { destination } · NavigationLink { destination } label: { … }
             guard let destinationClosure = args.closure("destination") ?? args.trailing,
@@ -292,7 +345,10 @@ extension CompilerContext {
             if let helper = helpers[name] {
                 return helperView(helper, args, at: call)
             }
-            error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
+            if customComponents.contains(name) {
+                return customComponent(name, args, at: call)
+            }
+            error("'\(name)' isn't supported (supported: Text, Image, Label, Button, Color, shapes, Spacer, Divider, stacks, Group, Form, Section, ScrollView, NavigationStack, NavigationLink, TabView, LazyVGrid, LazyHGrid, Grid, GridRow, ForEach, List, TextField, SecureField, Toggle, Picker, DatePicker, ProgressView, and View structs in this file)", at: call.calledExpression)
             return nil
         }
     }
@@ -424,6 +480,100 @@ extension CompilerContext {
                                                   value: .var("option.value")))
     }
 
+    // MARK: - Grid items
+
+    /// `[GridItem(.adaptive(minimum: 160))]`, `[GridItem(.flexible()), GridItem(.fixed(80), spacing: 8)]`, or
+    /// `Array(repeating: GridItem(.flexible()), count: 2)`. Sizes must be literal numbers.
+    private func gridItems(_ syntax: ExprSyntax) -> [InjectedGridItem]? {
+        if let call = syntax.as(FunctionCallExprSyntax.self), call.calledExpression.trimmedDescription == "Array",
+           let repeating = Arguments(call).labeled["repeating"], let countSyntax = Arguments(call).labeled["count"],
+           let count = countSyntax.as(IntegerLiteralExprSyntax.self).flatMap({ Int($0.literal.text) }), count > 0 {
+            return gridItem(repeating).map { Array(repeating: $0, count: count) }
+        }
+        guard let array = syntax.as(ArrayExprSyntax.self) else {
+            error("Grid columns/rows must be a literal array of GridItem(…), or Array(repeating: GridItem(…), count: n)", at: syntax)
+            return nil
+        }
+        var items: [InjectedGridItem] = []
+        for element in array.elements {
+            guard let item = gridItem(element.expression) else { return nil }
+            items.append(item)
+        }
+        return items
+    }
+
+    private func gridItem(_ syntax: ExprSyntax) -> InjectedGridItem? {
+        guard let call = syntax.as(FunctionCallExprSyntax.self), call.calledExpression.trimmedDescription == "GridItem" else {
+            error("Expected GridItem(…)", at: syntax)
+            return nil
+        }
+        func literal(_ expr: ExprSyntax?) -> Double? {
+            guard let expr else { return nil }
+            if let integer = expr.as(IntegerLiteralExprSyntax.self) { return Double(integer.literal.text) }
+            if let float = expr.as(FloatLiteralExprSyntax.self) { return Double(float.literal.text) }
+            return nil
+        }
+        let args = Arguments(call)
+        var item = InjectedGridItem()
+        if let sizeSyntax = args.unlabeled.first {
+            guard let sizeCall = sizeSyntax.as(FunctionCallExprSyntax.self),
+                  let kind = sizeCall.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text,
+                  let size = InjectedGridItem.Size(rawValue: kind) else {
+                error("GridItem sizes: .fixed(n), .flexible(minimum:maximum:), .adaptive(minimum:maximum:)", at: sizeSyntax)
+                return nil
+            }
+            let sizeArgs = Arguments(sizeCall)
+            item.size = size
+            item.value = literal(sizeArgs.unlabeled.first)
+            item.minimum = literal(sizeArgs.labeled["minimum"])
+            item.maximum = literal(sizeArgs.labeled["maximum"])
+        }
+        item.spacing = literal(args.labeled["spacing"])
+        if let alignment = args.labeled["alignment"]?.as(MemberAccessExprSyntax.self)?.declName.baseName.text {
+            guard let parsed = InjectedAlignment(rawValue: alignment) else {
+                error("'.\(alignment)' isn't a supported alignment", at: args.labeled["alignment"]!)
+                return nil
+            }
+            item.alignment = parsed
+        }
+        return item
+    }
+
+    // MARK: - Custom components
+
+    /// An app view listed in `components`: `PrimaryButton(title: "Apply") { hostAction("apply", offer.id) }` →
+    /// `{"custom": {"name": "PrimaryButton", "props": {"title": "Apply"}, "on": {"action": [...]}}}`.
+    /// A trailing closure is the `action` event; labeled closures use their label.
+    private func customComponent(_ name: String, _ args: Arguments, at call: FunctionCallExprSyntax) -> InjectedView? {
+        guard args.unlabeled.isEmpty else {
+            error("Arguments to the custom component '\(name)' must be labeled (they become its props)", at: call)
+            return nil
+        }
+        var props: [String: InjectedExpression] = [:]
+        var events: [String: [InjectedAction]] = [:]
+        var failed = false
+        for (label, argument) in args.labeled {
+            if let closure = argument.as(ClosureExprSyntax.self) {
+                if let compiled = actions(closure) { events[label] = compiled } else { failed = true }
+            } else if let color = color(argument, reportErrors: false) {
+                props[label] = color
+            } else if let typed = expression(argument) {
+                props[label] = typed.expression
+            } else {
+                failed = true
+            }
+        }
+        if let trailing = args.trailing {
+            if let compiled = actions(trailing) { events["action"] = compiled } else { failed = true }
+        }
+        for (label, closure) in args.additionalTrailing {
+            if let compiled = actions(closure) { events[label] = compiled } else { failed = true }
+        }
+        if failed { return nil }
+        customComponentsUsed.insert(name)
+        return .custom(viewStore: CustomViewStore(name: name, props: props, on: events))
+    }
+
     // MARK: - Helper views
 
     /// Another View struct in the file. Without properties it becomes a shared named view (`{"ref": name}`);
@@ -486,11 +636,19 @@ extension CompilerContext {
                 if field.isBinding {
                     guard let binding = bindingPath(argument) else { return nil }
                     parameters[field.name] = .binding(path: binding.path, type: binding.type)
+                } else if field.type == .color {
+                    guard let hex = color(argument) else { return nil }
+                    parameters[field.name] = .value(Typed(expression: hex, type: .color))
                 } else {
                     guard let typed = expression(argument) else { return nil }
                     parameters[field.name] = .value(typed)
                 }
             } else if let defaultValue = field.defaultValue, !field.isBinding {
+                if field.type == .color {
+                    guard let hex = color(defaultValue) else { return nil }
+                    parameters[field.name] = .value(Typed(expression: hex, type: .color))
+                    continue
+                }
                 guard let typed = expression(defaultValue) else { return nil }
                 parameters[field.name] = .value(typed)
             } else {

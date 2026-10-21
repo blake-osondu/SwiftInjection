@@ -36,7 +36,7 @@ extension CompilerContext {
             syntax = expr
         case .stmt(let stmt):
             guard let expr = stmt.as(ExpressionStmtSyntax.self)?.expression else {
-                error("Unsupported statement in an action (supported: assignments, `+=`-style updates, `toggle()`, `if` and `runScript(…)`)", at: stmt)
+                error("Unsupported statement in an action (supported: assignments, `+=`-style updates, `toggle()`, `if`, `runScript(…)` and `hostAction(…)`)", at: stmt)
                 return nil
             }
             syntax = expr
@@ -52,8 +52,9 @@ extension CompilerContext {
             return assignment(infix)
         }
         if let call = syntax.as(FunctionCallExprSyntax.self),
-           call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "runScript" {
-            guard let script = scriptCall(call) else { return nil }
+           let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
+           callee == "runScript" || callee == "hostAction" {
+            guard let script = scriptCall(call, host: callee == "hostAction") else { return nil }
             return .call(name: script.name, args: script.arguments)
         }
         if let call = syntax.as(FunctionCallExprSyntax.self), let member = call.calledExpression.as(MemberAccessExprSyntax.self),

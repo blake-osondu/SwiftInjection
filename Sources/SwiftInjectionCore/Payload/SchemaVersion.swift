@@ -14,7 +14,35 @@ public struct SchemaVersion: Hashable, Comparable, Codable, CustomStringConverti
     public var minor: Int
 
     /// The schema this build of SwiftInjection renders.
-    public static let current = SchemaVersion(major: 1, minor: 0)
+    public static let current = SchemaVersion(major: 1, minor: 1)
+
+    /// Components and modifiers added after 1.0, by the version that introduced them.
+    static let introduced: [String: SchemaVersion] = [
+        "systemFontSize": .init(major: 1, minor: 1), "aspectRatio": .init(major: 1, minor: 1),
+        "tabViewStyle": .init(major: 1, minor: 1), "indexViewStyle": .init(major: 1, minor: 1),
+        "currency": .init(major: 1, minor: 1), "fixed": .init(major: 1, minor: 1),
+    ]
+
+    /// The lowest schema version that can render `payload`: 1.0 unless it uses something added later.
+    /// Publishing with this (rather than `current`) keeps payloads loadable by apps on older runtimes.
+    public static func minimum(for payload: InjectedPayload) -> SchemaVersion {
+        let views = [payload.body] + Array(payload.views.values)
+        guard let data = try? JSONEncoder().encode(views),
+              let json = try? JSONSerialization.jsonObject(with: data) else { return .init(major: 1, minor: 0) }
+        var version = SchemaVersion(major: 1, minor: 0)
+        func visit(_ value: Any) {
+            if let object = value as? [String: Any] {
+                for (key, child) in object {
+                    if let added = introduced[key], added > version { version = added }
+                    visit(child)
+                }
+            } else if let array = value as? [Any] {
+                array.forEach(visit)
+            }
+        }
+        visit(json)
+        return version
+    }
 
     public init(major: Int, minor: Int) {
         self.major = major

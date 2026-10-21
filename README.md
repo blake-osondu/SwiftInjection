@@ -31,13 +31,13 @@ RemoteInjectedScreen(loader: PayloadLoader(configuration: .init(
 **Good fits:** screens that change often or need fast fixes (onboarding, settings, promotions, forms, content and layout tweaks), and experiments that shouldn't wait on release cycles.
 
 **Not a fit:**
-- The core of your app.
+- The core *logic* of your app. Keep business rules, payments, authentication and navigation native, and let remote screens render your app's state and send intents back. The [Retail example](Examples/Enterprise/Retail) runs most of a shopping app's screens this way, on top of The Composable Architecture.
 - Anything that needs APIs beyond what payloads can express (use custom components for those parts).
 - Changing your app's primary purpose. Apple allows downloaded interpreted code only when it doesn't (App Store Review Guideline 2.5.2). SwiftInjection is for updating screens, not for getting around review.
 
 ## Status
 
-**0.1 (pre-release).** Payload schema `1.0`. The library API may still change before 1.0. Payloads follow [`SchemaVersion`](Sources/SwiftInjectionCore/Payload/SchemaVersion.swift): minor schema versions only add things.
+**0.2 (pre-release).** Payload schema `1.1` (apps on 0.2 also load `1.0` payloads). The library API may still change before 1.0. Payloads follow [`SchemaVersion`](Sources/SwiftInjectionCore/Payload/SchemaVersion.swift): minor schema versions only add things.
 
 Requirements: **iOS 16+** for the runtime, **macOS 13+** for the CLI and compiler. Developed and tested with Xcode 26 (Swift 6.2).
 
@@ -46,7 +46,7 @@ Requirements: **iOS 16+** for the runtime, **macOS 13+** for the CLI and compile
 Swift Package Manager:
 
 ```swift
-.package(url: "https://github.com/blake-osondu/SwiftInjection", from: "0.1.0")
+.package(url: "https://github.com/blake-osondu/SwiftInjection", from: "0.2.0")
 ```
 
 | Product | Use it in |
@@ -114,7 +114,7 @@ struct ContentView: View {
 }
 ```
 
-Edit `Counter.swift`, save, and relaunch the screen to see the change. The [example app](Examples/) does exactly this with a reload button.
+Edit `Counter.swift`, save, and relaunch the screen to see the change. The [examples](Examples/) include this quick start and fuller showcase apps.
 
 **4. Ship it:** create a signing key, sign, and upload over HTTPS. See [Publishing](docs/Publishing.md):
 
@@ -143,6 +143,12 @@ store.functions["track"] = { args, _ in
     print("track:", args.map(\.displayString))
     return .null
 }
+```
+
+To drive a remote screen from your app's own state (a cart, search results), pass it in. The screen reads it like any other state, and it updates when your state does:
+
+```swift
+RemoteInjectedScreen(loader: loader, hostState: ["cart": try RuntimeValue(encoding: cart)])
 ```
 
 Treat anything you expose like a public API: a payload can call it with any arguments.

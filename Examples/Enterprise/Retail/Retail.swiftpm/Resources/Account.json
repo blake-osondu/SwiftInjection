@@ -1,0 +1,352 @@
+{
+  "body" : {
+    "list" : {
+      "children" : [
+        {
+          "section" : {
+            "children" : [
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "image" : {
+                        "modifiers" : [
+                          {
+                            "systemFontSize" : {
+                              "size" : 44
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF292E4A"
+                            }
+                          }
+                        ],
+                        "systemName" : "person.crop.circle.fill"
+                      }
+                    },
+                    {
+                      "vStack" : {
+                        "alignment" : "leading",
+                        "children" : [
+                          {
+                            "text" : {
+                              "modifiers" : [
+                                {
+                                  "systemFont" : {
+                                    "font" : "headline"
+                                  }
+                                }
+                              ],
+                              "value" : {
+                                "var" : "profile.name"
+                              }
+                            }
+                          },
+                          {
+                            "text" : {
+                              "modifiers" : [
+                                {
+                                  "systemFont" : {
+                                    "font" : "subheadline"
+                                  }
+                                },
+                                {
+                                  "foregroundColor" : {
+                                    "color" : "#FF8E8E93"
+                                  }
+                                }
+                              ],
+                              "value" : {
+                                "var" : "profile.email"
+                              }
+                            }
+                          }
+                        ],
+                        "spacing" : 2
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+                        "edges" : "vertical",
+                        "length" : 4
+                      }
+                    }
+                  ],
+                  "spacing" : 14
+                }
+              }
+            ]
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "label" : {
+                  "systemImage" : "house.fill",
+                  "title" : {
+                    "concat" : [
+                      {
+                        "concat" : [
+                          {
+                            "var" : "profile.address.street"
+                          },
+                          ", "
+                        ]
+                      },
+                      {
+                        "var" : "profile.address.city"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "label" : {
+                  "systemImage" : "creditcard.fill",
+                  "title" : {
+                    "concat" : [
+                      "Visa •••• ",
+                      {
+                        "var" : "profile.cardLast4"
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "title" : "Shipping and payment"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "if" : {
+                  "condition" : {
+                    "eq" : [
+                      {
+                        "count" : [
+                          {
+                            "var" : "orders"
+                          }
+                        ]
+                      },
+                      0
+                    ]
+                  },
+                  "else" : {
+                    "forEach" : {
+                      "content" : {
+                        "hStack" : {
+                          "children" : [
+                            {
+                              "vStack" : {
+                                "alignment" : "leading",
+                                "children" : [
+                                  {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "bold" : {
+
+                                          }
+                                        }
+                                      ],
+                                      "value" : {
+                                        "concat" : [
+                                          "Order ",
+                                          {
+                                            "var" : "order.id"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "systemFont" : {
+                                            "font" : "caption"
+                                          }
+                                        },
+                                        {
+                                          "foregroundColor" : {
+                                            "color" : "#FF8E8E93"
+                                          }
+                                        }
+                                      ],
+                                      "value" : {
+                                        "concat" : [
+                                          {
+                                            "format" : [
+                                              "{0} items · arrives ",
+                                              {
+                                                "var" : "order.totals.itemCount"
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "var" : "order.estimatedDelivery"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                ],
+                                "spacing" : 2
+                              }
+                            },
+                            {
+                              "spacer" : {
+
+                              }
+                            },
+                            {
+                              "text" : {
+                                "modifiers" : [
+                                  {
+                                    "monospacedDigit" : {
+
+                                    }
+                                  }
+                                ],
+                                "value" : {
+                                  "currency" : [
+                                    {
+                                      "var" : "order.totals.total"
+                                    },
+                                    "USD"
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "identity" : {
+                        "var" : "order.id"
+                      },
+                      "itemName" : "order",
+                      "items" : "orders"
+                    }
+                  },
+                  "then" : {
+                    "vStack" : {
+                      "alignment" : "leading",
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF8E8E93"
+                                }
+                              }
+                            ],
+                            "value" : "No orders yet"
+                          }
+                        },
+                        {
+                          "button" : {
+                            "action" : [
+                              {
+                                "call" : "startShopping"
+                              }
+                            ],
+                            "modifiers" : [
+                              {
+                                "buttonStyle" : {
+                                  "style" : "borderless"
+                                }
+                              }
+                            ],
+                            "title" : "Start shopping"
+                          }
+                        }
+                      ],
+                      "spacing" : 8
+                    }
+                  }
+                }
+              }
+            ],
+            "title" : "Orders"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "forEach" : {
+                  "content" : {
+                    "label" : {
+                      "systemImage" : "antenna.radiowaves.left.and.right",
+                      "title" : {
+                        "var" : "name"
+                      }
+                    }
+                  },
+                  "identity" : {
+                    "var" : "name"
+                  },
+                  "itemName" : "name",
+                  "items" : "remoteScreens"
+                }
+              }
+            ],
+            "footer" : {
+              "text" : {
+                "value" : "These screens, including this one, are signed SwiftInjection payloads rendered natively. The tab bar, navigation, payment and all business logic are native TCA."
+              }
+            },
+            "header" : {
+              "text" : {
+                "value" : "Remote screens"
+              }
+            }
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Account"
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "orders" : [
+      {
+        "estimatedDelivery" : "Monday, October 26",
+        "id" : "NW-48213",
+        "totals" : {
+          "itemCount" : 2,
+          "total" : 181.48
+        }
+      }
+    ],
+    "profile" : {
+      "address" : {
+        "city" : "San Francisco, CA 94105",
+        "street" : "200 Market St"
+      },
+      "cardLast4" : "4242",
+      "email" : "sam@example.com",
+      "name" : "Sam Rivera"
+    },
+    "remoteScreens" : [
+      "Home",
+      "Catalog",
+      "Account"
+    ]
+  },
+  "version" : "2879cd27d2bc"
+}

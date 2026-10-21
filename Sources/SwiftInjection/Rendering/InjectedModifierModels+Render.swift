@@ -280,3 +280,30 @@ extension InjectdDatePickerStyle {
         }
     }
 }
+
+extension InjectedIndexDisplayMode {
+    var pageIndexDisplayMode: PageTabViewStyle.IndexDisplayMode {
+        switch self {
+        case .automatic: return .automatic
+        case .always: return .always
+        case .never: return .never
+        }
+    }
+
+    var backgroundDisplayMode: PageIndexViewStyle.BackgroundDisplayMode {
+        switch self {
+        case .automatic: return .automatic
+        case .always: return .always
+        case .never: return .never
+        }
+    }
+}
+
+extension InjectedContentMode {
+    var render: ContentMode {
+        switch self {
+        case .fit: return .fit
+        case .fill: return .fill
+        }
+    }
+}

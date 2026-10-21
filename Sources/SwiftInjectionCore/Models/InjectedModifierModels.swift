@@ -97,3 +97,18 @@ public enum InjectedTextContentType: String, Codable, CaseIterable {
 public enum InjectedRoundedCornerStyle: String, Codable {
     case circular, continuous
 }
+
+/// `tabViewStyle`: `page` swipes between children (added in schema 1.1).
+public enum InjectedTabViewStyle: String, Codable, CaseIterable {
+    case automatic, page
+}
+
+/// Page dots for `tabViewStyle` and their background for `indexViewStyle` (added in schema 1.1).
+public enum InjectedIndexDisplayMode: String, Codable, CaseIterable {
+    case automatic, always, never
+}
+
+/// `aspectRatio` content mode (added in schema 1.1).
+public enum InjectedContentMode: String, Codable, CaseIterable {
+    case fit, fill
+}

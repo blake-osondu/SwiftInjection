@@ -1,0 +1,464 @@
+{
+  "body" : {
+    "scrollView" : {
+      "children" : [
+        {
+          "vStack" : {
+            "children" : [
+              {
+                "image" : {
+                  "modifiers" : [
+                    {
+                      "systemFontSize" : {
+                        "size" : 72
+                      }
+                    },
+                    {
+                      "foregroundColor" : {
+                        "color" : "#FF34C759"
+                      }
+                    },
+                    {
+                      "padding" : {
+                        "edges" : "top",
+                        "length" : 24
+                      }
+                    }
+                  ],
+                  "systemName" : "checkmark.seal.fill"
+                }
+              },
+              {
+                "vStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "title"
+                            }
+                          },
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : "Thanks for your order!"
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          },
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "concat" : [
+                            "Order ",
+                            {
+                              "var" : "order.id"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "spacing" : 6
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "label" : {
+                        "systemImage" : "shippingbox.fill",
+                        "title" : {
+                          "concat" : [
+                            "Arrives ",
+                            {
+                              "var" : "order.estimatedDelivery"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "label" : {
+                        "systemImage" : "mappin.and.ellipse",
+                        "title" : {
+                          "concat" : [
+                            {
+                              "concat" : [
+                                {
+                                  "var" : "order.shipping.name"
+                                },
+                                " delivery to "
+                              ]
+                            },
+                            {
+                              "var" : "order.address.street"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "label" : {
+                        "systemImage" : "creditcard.fill",
+                        "title" : {
+                          "concat" : [
+                            {
+                              "concat" : [
+                                {
+                                  "concat" : [
+                                    "Paid ",
+                                    {
+                                      "currency" : [
+                                        {
+                                          "var" : "order.totals.total"
+                                        },
+                                        "USD"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                " · Visa •••• "
+                              ]
+                            },
+                            {
+                              "var" : "order.cardLast4"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "systemFont" : {
+                        "font" : "subheadline"
+                      }
+                    },
+                    {
+                      "padding" : {
+                        "length" : 16
+                      }
+                    },
+                    {
+                      "frame" : {
+                        "alignment" : "leading",
+                        "maxWidth" : "infinity"
+                      }
+                    },
+                    {
+                      "background" : {
+                        "content" : {
+                          "color" : {
+                            "color" : "#FFF0F0F5"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "cornerRadius" : {
+                        "radius" : 16
+                      }
+                    }
+                  ],
+                  "spacing" : 14
+                }
+              },
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "systemFont" : {
+                              "font" : "headline"
+                            }
+                          }
+                        ],
+                        "value" : "In this order"
+                      }
+                    },
+                    {
+                      "forEach" : {
+                        "content" : {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "value" : {
+                                    "var" : "line.product.name"
+                                  }
+                                }
+                              },
+                              {
+                                "spacer" : {
+
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FF8E8E93"
+                                      }
+                                    }
+                                  ],
+                                  "value" : {
+                                    "format" : [
+                                      "×{0}",
+                                      {
+                                        "var" : "line.quantity"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "subheadline"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "identity" : {
+                          "var" : "line.id"
+                        },
+                        "itemName" : "line",
+                        "items" : "order.lines"
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "frame" : {
+                        "alignment" : "leading",
+                        "maxWidth" : "infinity"
+                      }
+                    }
+                  ],
+                  "spacing" : 8
+                }
+              },
+              {
+                "vStack" : {
+                  "children" : [
+                    {
+                      "if" : {
+                        "condition" : {
+                          "eq" : [
+                            {
+                              "count" : [
+                                {
+                                  "var" : "feedback"
+                                }
+                              ]
+                            },
+                            0
+                          ]
+                        },
+                        "else" : {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "subheadline"
+                                }
+                              },
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF8E8E93"
+                                }
+                              }
+                            ],
+                            "value" : "Thanks for the feedback!"
+                          }
+                        },
+                        "then" : {
+                          "group" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "systemFont" : {
+                                        "font" : "headline"
+                                      }
+                                    }
+                                  ],
+                                  "value" : "How was checkout?"
+                                }
+                              },
+                              {
+                                "hStack" : {
+                                  "children" : [
+                                    {
+                                      "button" : {
+                                        "action" : [
+                                          {
+                                            "args" : [
+                                              "easy"
+                                            ],
+                                            "call" : "sendFeedback"
+                                          }
+                                        ],
+                                        "modifiers" : [
+                                          {
+                                            "buttonStyle" : {
+                                              "style" : "bordered"
+                                            }
+                                          }
+                                        ],
+                                        "title" : "👍 Easy"
+                                      }
+                                    },
+                                    {
+                                      "button" : {
+                                        "action" : [
+                                          {
+                                            "args" : [
+                                              "hard"
+                                            ],
+                                            "call" : "sendFeedback"
+                                          }
+                                        ],
+                                        "modifiers" : [
+                                          {
+                                            "buttonStyle" : {
+                                              "style" : "bordered"
+                                            }
+                                          }
+                                        ],
+                                        "title" : "👎 Not great"
+                                      }
+                                    }
+                                  ],
+                                  "spacing" : 12
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "padding" : {
+                        "edges" : "top",
+                        "length" : 8
+                      }
+                    }
+                  ],
+                  "spacing" : 8
+                }
+              },
+              {
+                "button" : {
+                  "action" : [
+                    {
+                      "call" : "continueShopping"
+                    }
+                  ],
+                  "label" : {
+                    "text" : {
+                      "modifiers" : [
+                        {
+                          "systemFont" : {
+                            "font" : "headline"
+                          }
+                        },
+                        {
+                          "frame" : {
+                            "maxWidth" : "infinity"
+                          }
+                        },
+                        {
+                          "padding" : {
+                            "edges" : "vertical",
+                            "length" : 6
+                          }
+                        }
+                      ],
+                      "value" : "Continue shopping"
+                    }
+                  },
+                  "modifiers" : [
+                    {
+                      "buttonStyle" : {
+                        "style" : "borderedProminent"
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "modifiers" : [
+              {
+                "padding" : {
+                  "length" : 16
+                }
+              }
+            ],
+            "spacing" : 20
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Order placed"
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "feedback" : "",
+    "order" : {
+      "address" : {
+        "street" : "200 Market St"
+      },
+      "cardLast4" : "4242",
+      "estimatedDelivery" : "Monday, October 26",
+      "id" : "NW-48213",
+      "lines" : [
+        {
+          "id" : "puffer-M",
+          "product" : {
+            "name" : "Alpine Puffer Jacket"
+          },
+          "quantity" : 1
+        }
+      ],
+      "shipping" : {
+        "name" : "Standard"
+      },
+      "totals" : {
+        "total" : 160.92
+      }
+    }
+  },
+  "version" : "365e94845ba9"
+}

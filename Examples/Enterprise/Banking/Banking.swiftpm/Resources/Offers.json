@@ -1,0 +1,359 @@
+{
+  "body" : {
+    "list" : {
+      "children" : [
+        {
+          "if" : {
+            "condition" : {
+              "var" : "showSpringPromo"
+            },
+            "then" : {
+              "section" : {
+                "children" : [
+                  {
+                    "vStack" : {
+                      "alignment" : "leading",
+                      "children" : [
+                        {
+                          "label" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "headline"
+                                }
+                              },
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF34C759"
+                                }
+                              }
+                            ],
+                            "systemImage" : "leaf.fill",
+                            "title" : "Spring savings challenge"
+                          }
+                        },
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "subheadline"
+                                }
+                              }
+                            ],
+                            "value" : "Move $50 a week into savings through May and we'll add a $25 bonus."
+                          }
+                        },
+                        {
+                          "custom" : {
+                            "name" : "PrimaryButton",
+                            "on" : {
+                              "action" : [
+                                {
+                                  "args" : [
+                                    "spring_promo_tapped"
+                                  ],
+                                  "call" : "track"
+                                },
+                                {
+                                  "args" : [
+                                    "transfer"
+                                  ],
+                                  "call" : "navigate"
+                                }
+                              ]
+                            },
+                            "props" : {
+                              "title" : "Start saving"
+                            }
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "padding" : {
+                            "edges" : "vertical",
+                            "length" : 4
+                          }
+                        }
+                      ],
+                      "spacing" : 8
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "forEach" : {
+                  "content" : {
+                    "vStack" : {
+                      "alignment" : "leading",
+                      "children" : [
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "systemFont" : {
+                                        "font" : "headline"
+                                      }
+                                    }
+                                  ],
+                                  "value" : {
+                                    "var" : "offer.title"
+                                  }
+                                }
+                              },
+                              {
+                                "if" : {
+                                  "condition" : {
+                                    "not" : [
+                                      {
+                                        "eq" : [
+                                          {
+                                            "count" : [
+                                              {
+                                                "var" : "offer.badge"
+                                              }
+                                            ]
+                                          },
+                                          0
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "then" : {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "systemFont" : {
+                                            "font" : "caption"
+                                          }
+                                        },
+                                        {
+                                          "bold" : {
+
+                                          }
+                                        },
+                                        {
+                                          "foregroundColor" : {
+                                            "color" : "#FFFFFFFF"
+                                          }
+                                        },
+                                        {
+                                          "padding" : {
+                                            "edges" : "horizontal",
+                                            "length" : 6
+                                          }
+                                        },
+                                        {
+                                          "background" : {
+                                            "content" : {
+                                              "color" : {
+                                                "color" : "#FF007AFF"
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "cornerRadius" : {
+                                            "radius" : 6
+                                          }
+                                        }
+                                      ],
+                                      "value" : {
+                                        "var" : "offer.badge"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "systemFont" : {
+                                  "font" : "subheadline"
+                                }
+                              },
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF8E8E93"
+                                }
+                              }
+                            ],
+                            "value" : {
+                              "var" : "offer.detail"
+                            }
+                          }
+                        },
+                        {
+                          "if" : {
+                            "condition" : {
+                              "eq" : [
+                                {
+                                  "at" : [
+                                    {
+                                      "var" : "applied"
+                                    },
+                                    {
+                                      "var" : "offer.id"
+                                    }
+                                  ]
+                                },
+                                true
+                              ]
+                            },
+                            "else" : {
+                              "if" : {
+                                "condition" : {
+                                  "eq" : [
+                                    {
+                                      "at" : [
+                                        {
+                                          "var" : "applied"
+                                        },
+                                        {
+                                          "var" : "offer.id"
+                                        }
+                                      ]
+                                    },
+                                    "applying"
+                                  ]
+                                },
+                                "else" : {
+                                  "custom" : {
+                                    "name" : "PrimaryButton",
+                                    "on" : {
+                                      "action" : [
+                                        {
+                                          "args" : [
+                                            {
+                                              "var" : "offer.id"
+                                            }
+                                          ],
+                                          "call" : "applyForOffer"
+                                        }
+                                      ]
+                                    },
+                                    "props" : {
+                                      "title" : "Apply"
+                                    }
+                                  }
+                                },
+                                "then" : {
+                                  "progressView" : {
+                                    "title" : "Applying…"
+                                  }
+                                }
+                              }
+                            },
+                            "then" : {
+                              "label" : {
+                                "modifiers" : [
+                                  {
+                                    "foregroundColor" : {
+                                      "color" : "#FF34C759"
+                                    }
+                                  }
+                                ],
+                                "systemImage" : "checkmark.circle.fill",
+                                "title" : "Application received"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "padding" : {
+                            "edges" : "vertical",
+                            "length" : 4
+                          }
+                        }
+                      ],
+                      "spacing" : 6
+                    }
+                  },
+                  "identity" : {
+                    "var" : "offer.id"
+                  },
+                  "itemName" : "offer",
+                  "items" : "offers"
+                }
+              }
+            ],
+            "title" : {
+              "format" : [
+                "Picked for you, {0}",
+                {
+                  "var" : "user.firstName"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Offers"
+          }
+        },
+        {
+          "onAppear" : {
+            "do" : [
+              {
+                "args" : [
+                  "offers_viewed"
+                ],
+                "call" : "track"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.0",
+  "state" : {
+    "applied" : {
+
+    },
+    "offers" : [
+      {
+        "badge" : "New",
+        "detail" : "Earn more on new deposits for 6 months.",
+        "id" : "savings-boost",
+        "title" : "4.50% APY Savings Boost"
+      },
+      {
+        "badge" : "",
+        "detail" : "Unlimited 2% back on every purchase, no annual fee.",
+        "id" : "cashback-card",
+        "title" : "2% Cashback Card"
+      },
+      {
+        "badge" : "",
+        "detail" : "Trip cancellation and lost-bag protection when you pay with Northwind.",
+        "id" : "travel-cover",
+        "title" : "Travel Cover"
+      }
+    ],
+    "showSpringPromo" : true,
+    "user" : {
+      "firstName" : "there"
+    }
+  },
+  "version" : "7148dfee87b9"
+}

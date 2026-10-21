@@ -1,0 +1,699 @@
+{
+  "body" : {
+    "list" : {
+      "children" : [
+        {
+          "section" : {
+            "children" : [
+              {
+                "vStack" : {
+                  "alignment" : "leading",
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "var" : "address.name"
+                        }
+                      }
+                    },
+                    {
+                      "text" : {
+                        "value" : {
+                          "var" : "address.street"
+                        }
+                      }
+                    },
+                    {
+                      "text" : {
+                        "value" : {
+                          "var" : "address.city"
+                        }
+                      }
+                    }
+                  ],
+                  "modifiers" : [
+                    {
+                      "systemFont" : {
+                        "font" : "subheadline"
+                      }
+                    }
+                  ],
+                  "spacing" : 2
+                }
+              }
+            ],
+            "title" : "Ship to"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "forEach" : {
+                  "content" : {
+                    "button" : {
+                      "action" : [
+                        {
+                          "args" : [
+                            {
+                              "var" : "option.id"
+                            }
+                          ],
+                          "call" : "selectShipping"
+                        }
+                      ],
+                      "label" : {
+                        "hStack" : {
+                          "children" : [
+                            {
+                              "image" : {
+                                "modifiers" : [
+                                  {
+                                    "foregroundColor" : {
+                                      "color" : "#FF007AFF"
+                                    }
+                                  }
+                                ],
+                                "systemName" : {
+                                  "if" : [
+                                    {
+                                      "eq" : [
+                                        {
+                                          "var" : "shippingID"
+                                        },
+                                        {
+                                          "var" : "option.id"
+                                        }
+                                      ]
+                                    },
+                                    "largecircle.fill.circle",
+                                    "circle"
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "vStack" : {
+                                "alignment" : "leading",
+                                "children" : [
+                                  {
+                                    "text" : {
+                                      "value" : {
+                                        "var" : "option.name"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "systemFont" : {
+                                            "font" : "caption"
+                                          }
+                                        },
+                                        {
+                                          "foregroundColor" : {
+                                            "color" : "#FF8E8E93"
+                                          }
+                                        }
+                                      ],
+                                      "value" : {
+                                        "var" : "option.detail"
+                                      }
+                                    }
+                                  }
+                                ],
+                                "spacing" : 2
+                              }
+                            },
+                            {
+                              "spacer" : {
+
+                              }
+                            },
+                            {
+                              "text" : {
+                                "value" : {
+                                  "if" : [
+                                    {
+                                      "eq" : [
+                                        {
+                                          "var" : "option.price"
+                                        },
+                                        0
+                                      ]
+                                    },
+                                    "Free",
+                                    {
+                                      "currency" : [
+                                        {
+                                          "var" : "option.price"
+                                        },
+                                        "USD"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ],
+                          "spacing" : 12
+                        }
+                      },
+                      "modifiers" : [
+                        {
+                          "buttonStyle" : {
+                            "style" : "plain"
+                          }
+                        },
+                        {
+                          "disabled" : {
+                            "isDisabled" : {
+                              "var" : "isPlacingOrder"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "identity" : {
+                    "var" : "option.id"
+                  },
+                  "itemName" : "option",
+                  "items" : "shippingOptions"
+                }
+              }
+            ],
+            "title" : "Delivery"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "forEach" : {
+                  "content" : {
+                    "hStack" : {
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF8E8E93"
+                                }
+                              }
+                            ],
+                            "value" : {
+                              "format" : [
+                                "{0}×",
+                                {
+                                  "var" : "line.quantity"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "lineLimit" : {
+                                  "limit" : 1
+                                }
+                              }
+                            ],
+                            "value" : {
+                              "var" : "line.product.name"
+                            }
+                          }
+                        },
+                        {
+                          "spacer" : {
+
+                          }
+                        },
+                        {
+                          "text" : {
+                            "value" : {
+                              "currency" : [
+                                {
+                                  "var" : "line.lineTotal"
+                                },
+                                "USD"
+                              ]
+                            }
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "systemFont" : {
+                            "font" : "subheadline"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "identity" : {
+                    "var" : "line.id"
+                  },
+                  "itemName" : "line",
+                  "items" : "lines"
+                }
+              }
+            ],
+            "title" : "Items"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "label" : {
+                  "systemImage" : "creditcard.fill",
+                  "title" : {
+                    "concat" : [
+                      "Visa •••• ",
+                      {
+                        "var" : "cardLast4"
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "title" : "Payment"
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "Subtotal"
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "text" : {
+                        "value" : {
+                          "currency" : [
+                            {
+                              "var" : "totals.subtotal"
+                            },
+                            "USD"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "if" : {
+                  "condition" : {
+                    "gt" : [
+                      {
+                        "var" : "totals.discount"
+                      },
+                      0
+                    ]
+                  },
+                  "then" : {
+                    "hStack" : {
+                      "children" : [
+                        {
+                          "text" : {
+                            "modifiers" : [
+                              {
+                                "foregroundColor" : {
+                                  "color" : "#FF8E8E93"
+                                }
+                              }
+                            ],
+                            "value" : "Discount"
+                          }
+                        },
+                        {
+                          "spacer" : {
+
+                          }
+                        },
+                        {
+                          "text" : {
+                            "value" : {
+                              "concat" : [
+                                "−",
+                                {
+                                  "currency" : [
+                                    {
+                                      "var" : "totals.discount"
+                                    },
+                                    "USD"
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "Shipping"
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "text" : {
+                        "value" : {
+                          "if" : [
+                            {
+                              "eq" : [
+                                {
+                                  "var" : "totals.shipping"
+                                },
+                                0
+                              ]
+                            },
+                            "Free",
+                            {
+                              "currency" : [
+                                {
+                                  "var" : "totals.shipping"
+                                },
+                                "USD"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "foregroundColor" : {
+                              "color" : "#FF8E8E93"
+                            }
+                          }
+                        ],
+                        "value" : "Tax"
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "text" : {
+                        "value" : {
+                          "currency" : [
+                            {
+                              "var" : "totals.tax"
+                            },
+                            "USD"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "hStack" : {
+                  "children" : [
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : "Total"
+                      }
+                    },
+                    {
+                      "spacer" : {
+
+                      }
+                    },
+                    {
+                      "text" : {
+                        "modifiers" : [
+                          {
+                            "bold" : {
+
+                            }
+                          }
+                        ],
+                        "value" : {
+                          "currency" : [
+                            {
+                              "var" : "totals.total"
+                            },
+                            "USD"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if" : {
+            "condition" : {
+              "not" : [
+                {
+                  "eq" : [
+                    {
+                      "count" : [
+                        {
+                          "var" : "errorMessage"
+                        }
+                      ]
+                    },
+                    0
+                  ]
+                }
+              ]
+            },
+            "then" : {
+              "section" : {
+                "children" : [
+                  {
+                    "label" : {
+                      "modifiers" : [
+                        {
+                          "foregroundColor" : {
+                            "color" : "#FFFF3B30"
+                          }
+                        }
+                      ],
+                      "systemImage" : "exclamationmark.triangle.fill",
+                      "title" : {
+                        "var" : "errorMessage"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "section" : {
+            "children" : [
+              {
+                "button" : {
+                  "action" : [
+                    {
+                      "call" : "pay"
+                    }
+                  ],
+                  "label" : {
+                    "hStack" : {
+                      "children" : [
+                        {
+                          "spacer" : {
+
+                          }
+                        },
+                        {
+                          "if" : {
+                            "condition" : {
+                              "var" : "isPlacingOrder"
+                            },
+                            "else" : {
+                              "label" : {
+                                "modifiers" : [
+                                  {
+                                    "systemFont" : {
+                                      "font" : "headline"
+                                    }
+                                  }
+                                ],
+                                "systemImage" : "lock.fill",
+                                "title" : {
+                                  "concat" : [
+                                    "Pay ",
+                                    {
+                                      "currency" : [
+                                        {
+                                          "var" : "totals.total"
+                                        },
+                                        "USD"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "then" : {
+                              "progressView" : {
+                                "title" : "Placing your order…"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "spacer" : {
+
+                          }
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "padding" : {
+                            "edges" : "vertical",
+                            "length" : 6
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "modifiers" : [
+                    {
+                      "buttonStyle" : {
+                        "style" : "borderedProminent"
+                      }
+                    },
+                    {
+                      "disabled" : {
+                        "isDisabled" : {
+                          "var" : "isPlacingOrder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Review order"
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "address" : {
+      "city" : "San Francisco, CA 94105",
+      "name" : "Sam Rivera",
+      "street" : "200 Market St"
+    },
+    "cardLast4" : "4242",
+    "errorMessage" : "",
+    "isPlacingOrder" : false,
+    "lines" : [
+      {
+        "id" : "puffer-M",
+        "lineTotal" : 149,
+        "product" : {
+          "name" : "Alpine Puffer Jacket"
+        },
+        "quantity" : 1
+      }
+    ],
+    "shippingID" : "standard",
+    "shippingOptions" : [
+      {
+        "detail" : "3–5 business days · free over $75",
+        "id" : "standard",
+        "name" : "Standard",
+        "price" : 0
+      },
+      {
+        "detail" : "1–2 business days",
+        "id" : "express",
+        "name" : "Express",
+        "price" : 12
+      }
+    ],
+    "totals" : {
+      "discount" : 0,
+      "shipping" : 0,
+      "subtotal" : 149,
+      "tax" : 11.92,
+      "total" : 160.92
+    }
+  },
+  "version" : "31f236ec0de6"
+}

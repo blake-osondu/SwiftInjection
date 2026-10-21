@@ -44,11 +44,30 @@ jobs:
           xcodebuild test -scheme SwiftInjection-Package -destination "id=$SIMULATOR_ID" \
             -clonedSourcePackagesDirPath .spm 2>&1 | tee build.log
 
-      - name: Build the example app
-        working-directory: Examples/TodoApp.swiftpm
+      - name: Build the example apps
         run: |
           set -o pipefail
-          xcodebuild build -scheme TodoApp -destination "id=$SIMULATOR_ID" -clonedSourcePackagesDirPath ../../.spm 2>&1 | tail -5
+          # Every app package under Examples/; each one's scheme is its directory name without .swiftpm.
+          for app in $(find Examples -name "*.swiftpm" -type d -not -path "*/.build/*" | sort); do
+            echo "::group::$app"
+            # -skipMacroValidation: packages such as The Composable Architecture ship Swift macros.
+            (cd "$app" && xcodebuild build -scheme "$(basename "$app" .swiftpm)" -destination "id=$SIMULATOR_ID" \
+              -skipMacroValidation -clonedSourcePackagesDirPath "$GITHUB_WORKSPACE/.spm" 2>&1 \
+              | grep -E "error:|\*\* BUILD")
+            echo "::endgroup::"
+          done
+
+      - name: Test the example packages
+        run: |
+          set -o pipefail
+          # Feature packages behind the enterprise examples (e.g. Examples/Enterprise/Banking/Packages/BankingKit).
+          for package in $(find Examples -path "*/Packages/*/Package.swift" -not -path "*/.build/*" | sort); do
+            dir="$(dirname "$package")"
+            echo "::group::$dir"
+            (cd "$dir" && xcodebuild test -scheme "$(basename "$dir")-Package" -destination "id=$SIMULATOR_ID" \
+              -skipMacroValidation -clonedSourcePackagesDirPath "$GITHUB_WORKSPACE/.spm" 2>&1 | grep -E "error:|Executed|\*\* TEST")
+            echo "::endgroup::"
+          done
 
       - name: No warnings in Sources
         run: |

@@ -1,0 +1,963 @@
+{
+  "body" : {
+    "group" : {
+      "children" : [
+        {
+          "if" : {
+            "condition" : {
+              "eq" : [
+                {
+                  "count" : [
+                    {
+                      "var" : "lines"
+                    }
+                  ]
+                },
+                0
+              ]
+            },
+            "else" : {
+              "list" : {
+                "children" : [
+                  {
+                    "section" : {
+                      "children" : [
+                        {
+                          "if" : {
+                            "condition" : {
+                              "gt" : [
+                                {
+                                  "var" : "amountToFreeShipping"
+                                },
+                                0
+                              ]
+                            },
+                            "else" : {
+                              "label" : {
+                                "modifiers" : [
+                                  {
+                                    "systemFont" : {
+                                      "font" : "subheadline"
+                                    }
+                                  },
+                                  {
+                                    "foregroundColor" : {
+                                      "color" : "#FF34C759"
+                                    }
+                                  }
+                                ],
+                                "systemImage" : "shippingbox.fill",
+                                "title" : "You've unlocked free standard shipping"
+                              }
+                            },
+                            "then" : {
+                              "label" : {
+                                "modifiers" : [
+                                  {
+                                    "systemFont" : {
+                                      "font" : "subheadline"
+                                    }
+                                  }
+                                ],
+                                "systemImage" : "shippingbox",
+                                "title" : {
+                                  "format" : [
+                                    "Add {0} more for free shipping",
+                                    {
+                                      "currency" : [
+                                        {
+                                          "var" : "amountToFreeShipping"
+                                        },
+                                        "USD"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "section" : {
+                      "children" : [
+                        {
+                          "forEach" : {
+                            "content" : {
+                              "hStack" : {
+                                "children" : [
+                                  {
+                                    "zStack" : {
+                                      "children" : [
+                                        {
+                                          "rectangle" : {
+                                            "modifiers" : [
+                                              {
+                                                "foregroundColor" : {
+                                                  "color" : {
+                                                    "var" : "line.product.color"
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "opacity" : {
+                                                  "value" : 0.16
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "image" : {
+                                            "modifiers" : [
+                                              {
+                                                "systemFont" : {
+                                                  "font" : "title2"
+                                                }
+                                              },
+                                              {
+                                                "foregroundColor" : {
+                                                  "color" : {
+                                                    "var" : "line.product.color"
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "systemName" : {
+                                              "var" : "line.product.symbol"
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "modifiers" : [
+                                        {
+                                          "frame" : {
+                                            "height" : 60,
+                                            "width" : 60
+                                          }
+                                        },
+                                        {
+                                          "cornerRadius" : {
+                                            "radius" : 12
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "vStack" : {
+                                      "alignment" : "leading",
+                                      "children" : [
+                                        {
+                                          "text" : {
+                                            "modifiers" : [
+                                              {
+                                                "systemFont" : {
+                                                  "font" : "subheadline"
+                                                }
+                                              },
+                                              {
+                                                "bold" : {
+
+                                                }
+                                              },
+                                              {
+                                                "lineLimit" : {
+                                                  "limit" : 1
+                                                }
+                                              }
+                                            ],
+                                            "value" : {
+                                              "var" : "line.product.name"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "if" : {
+                                            "condition" : {
+                                              "not" : [
+                                                {
+                                                  "eq" : [
+                                                    {
+                                                      "count" : [
+                                                        {
+                                                          "var" : "line.size"
+                                                        }
+                                                      ]
+                                                    },
+                                                    0
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "then" : {
+                                              "text" : {
+                                                "modifiers" : [
+                                                  {
+                                                    "systemFont" : {
+                                                      "font" : "caption"
+                                                    }
+                                                  },
+                                                  {
+                                                    "foregroundColor" : {
+                                                      "color" : "#FF8E8E93"
+                                                    }
+                                                  }
+                                                ],
+                                                "value" : {
+                                                  "concat" : [
+                                                    "Size ",
+                                                    {
+                                                      "var" : "line.size"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "text" : {
+                                            "modifiers" : [
+                                              {
+                                                "systemFont" : {
+                                                  "font" : "subheadline"
+                                                }
+                                              }
+                                            ],
+                                            "value" : {
+                                              "currency" : [
+                                                {
+                                                  "var" : "line.lineTotal"
+                                                },
+                                                "USD"
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "spacing" : 4
+                                    }
+                                  },
+                                  {
+                                    "spacer" : {
+
+                                    }
+                                  },
+                                  {
+                                    "button" : {
+                                      "action" : [
+                                        {
+                                          "args" : [
+                                            {
+                                              "var" : "line.id"
+                                            },
+                                            -1
+                                          ],
+                                          "call" : "changeQuantity"
+                                        }
+                                      ],
+                                      "label" : {
+                                        "image" : {
+                                          "modifiers" : [
+                                            {
+                                              "systemFont" : {
+                                                "font" : "title3"
+                                              }
+                                            }
+                                          ],
+                                          "systemName" : {
+                                            "if" : [
+                                              {
+                                                "eq" : [
+                                                  {
+                                                    "var" : "line.quantity"
+                                                  },
+                                                  1
+                                                ]
+                                              },
+                                              "trash.circle",
+                                              "minus.circle"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "modifiers" : [
+                                        {
+                                          "buttonStyle" : {
+                                            "style" : "borderless"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "monospacedDigit" : {
+
+                                          }
+                                        }
+                                      ],
+                                      "value" : {
+                                        "format" : [
+                                          "{0}",
+                                          {
+                                            "var" : "line.quantity"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "button" : {
+                                      "action" : [
+                                        {
+                                          "args" : [
+                                            {
+                                              "var" : "line.id"
+                                            },
+                                            1
+                                          ],
+                                          "call" : "changeQuantity"
+                                        }
+                                      ],
+                                      "label" : {
+                                        "image" : {
+                                          "modifiers" : [
+                                            {
+                                              "systemFont" : {
+                                                "font" : "title3"
+                                              }
+                                            }
+                                          ],
+                                          "systemName" : "plus.circle"
+                                        }
+                                      },
+                                      "modifiers" : [
+                                        {
+                                          "buttonStyle" : {
+                                            "style" : "borderless"
+                                          }
+                                        },
+                                        {
+                                          "disabled" : {
+                                            "isDisabled" : {
+                                              "gte" : [
+                                                {
+                                                  "var" : "line.quantity"
+                                                },
+                                                10
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ],
+                                "spacing" : 12
+                              }
+                            },
+                            "identity" : {
+                              "var" : "line.id"
+                            },
+                            "itemName" : "line",
+                            "items" : "lines"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "section" : {
+                      "children" : [
+                        {
+                          "if" : {
+                            "condition" : {
+                              "eq" : [
+                                {
+                                  "count" : [
+                                    {
+                                      "var" : "promoCode"
+                                    }
+                                  ]
+                                },
+                                0
+                              ]
+                            },
+                            "else" : {
+                              "hStack" : {
+                                "children" : [
+                                  {
+                                    "label" : {
+                                      "modifiers" : [
+                                        {
+                                          "foregroundColor" : {
+                                            "color" : "#FF34C759"
+                                          }
+                                        }
+                                      ],
+                                      "systemImage" : "tag.fill",
+                                      "title" : {
+                                        "concat" : [
+                                          {
+                                            "var" : "promoCode"
+                                          },
+                                          " applied"
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "spacer" : {
+
+                                    }
+                                  },
+                                  {
+                                    "button" : {
+                                      "action" : [
+                                        {
+                                          "call" : "removePromo"
+                                        }
+                                      ],
+                                      "modifiers" : [
+                                        {
+                                          "buttonStyle" : {
+                                            "style" : "borderless"
+                                          }
+                                        }
+                                      ],
+                                      "title" : "Remove"
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "then" : {
+                              "group" : {
+                                "children" : [
+                                  {
+                                    "hStack" : {
+                                      "children" : [
+                                        {
+                                          "field" : {
+                                            "text" : "promoDraft",
+                                            "title" : "Try FALL20"
+                                          }
+                                        },
+                                        {
+                                          "button" : {
+                                            "action" : [
+                                              {
+                                                "args" : [
+                                                  {
+                                                    "var" : "promoDraft"
+                                                  }
+                                                ],
+                                                "call" : "applyPromo"
+                                              }
+                                            ],
+                                            "modifiers" : [
+                                              {
+                                                "buttonStyle" : {
+                                                  "style" : "borderless"
+                                                }
+                                              },
+                                              {
+                                                "disabled" : {
+                                                  "isDisabled" : {
+                                                    "or" : [
+                                                      {
+                                                        "eq" : [
+                                                          {
+                                                            "count" : [
+                                                              {
+                                                                "var" : "promoDraft"
+                                                              }
+                                                            ]
+                                                          },
+                                                          0
+                                                        ]
+                                                      },
+                                                      {
+                                                        "eq" : [
+                                                          {
+                                                            "var" : "promoStatus"
+                                                          },
+                                                          "checking"
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "title" : "Apply"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "if" : {
+                                      "condition" : {
+                                        "eq" : [
+                                          {
+                                            "var" : "promoStatus"
+                                          },
+                                          "checking"
+                                        ]
+                                      },
+                                      "then" : {
+                                        "progressView" : {
+
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "if" : {
+                                      "condition" : {
+                                        "eq" : [
+                                          {
+                                            "var" : "promoStatus"
+                                          },
+                                          "invalid"
+                                        ]
+                                      },
+                                      "then" : {
+                                        "text" : {
+                                          "modifiers" : [
+                                            {
+                                              "systemFont" : {
+                                                "font" : "footnote"
+                                              }
+                                            },
+                                            {
+                                              "foregroundColor" : {
+                                                "color" : "#FFFF3B30"
+                                              }
+                                            }
+                                          ],
+                                          "value" : "That code isn't valid."
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "title" : "Promo code"
+                    }
+                  },
+                  {
+                    "section" : {
+                      "children" : [
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FF8E8E93"
+                                      }
+                                    }
+                                  ],
+                                  "value" : {
+                                    "format" : [
+                                      "Subtotal ({0} items)",
+                                      {
+                                        "var" : "totals.itemCount"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "spacer" : {
+
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "value" : {
+                                    "currency" : [
+                                      {
+                                        "var" : "totals.subtotal"
+                                      },
+                                      "USD"
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "if" : {
+                            "condition" : {
+                              "gt" : [
+                                {
+                                  "var" : "totals.discount"
+                                },
+                                0
+                              ]
+                            },
+                            "then" : {
+                              "hStack" : {
+                                "children" : [
+                                  {
+                                    "text" : {
+                                      "modifiers" : [
+                                        {
+                                          "foregroundColor" : {
+                                            "color" : "#FF8E8E93"
+                                          }
+                                        }
+                                      ],
+                                      "value" : "Discount"
+                                    }
+                                  },
+                                  {
+                                    "spacer" : {
+
+                                    }
+                                  },
+                                  {
+                                    "text" : {
+                                      "value" : {
+                                        "concat" : [
+                                          "−",
+                                          {
+                                            "currency" : [
+                                              {
+                                                "var" : "totals.discount"
+                                              },
+                                              "USD"
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FF8E8E93"
+                                      }
+                                    }
+                                  ],
+                                  "value" : "Shipping"
+                                }
+                              },
+                              {
+                                "spacer" : {
+
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "value" : {
+                                    "if" : [
+                                      {
+                                        "eq" : [
+                                          {
+                                            "var" : "totals.shipping"
+                                          },
+                                          0
+                                        ]
+                                      },
+                                      "Free",
+                                      {
+                                        "currency" : [
+                                          {
+                                            "var" : "totals.shipping"
+                                          },
+                                          "USD"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "foregroundColor" : {
+                                        "color" : "#FF8E8E93"
+                                      }
+                                    }
+                                  ],
+                                  "value" : "Estimated tax"
+                                }
+                              },
+                              {
+                                "spacer" : {
+
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "value" : {
+                                    "currency" : [
+                                      {
+                                        "var" : "totals.tax"
+                                      },
+                                      "USD"
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "hStack" : {
+                            "children" : [
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "bold" : {
+
+                                      }
+                                    }
+                                  ],
+                                  "value" : "Total"
+                                }
+                              },
+                              {
+                                "spacer" : {
+
+                                }
+                              },
+                              {
+                                "text" : {
+                                  "modifiers" : [
+                                    {
+                                      "bold" : {
+
+                                      }
+                                    }
+                                  ],
+                                  "value" : {
+                                    "currency" : [
+                                      {
+                                        "var" : "totals.total"
+                                      },
+                                      "USD"
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "section" : {
+                      "children" : [
+                        {
+                          "button" : {
+                            "action" : [
+                              {
+                                "call" : "checkout"
+                              }
+                            ],
+                            "label" : {
+                              "text" : {
+                                "modifiers" : [
+                                  {
+                                    "systemFont" : {
+                                      "font" : "headline"
+                                    }
+                                  },
+                                  {
+                                    "frame" : {
+                                      "maxWidth" : "infinity"
+                                    }
+                                  },
+                                  {
+                                    "padding" : {
+                                      "edges" : "vertical",
+                                      "length" : 6
+                                    }
+                                  }
+                                ],
+                                "value" : "Checkout"
+                              }
+                            },
+                            "modifiers" : [
+                              {
+                                "buttonStyle" : {
+                                  "style" : "borderedProminent"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "then" : {
+              "vStack" : {
+                "children" : [
+                  {
+                    "image" : {
+                      "modifiers" : [
+                        {
+                          "systemFontSize" : {
+                            "size" : 56
+                          }
+                        },
+                        {
+                          "foregroundColor" : {
+                            "color" : "#FF8E8E93"
+                          }
+                        }
+                      ],
+                      "systemName" : "cart"
+                    }
+                  },
+                  {
+                    "text" : {
+                      "modifiers" : [
+                        {
+                          "systemFont" : {
+                            "font" : "title2"
+                          }
+                        },
+                        {
+                          "bold" : {
+
+                          }
+                        }
+                      ],
+                      "value" : "Your cart is empty"
+                    }
+                  },
+                  {
+                    "text" : {
+                      "modifiers" : [
+                        {
+                          "foregroundColor" : {
+                            "color" : "#FF8E8E93"
+                          }
+                        }
+                      ],
+                      "value" : "Find something you love."
+                    }
+                  },
+                  {
+                    "button" : {
+                      "action" : [
+                        {
+                          "call" : "browse"
+                        }
+                      ],
+                      "modifiers" : [
+                        {
+                          "buttonStyle" : {
+                            "style" : "borderedProminent"
+                          }
+                        }
+                      ],
+                      "title" : "Start shopping"
+                    }
+                  }
+                ],
+                "modifiers" : [
+                  {
+                    "frame" : {
+                      "maxHeight" : "infinity",
+                      "maxWidth" : "infinity"
+                    }
+                  }
+                ],
+                "spacing" : 14
+              }
+            }
+          }
+        }
+      ],
+      "modifiers" : [
+        {
+          "navigationTitle" : {
+            "title" : "Cart"
+          }
+        }
+      ]
+    }
+  },
+  "schemaVersion" : "1.1",
+  "state" : {
+    "amountToFreeShipping" : 0,
+    "lines" : [
+      {
+        "id" : "puffer-M",
+        "lineTotal" : 149,
+        "product" : {
+          "color" : "#3B6EA5",
+          "name" : "Alpine Puffer Jacket",
+          "symbol" : "snowflake"
+        },
+        "quantity" : 1,
+        "size" : "M"
+      },
+      {
+        "id" : "mug",
+        "lineTotal" : 64,
+        "product" : {
+          "color" : "#6D8B74",
+          "name" : "Stoneware Mug Set",
+          "symbol" : "cup.and.saucer.fill"
+        },
+        "quantity" : 2,
+        "size" : ""
+      }
+    ],
+    "promoCode" : "",
+    "promoDraft" : "",
+    "promoStatus" : "none",
+    "totals" : {
+      "discount" : 0,
+      "itemCount" : 3,
+      "shipping" : 0,
+      "subtotal" : 213,
+      "tax" : 17.04,
+      "total" : 230.04
+    }
+  },
+  "version" : "aa2624a4be81"
+}
