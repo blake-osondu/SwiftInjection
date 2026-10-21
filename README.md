@@ -31,7 +31,7 @@ RemoteInjectedScreen(loader: PayloadLoader(configuration: .init(
 **Good fits:** screens that change often or need fast fixes (onboarding, settings, promotions, forms, content and layout tweaks), and experiments that shouldn't wait on release cycles.
 
 **Not a fit:**
-- The core of your app.
+- The core *logic* of your app. Keep business rules, payments, authentication and navigation native, and let remote screens render your app's state and send intents back. The [Retail example](Examples/Enterprise/Retail) runs most of a shopping app's screens this way, on top of The Composable Architecture.
 - Anything that needs APIs beyond what payloads can express (use custom components for those parts).
 - Changing your app's primary purpose. Apple allows downloaded interpreted code only when it doesn't (App Store Review Guideline 2.5.2). SwiftInjection is for updating screens, not for getting around review.
 

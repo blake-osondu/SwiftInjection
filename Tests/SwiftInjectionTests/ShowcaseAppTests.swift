@@ -115,4 +115,110 @@ final class ShowcaseAppTests: XCTestCase {
         store.update { $0 = $0.setting(true, at: ["applied", "savings-boost"]) }
         XCTAssertNoThrow(try screen.inspect().find(text: "Application received"))
     }
+
+    // MARK: Retail (#43)
+
+    /// Records every host function a Retail screen calls, the way RemoteScreen forwards intents to TCA actions.
+    private func recordIntents(_ store: StateStore, _ names: [String]) -> () -> [String] {
+        var calls: [String] = []
+        for name in names {
+            store.functions[name] = { args, _ in
+                calls.append(([name] + args.map(\.displayString)).joined(separator: ":"))
+                return .null
+            }
+        }
+        return { calls }
+    }
+
+    private func usd(_ amount: Double) -> String { amount.formatted(.currency(code: "USD")) }
+
+    func testRetailScreensCompile() throws {
+        for screen in ["Home", "Catalog", "ProductDetail", "Cart", "CheckoutReview", "OrderConfirmation"] {
+            XCTAssertNoThrow(try load("Enterprise/Retail", screen), screen)
+        }
+    }
+
+    func testRetailHomeRendersTheAppsFeed() throws {
+        let (screen, store) = try load("Enterprise/Retail", "Home")
+        let calls = recordIntents(store, ["openProduct", "openCategory", "search"])
+        store.update { $0 = $0.setting(["headline": "Winter Sale", "subheadline": "Everything 40% off",
+                                         "categories": [["id": "tech", "name": "Tech", "symbol": "headphones"]],
+                                         "featured": [], "trending": [
+                                            ["id": "mug", "name": "Stoneware Mug Set", "brand": "Hearth", "price": 32, "compareAtPrice": 0,
+                                             "onSale": false, "rating": 4.7, "reviewCount": 1530, "symbol": "cup.and.saucer.fill", "color": "#6D8B74"]]],
+                                        at: ["feed"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Winter Sale"))
+        XCTAssertNoThrow(try screen.inspect().find(text: usd(32)))
+        XCTAssertNoThrow(try screen.inspect().find(text: "4.7"))
+        try screen.inspect().find(button: "Tech").tap()
+        try screen.inspect().find(button: "Stoneware Mug Set").tap()
+        XCTAssertEqual(calls(), ["openCategory:tech", "openProduct:mug"])
+
+        store.update { $0 = $0.setting(true, at: ["isLoading"]) }
+        XCTAssertNoThrow(try screen.inspect().find(ViewType.ProgressView.self))
+    }
+
+    func testRetailProductDetailShowsFeatureStateAndSendsIntents() throws {
+        let (screen, store) = try load("Enterprise/Retail", "ProductDetail")
+        let calls = recordIntents(store, ["selectSize", "changeQuantity", "addToCart", "viewCart"])
+
+        XCTAssertFalse(try screen.inspect().find(button: "Add to cart").isDisabled())
+        XCTAssertTrue(try screen.inspect().findAll(ViewType.Button.self)[4].isDisabled(), "minus is disabled at quantity 1")
+        try screen.inspect().find(button: "M").tap()
+        try screen.inspect().find(button: "Add to cart").tap()
+        XCTAssertEqual(calls(), ["selectSize:M", "addToCart"])
+
+        // The feature rejects adding without a size; the screen shows what the feature decided.
+        store.update { $0 = $0.setting(true, at: ["needsSize"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Choose a size first"))
+        store.update { $0 = $0.setting(true, at: ["added"]) }
+        try screen.inspect().find(button: "View cart").tap()
+        XCTAssertEqual(calls().last, "viewCart")
+    }
+
+    func testRetailCartShowsTotalsPromoAndEmptyState() throws {
+        let (screen, store) = try load("Enterprise/Retail", "Cart")
+        let calls = recordIntents(store, ["changeQuantity", "applyPromo", "removePromo", "checkout", "browse"])
+
+        XCTAssertNoThrow(try screen.inspect().find(text: usd(230.04)))
+        try screen.inspect().findAll(ViewType.TextField.self)[0].setInput("FALL20")
+        try screen.inspect().find(button: "Apply").tap()
+        try screen.inspect().find(button: "Checkout").tap()
+        XCTAssertEqual(calls(), ["applyPromo:FALL20", "checkout"])
+
+        store.update { $0 = $0.setting("invalid", at: ["promoStatus"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "That code isn't valid."))
+        store.update { $0 = $0.setting("FALL20", at: ["promoCode"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "FALL20 applied"))
+
+        store.update { $0 = $0.setting([], at: ["lines"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Your cart is empty"))
+        try screen.inspect().find(button: "Start shopping").tap()
+        XCTAssertEqual(calls().last, "browse")
+    }
+
+    func testRetailCheckoutSendsShippingAndPay() throws {
+        let (screen, store) = try load("Enterprise/Retail", "CheckoutReview")
+        let calls = recordIntents(store, ["selectShipping", "pay"])
+        try screen.inspect().find(button: "Express").tap()
+        try screen.inspect().find(button: "Pay " + usd(160.92)).tap()
+        XCTAssertEqual(calls(), ["selectShipping:express", "pay"])
+
+        store.update { $0 = $0.setting(true, at: ["isPlacingOrder"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Placing your order…"))
+    }
+
+    func testRetailCatalogSendsSearchesAndFilters() throws {
+        let (screen, store) = try load("Enterprise/Retail", "Catalog")
+        let calls = recordIntents(store, ["search", "selectCategory", "sort", "openProduct"])
+        try screen.inspect().find(ViewType.TextField.self).setInput("boot")
+        // `.onChange(of: query)` runs on a real render; trigger it the way SwiftUI would.
+        let changed = try screen.inspect().findAll(ViewType.AnyView.self)
+            .contains { (try? $0.callOnChange(newValue: RuntimeValue.string("boot"))) != nil }
+        XCTAssertTrue(changed)
+        try screen.inspect().find(button: "Shoes").tap()
+        try screen.inspect().find(button: "Price ↑").tap()
+        XCTAssertEqual(calls(), ["search:boot", "selectCategory:shoes", "sort:priceLow"])
+        XCTAssertNoThrow(try screen.inspect().find(text: "2 results"))
+    }
 }
