@@ -133,7 +133,7 @@ final class ShowcaseAppTests: XCTestCase {
     private func usd(_ amount: Double) -> String { amount.formatted(.currency(code: "USD")) }
 
     func testRetailScreensCompile() throws {
-        for screen in ["Home", "Catalog", "ProductDetail", "Cart", "CheckoutReview", "OrderConfirmation"] {
+        for screen in ["Home", "Catalog", "ProductDetail", "Cart", "CheckoutReview", "OrderConfirmation", "Account"] {
             XCTAssertNoThrow(try load("Enterprise/Retail", screen), screen)
         }
     }
@@ -220,5 +220,20 @@ final class ShowcaseAppTests: XCTestCase {
         try screen.inspect().find(button: "Price ↑").tap()
         XCTAssertEqual(calls(), ["search:boot", "selectCategory:shoes", "sort:priceLow"])
         XCTAssertNoThrow(try screen.inspect().find(text: "2 results"))
+    }
+
+    func testRetailAccountShowsProfileAndOrders() throws {
+        let (screen, store) = try load("Enterprise/Retail", "Account")
+        let calls = recordIntents(store, ["startShopping"])
+        store.update { $0 = $0.setting(["name": "Ada Obi", "email": "ada@example.com", "cardLast4": "1881",
+                                         "address": ["street": "1 Main St", "city": "Lagos"]], at: ["profile"]) }
+        XCTAssertNoThrow(try screen.inspect().find(text: "Ada Obi"))
+        XCTAssertNoThrow(try screen.inspect().find(text: "Visa •••• 1881"))
+        XCTAssertNoThrow(try screen.inspect().find(text: "Order NW-48213"))
+        XCTAssertNoThrow(try screen.inspect().find(text: usd(181.48)))
+
+        store.update { $0 = $0.setting([], at: ["orders"]) }
+        try screen.inspect().find(button: "Start shopping").tap()
+        XCTAssertEqual(calls(), ["startShopping"])
     }
 }

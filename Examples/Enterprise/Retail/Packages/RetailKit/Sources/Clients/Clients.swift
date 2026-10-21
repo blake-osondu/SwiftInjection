@@ -34,7 +34,7 @@ public struct OrderClient: Sendable {
     public var validatePromo: @Sendable (_ code: String) async throws -> Promo?
 }
 
-public struct CustomerProfile: Equatable, Sendable {
+public struct CustomerProfile: Codable, Equatable, Sendable {
     public var name: String
     public var email: String
     public var address: Address

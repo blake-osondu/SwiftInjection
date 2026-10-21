@@ -1,8 +1,8 @@
 # Retail: The Composable Architecture
 
-A shopping app where **most of the UI is remote**. The home feed, catalog and search, product pages, cart, checkout review and order confirmation are signed SwiftInjection payloads. They use only built-in SDK views, with no custom components.
+A shopping app where **most of the UI is remote**. The home feed, catalog and search, product pages, cart, checkout review, order confirmation and account tab are signed SwiftInjection payloads. They use only built-in SDK views, with no custom components.
 
-The line remote screens shouldn't cross stays native. That covers the app shell, navigation, payment authorization, and every business rule. In TCA terms, **reducers own all state and logic; remote screens are their views.**
+The line remote screens shouldn't cross stays native. That covers the app shell, navigation, payment authorization, and every business rule. Measured by code, about 90% of what draws the UI is remote; the native UI is the tab bar and the payment sheet. In TCA terms, **reducers own all state and logic; remote screens are their views.**
 
 | Area | | Why |
 |---|---|---|
@@ -12,9 +12,9 @@ The line remote screens shouldn't cross stays native. That covers the app shell,
 | Cart | **Remote** | Promotions, messaging, free-shipping nudges |
 | Checkout review | **Remote** | Layout and copy; every number comes from the app |
 | Order confirmation | **Remote** | Cross-sells and surveys |
+| Account | **Remote** | Profile and order history; the card shows only its last four digits |
 | Tab bar, navigation stacks | Native | Navigation is a reducer decision, never a payload's |
 | Payment sheet | Native | Card data and payment authorization never touch a payload |
-| Account tab | Native | |
 | Prices, totals, tax, promo validation, size and quantity rules, placing orders | Native (reducers) | Business logic is tested, versioned code |
 
 ## How a remote screen plugs into TCA
@@ -51,7 +51,7 @@ Packages/RetailKit
   RemoteScreens                 the only module that imports SwiftInjection: RemoteScreen + RemoteArguments
   Payment                       PaymentFeature + PaymentView (native sheet)
   Features                      Home, Catalog, Product, Cart, Checkout, Confirmation, and AppFeature (tabs, StackState paths)
-screens/                        the six remote screens, in SwiftUI
+screens/                        the seven remote screens, in SwiftUI
 ```
 
 ## Run it
@@ -64,6 +64,7 @@ Launch arguments jump straight to a screen for demos and screenshots:
 - `-demoCatalog shoes`
 - `-demoTab cart -demoCart puffer:M,mug,tote`
 - `-demoTab cart -demoCart puffer:M,mug -demoCheckout YES`
+- `-demoTab account`
 
 ## Things to try
 
@@ -81,4 +82,4 @@ cd Examples/Enterprise/Retail/Packages/RetailKit
 xcodebuild test -scheme RetailKit-Package -destination 'platform=iOS Simulator,name=iPhone 16' -skipMacroValidation
 ```
 
-`ShowcaseAppTests` in the main test suite compiles the six screens and drives them with app state, checking that each tap sends the right intent. CI runs both.
+`ShowcaseAppTests` in the main test suite compiles the seven screens and drives them with app state, checking that each tap sends the right intent. CI runs both.

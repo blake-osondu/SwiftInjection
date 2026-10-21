@@ -2,6 +2,7 @@ import SwiftUI
 import ComposableArchitecture
 import Models
 import Clients
+import RemoteScreens
 
 /// The app: a native tab bar and navigation stacks. Every screen state lives here or in a child feature, and every
 /// navigation decision is made here, so remote screens can only ask (via delegate actions), never navigate.
@@ -137,7 +138,7 @@ public struct AppView: View {
             .tag(AppFeature.Tab.cart)
 
             NavigationStack {
-                AccountView(profile: store.profile, orders: store.orders)
+                AccountView(store: store)
             }
             .tabItem { Label("Account", systemImage: "person.crop.circle") }
             .tag(AppFeature.Tab.account)
@@ -145,47 +146,19 @@ public struct AppView: View {
     }
 }
 
-/// Native: the account tab, with a list of which screens in this app are remote.
+/// The account tab, a remote `Account` screen. Profile and orders come from `AppFeature`'s state.
 struct AccountView: View {
-    let profile: CustomerProfile
-    let orders: [Order]
+    let store: StoreOf<AppFeature>
 
-    static let remoteScreens = ["Home", "Catalog", "ProductDetail", "Cart", "CheckoutReview", "OrderConfirmation"]
+    static let remoteScreens = ["Home", "Catalog", "ProductDetail", "Cart", "CheckoutReview", "OrderConfirmation", "Account"]
 
     var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading) {
-                    Text(profile.name).font(.headline)
-                    Text(profile.email).font(.subheadline).foregroundStyle(.secondary)
-                }
-                LabeledContent("Ships to", value: profile.address.street)
-                LabeledContent("Card", value: "Visa •••• \(profile.cardLast4)")
-            }
-            Section("Orders") {
-                if orders.isEmpty {
-                    Text("No orders yet").foregroundStyle(.secondary)
-                }
-                ForEach(orders) { order in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Order \(order.id)").font(.body.weight(.medium))
-                            Text("\(order.totals.itemCount) items · arrives \(order.estimatedDelivery)")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Text(order.totals.total, format: .currency(code: "USD")).monospacedDigit()
-                    }
-                }
-            }
-            Section {
-                ForEach(Self.remoteScreens, id: \.self) { Label($0, systemImage: "antenna.radiowaves.left.and.right") }
-            } header: {
-                Text("Remote screens")
-            } footer: {
-                Text("These screens are signed SwiftInjection payloads, rendered natively. The tab bar, navigation, this account tab, payment and all business logic are native TCA.")
-            }
-        }
-        .navigationTitle("Account")
+        RemoteScreen("Account", state: [
+            "profile": store.profile,
+            "orders": store.orders,
+            "remoteScreens": Self.remoteScreens,
+        ], intents: [
+            "startShopping": { _ in store.send(.tabSelected(.shop)) },
+        ])
     }
 }
